@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reliance Power - Stock Analysis</title>
+    <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-blue: #58a6ff;
+            --border-color: #30363d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px 25px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .stat-value.positive { color: var(--accent-green); }
+        .stat-value.negative { color: var(--accent-red); }
+
+        .chart-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .time-range-group {
+            display: flex;
+            gap: 4px;
+            margin-right: 15px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: var(--bg-primary);
+            border-color: var(--accent-blue);
+        }
+
+        .btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: var(--bg-primary);
+        }
+
+        #candleChart, #lineChart {
+            width: 100%;
+            height: 450px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .chart-tooltip {
+            position: fixed;
+            display: none;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            min-width: 160px;
+        }
+
+        .tooltip-date {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--accent-blue);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+
+        .tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+        }
+
+        .tooltip-label {
+            color: var(--text-secondary);
+        }
+
+        .tooltip-value {
+            font-weight: 500;
+        }
+
+        .info-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .panel {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+        }
+
+        .panel h3 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            color: var(--accent-blue);
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-label {
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.5rem; }
+            .stats-bar { gap: 15px; }
+            .stat-item { padding: 8px 15px; }
+            .stat-value { font-size: 1.2rem; }
+            #candleChart, #lineChart { height: 350px; }
+            .chart-controls { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Reliance Power (RPOWER)</h1>
+            <p class="subtitle">Stock Data Visualization</p>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-label">Current Price</div>
+                <div class="stat-value" id="currentPrice">-</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Change</div>
+                <div class="stat-value" id="priceChange">-</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Period High</div>
+                <div class="stat-value" id="periodHigh">-</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Period Low</div>
+                <div class="stat-value" id="periodLow">-</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Avg Volume</div>
+                <div class="stat-value" id="avgVolume">-</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-header">
+                <span class="chart-title">Price Chart</span>
+                <div class="chart-controls">
+                    <div class="time-range-group">
+                        <button class="btn" id="btnDay" onclick="loadData('day')">1D</button>
+                        <button class="btn" id="btnWeek" onclick="loadData('week')">1W</button>
+                        <button class="btn" id="btnMonth" onclick="loadData('month')">1M</button>
+                    </div>
+                    <button class="btn active" id="btnCandle" onclick="showChart('candle')">Candlestick</button>
+                    <button class="btn" id="btnLine" onclick="showChart('line')">Line</button>
+                </div>
+            </div>
+            <div id="candleChart"></div>
+            <div id="lineChart" class="hidden"></div>
+            <div class="chart-tooltip" id="tooltip"></div>
+        </div>
+
+        <div class="info-panel">
+            <div class="panel">
+                <h3>Summary Statistics</h3>
+                <div class="data-row">
+                    <span class="data-label">Total Periods</span>
+                    <span id="totalPeriods">-</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Price Range</span>
+                    <span id="priceRange">-</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Average Price</span>
+                    <span id="avgPrice">-</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Volatility (Std Dev)</span>
+                    <span id="volatility">-</span>
+                </div>
+            </div>
+            <div class="panel">
+                <h3>Performance Metrics</h3>
+                <div class="data-row">
+                    <span class="data-label">Best Period</span>
+                    <span id="bestPeriod" class="positive">-</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Worst Period</span>
+                    <span id="worstPeriod" class="negative">-</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Positive Periods</span>
+                    <span id="positivePeriods">-</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Negative Periods</span>
+                    <span id="negativePeriods">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let datasets = { day: [], week: [], month: [] };
+        let currentData = [];
+        let currentRange = 'day';
+        let candleChart, lineChart;
+
+        function parseVolume(vol) {
+            if (!vol) return 0;
+            vol = vol.toString().replace(/"/g, '').replace(/,/g, '');
+            if (vol.includes('M')) return parseFloat(vol) * 1000000;
+            if (vol.includes('K')) return parseFloat(vol) * 1000;
+            return parseFloat(vol) || 0;
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const parts = lines[i].match(/("([^"]*)"|[^,]+)/g);
+                if (!parts || parts.length < 7) continue;
+                
+                const dateStr = parts[0].replace(/"/g, '');
+                const price = parseFloat(parts[1].replace(/"/g, ''));
+                const open = parseFloat(parts[2].replace(/"/g, ''));
+                const high = parseFloat(parts[3].replace(/"/g, ''));
+                const low = parseFloat(parts[4].replace(/"/g, ''));
+                const vol = parseVolume(parts[5]);
+                const change = parseFloat(parts[6].replace(/"/g, '').replace('%', ''));
+                
+                const dateParts = dateStr.split('-');
+                const time = Date.UTC(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+                
+                data.push({ time, date: dateStr, price, open, high, low, vol, change });
+            }
+            
+            return data.sort((a, b) => a.time - b.time);
+        }
+
+        async function loadAllData() {
+            const [dayRes, weekRes, monthRes] = await Promise.all([
+                fetch('RPOL Historical Data Day.csv'),
+                fetch('RPOL Historical Data Week.csv'),
+                fetch('RPOL Historical Data Month.csv')
+            ]);
+
+            const [dayText, weekText, monthText] = await Promise.all([
+                dayRes.text(),
+                weekRes.text(),
+                monthRes.text()
+            ]);
+
+            datasets.day = parseCSV(dayText);
+            datasets.week = parseCSV(weekText);
+            datasets.month = parseCSV(monthText);
+
+            loadData('day');
+        }
+
+        function loadData(range) {
+            currentRange = range;
+            currentData = datasets[range];
+
+            document.querySelectorAll('.time-range-group .btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('btn' + range.charAt(0).toUpperCase() + range.slice(1)).classList.add('active');
+
+            const rangeLabels = { day: '365D', week: '120W', month: '60M' };
+            document.querySelector('.subtitle').textContent = `Last ${rangeLabels[range]} Stock Data Visualization`;
+
+            calculateStats();
+            updateCharts();
+        }
+
+        function calculateStats() {
+            if (currentData.length === 0) return;
+
+            const latest = currentData[currentData.length - 1];
+            
+            document.getElementById('currentPrice').textContent = '₹' + latest.price.toFixed(2);
+            
+            const changeEl = document.getElementById('priceChange');
+            changeEl.textContent = (latest.change >= 0 ? '+' : '') + latest.change.toFixed(2) + '%';
+            changeEl.className = 'stat-value ' + (latest.change >= 0 ? 'positive' : 'negative');
+
+            const prices = currentData.map(d => d.price);
+            const high = Math.max(...prices);
+            const low = Math.min(...prices);
+            
+            document.getElementById('periodHigh').textContent = '₹' + high.toFixed(2);
+            document.getElementById('periodLow').textContent = '₹' + low.toFixed(2);
+
+            const volumes = currentData.map(d => d.vol);
+            const avgVol = volumes.reduce((a, b) => a + b, 0) / volumes.length;
+            document.getElementById('avgVolume').textContent = (avgVol / 1000000).toFixed(2) + 'M';
+
+            document.getElementById('totalPeriods').textContent = currentData.length;
+            document.getElementById('priceRange').textContent = '₹' + low.toFixed(2) + ' - ₹' + high.toFixed(2);
+
+            const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+            document.getElementById('avgPrice').textContent = '₹' + avgPrice.toFixed(2);
+
+            const variance = prices.reduce((sum, p) => sum + Math.pow(p - avgPrice, 2), 0) / prices.length;
+            const stdDev = Math.sqrt(variance);
+            document.getElementById('volatility').textContent = '₹' + stdDev.toFixed(2);
+
+            let bestPeriod = currentData[0], worstPeriod = currentData[0];
+            currentData.forEach(d => {
+                if (d.change > bestPeriod.change) bestPeriod = d;
+                if (d.change < worstPeriod.change) worstPeriod = d;
+            });
+
+            const bestEl = document.getElementById('bestPeriod');
+            bestEl.textContent = '+' + bestPeriod.change.toFixed(2) + '% (' + bestPeriod.date + ')';
+            
+            const worstEl = document.getElementById('worstPeriod');
+            worstEl.textContent = worstPeriod.change.toFixed(2) + '% (' + worstPeriod.date + ')';
+
+            const posPeriods = currentData.filter(d => d.change > 0).length;
+            const negPeriods = currentData.filter(d => d.change < 0).length;
+            
+            document.getElementById('positivePeriods').textContent = posPeriods + ' (' + (posPeriods / currentData.length * 100).toFixed(1) + '%)';
+            document.getElementById('negativePeriods').textContent = negPeriods + ' (' + (negPeriods / currentData.length * 100).toFixed(1) + '%)';
+        }
+
+        function updateCharts() {
+            const candleData = currentData.map(d => ({
+                time: d.time,
+                open: d.open,
+                high: d.high,
+                low: d.low,
+                close: d.price
+            }));
+
+            const lineData = currentData.map(d => ({
+                time: d.time,
+                value: d.price
+            }));
+
+            if (candleChart) {
+                candleChart.remove();
+            }
+            if (lineChart) {
+                lineChart.remove();
+            }
+
+            candleChart = LightweightCharts.createChart(document.getElementById('candleChart'), {
+                layout: {
+                    background: { color: '#161b22' },
+                    textColor: '#8b949e'
+                },
+                grid: {
+                    vertLines: { color: '#21262d' },
+                    horzLines: { color: '#21262d' }
+                },
+                crosshair: {
+                    mode: LightweightCharts.CrosshairMode.Normal
+                },
+                rightPriceScale: {
+                    borderColor: '#30363d'
+                },
+                timeScale: {
+                    borderColor: '#30363d',
+                    timeVisible: true
+                }
+            });
+
+            const candlestickSeries = candleChart.addCandlestickSeries({
+                upColor: '#3fb950',
+                downColor: '#f85149',
+                borderUpColor: '#3fb950',
+                borderDownColor: '#f85149',
+                wickUpColor: '#3fb950',
+                wickDownColor: '#f85149'
+            });
+            candlestickSeries.setData(candleData);
+
+            const tooltip = document.getElementById('tooltip');
+            
+            candleChart.subscribeCrosshairMove((param) => {
+                if (!param.time || !param.seriesData.size) {
+                    tooltip.style.display = 'none';
+                    return;
+                }
+                
+                const data = param.seriesData.get(candlestickSeries);
+                if (!data) return;
+                
+                const date = new Date(param.time).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                
+                tooltip.innerHTML = `
+                    <div class="tooltip-date">${date}</div>
+                    <div class="tooltip-row"><span class="tooltip-label">Open</span><span class="tooltip-value">₹${data.open.toFixed(2)}</span></div>
+                    <div class="tooltip-row"><span class="tooltip-label">High</span><span class="tooltip-value">₹${data.high.toFixed(2)}</span></div>
+                    <div class="tooltip-row"><span class="tooltip-label">Low</span><span class="tooltip-value">₹${data.low.toFixed(2)}</span></div>
+                    <div class="tooltip-row"><span class="tooltip-label">Close</span><span class="tooltip-value">₹${data.close.toFixed(2)}</span></div>
+                `;
+                
+                const chartEl = document.getElementById('candleChart');
+                const chartRect = chartEl.getBoundingClientRect();
+                
+                let left = chartRect.left + param.point.x + 15;
+                let top = chartRect.top + param.point.y + 15;
+                
+                if (left + 180 > window.innerWidth - 20) {
+                    left = chartRect.left + param.point.x - 175;
+                }
+                if (top + 150 > window.innerHeight) {
+                    top = chartRect.top + param.point.y - 130;
+                }
+
+                tooltip.style.left = left + 'px';
+                tooltip.style.top = top + 'px';
+                tooltip.style.display = 'block';
+            });
+
+            candleChart.timeScale().fitContent();
+
+            lineChart = LightweightCharts.createChart(document.getElementById('lineChart'), {
+                layout: {
+                    background: { color: '#161b22' },
+                    textColor: '#8b949e'
+                },
+                grid: {
+                    vertLines: { color: '#21262d' },
+                    horzLines: { color: '#21262d' }
+                },
+                crosshair: {
+                    mode: LightweightCharts.CrosshairMode.Normal
+                },
+                rightPriceScale: {
+                    borderColor: '#30363d'
+                },
+                timeScale: {
+                    borderColor: '#30363d',
+                    timeVisible: true
+                }
+            });
+
+            const areaSeries = lineChart.addAreaSeries({
+                lineColor: '#58a6ff',
+                topColor: 'rgba(88, 166, 255, 0.4)',
+                bottomColor: 'rgba(88, 166, 255, 0.0)',
+                lineWidth: 2
+            });
+            areaSeries.setData(lineData);
+
+            lineChart.timeScale().fitContent();
+
+            const isCandleVisible = !document.getElementById('candleChart').classList.contains('hidden');
+            if (!isCandleVisible) {
+                lineChart.resize(document.getElementById('lineChart').clientWidth, 450);
+                lineChart.timeScale().fitContent();
+            }
+
+            window.addEventListener('resize', () => {
+                candleChart.resize(document.getElementById('candleChart').clientWidth, 450);
+                lineChart.resize(document.getElementById('lineChart').clientWidth, 450);
+            });
+        }
+
+        function showChart(type) {
+            const candleEl = document.getElementById('candleChart');
+            const lineEl = document.getElementById('lineChart');
+            const btnCandle = document.getElementById('btnCandle');
+            const btnLine = document.getElementById('btnLine');
+
+            if (type === 'candle') {
+                candleEl.classList.remove('hidden');
+                lineEl.classList.add('hidden');
+                btnCandle.classList.add('active');
+                btnLine.classList.remove('active');
+                candleChart.timeScale().fitContent();
+            } else {
+                candleEl.classList.add('hidden');
+                lineEl.classList.remove('hidden');
+                btnCandle.classList.remove('active');
+                btnLine.classList.add('active');
+                lineChart.resize(lineEl.clientWidth, 450);
+                lineChart.timeScale().fitContent();
+            }
+        }
+
+        loadAllData();
+    </script>
+</body>
+</html>
