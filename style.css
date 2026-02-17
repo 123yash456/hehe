@@ -1,0 +1,1175 @@
+/* 
+    =============================================================================
+    STOCK ANALYSIS DASHBOARD - STYLESHEET
+    =============================================================================
+    This CSS file contains all styling for the stock analysis dashboard.
+    It uses CSS custom properties (variables) for consistent theming.
+    
+    TABLE OF CONTENTS:
+    1. CSS Variables (Custom Properties)
+    2. Global Reset & Base Styles
+    3. Layout & Container
+    4. Header Styles
+    5. Stats Grid
+    6. Chart Wrapper
+    7. Buttons & Controls
+    8. Tooltip
+    9. Indicator Legend
+    10. Panels
+    11. Table Styles
+    12. Loading Overlay
+    13. Animations
+    14. Responsive Design
+    =============================================================================
+*/
+
+/* -----------------------------------------------------------------------------
+   1. CSS VARIABLES (CUSTOM PROPERTIES)
+   ----------------------------------------------------------------------------- */
+/* 
+   :root defines CSS custom properties that can be reused throughout the file.
+   These create a consistent color palette and spacing system.
+*/
+:root {
+    /* Background Colors - Dark theme */
+    --bg-primary: #000000;        /* Main page background - pure black */
+    --bg-secondary: #1c1c1e;      /* Secondary background - slightly lighter */
+    --bg-tertiary: #2c2c2e;      /* Tertiary background - for cards/inputs */
+    --bg-card: #1e1e20;          /* Card background color */
+    
+    /* Text Colors */
+    --text-primary: #ffffff;     /* Primary text - white */
+    --text-secondary: #8e8e93;    /* Secondary text - gray */
+    --text-tertiary: #636366;     /* Tertiary text - darker gray */
+    
+    /* Accent Colors - Used for highlights and indicators */
+    --accent-green: #30d158;     /* Success/positive - green */
+    --accent-red: #ff453a;       /* Error/negative - red */
+    --accent-blue: #0a84ff;      /* Info/links - blue */
+    --accent-orange: #ff9f0a;    /* Warning/neutral - orange */
+    --accent-purple: #bf5af2;    /* Special indicators - purple */
+    
+    /* Border and effects */
+    --border-color: #38383a;     /* Default border color */
+    --glass-bg: rgba(30, 30, 32, 0.8);  /* Glassmorphism background */
+    --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);  /* Large shadow */
+    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.3);        /* Medium shadow */
+}
+
+/* -----------------------------------------------------------------------------
+   2. GLOBAL RESET & BASE STYLES
+   ----------------------------------------------------------------------------- */
+/* 
+   * selector applies to all elements
+   margin/padding: 0 removes default browser spacing
+   box-sizing: border-box includes padding/border in element's total width
+*/
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+/* 
+   Smooth scrolling when clicking anchor links
+   Applies to the entire HTML document
+*/
+html { 
+    scroll-behavior: smooth; 
+}
+
+/* 
+   Body base styles
+   font-family: Inter with system font fallback
+   min-height: 100vh ensures full viewport height
+   overflow-x: hidden prevents horizontal scroll
+*/
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.5;
+    overflow-x: hidden;
+}
+
+/* 
+   Background gradient overlay
+   Uses pseudo-element (::before) to create decorative gradients
+   pointer-events: none allows clicking through the gradient
+   z-index: 0 places it behind content
+*/
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: 
+        radial-gradient(ellipse at 20% 0%, rgba(10, 132, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(191, 90, 242, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* -----------------------------------------------------------------------------
+   3. LAYOUT & CONTAINER
+   ----------------------------------------------------------------------------- */
+/* 
+   Container limits width and centers content
+   max-width: 1400px prevents content from becoming too wide on large screens
+   margin: 0 auto centers the container horizontally
+   padding: 0 24px provides side spacing
+   position: relative and z-index: 1 place it above the background gradient
+*/
+.container { 
+    max-width: 1400px; 
+    margin: 0 auto; 
+    padding: 0 24px; 
+    position: relative; 
+    z-index: 1; 
+}
+
+/* -----------------------------------------------------------------------------
+   4. HEADER STYLES
+   ----------------------------------------------------------------------------- */
+/* 
+   Header section
+   border-bottom adds subtle separator
+   margin-bottom creates spacing below header
+   animation adds fade-in effect on page load
+*/
+header {
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 32px;
+    animation: fadeInDown 0.6s ease-out;
+}
+
+/* 
+   Header content layout
+   display: flex enables flexible layout
+   justify-content: space-between pushes items to opposite ends
+   align-items: flex-end aligns items at bottom
+   flex-wrap: wrap allows wrapping on smaller screens
+   gap: 20px provides spacing between flex items
+*/
+.header-content { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-end; 
+    flex-wrap: wrap; 
+    gap: 20px; 
+}
+
+/* 
+   Brand section
+   display: flex aligns logo and text horizontally
+   gap: 20px spaces logo from text
+*/
+.brand { 
+    display: flex; 
+    align-items: center; 
+    gap: 16px; 
+}
+
+/* 
+   Logo styling
+   Fixed size: 48x48 pixels
+   Gradient background using blue to purple
+   border-radius: 12px creates rounded corners
+   display: flex with center alignment for centering text
+   font-weight: 700 makes text bold
+   box-shadow adds glow effect
+*/
+.logo {
+    width: 48px; 
+    height: 48px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    border-radius: 12px;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    font-weight: 700; 
+    font-size: 18px;
+    box-shadow: 0 8px 24px rgba(10, 132, 255, 0.3);
+}
+
+/* 
+   Main heading (h1)
+   font-size: 2rem is large heading
+   font-weight: 600 is semibold
+   letter-spacing: -0.02em tightens spacing for modern look
+   Background gradient on text with -webkit-background-clip: text
+   This creates the gradient text effect
+*/
+h1 {
+    font-size: 2rem; 
+    font-weight: 600; 
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; 
+    background-clip: text;
+}
+
+/* 
+   Subtitle styling
+   color: var(--text-secondary) is muted gray
+   font-size: 0.95rem is slightly smaller than body
+   margin-top: 4px provides small gap from heading
+*/
+.subtitle { 
+    color: var(--text-secondary); 
+    font-size: 0.95rem; 
+    margin-top: 4px; 
+}
+
+/* 
+   Live indicator badge
+   display: flex aligns dot and text
+   gap: 8px spaces elements
+   padding and border-radius create pill shape
+   background uses tertiary color
+*/
+.live-indicator {
+    display: flex; 
+    align-items: center; 
+    gap: 8px;
+    padding: 8px 16px; 
+    background: var(--bg-tertiary); 
+    border-radius: 20px;
+    font-size: 0.85rem; 
+    color: var(--text-secondary);
+}
+
+/* 
+   Live indicator dot (pulsing animation)
+   width/height: 8px creates small circle
+   background: green for "live" status
+   border-radius: 50% makes it circular
+   animation: pulse creates blinking effect
+   box-shadow adds glow
+*/
+.live-dot {
+    width: 8px; 
+    height: 8px; 
+    background: var(--accent-green); 
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 12px var(--accent-green);
+}
+
+/* -----------------------------------------------------------------------------
+   5. STATS GRID
+   ----------------------------------------------------------------------------- */
+/* 
+   Stats grid container
+   display: grid creates CSS grid layout
+   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) creates responsive columns
+   minmax(180px, 1fr) ensures cards are at least 180px wide
+   gap: 16px spaces cards apart
+   margin-bottom adds spacing below grid
+*/
+.stats-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+    gap: 16px; 
+    margin-bottom: 32px; 
+}
+
+/* 
+   Individual stat card
+   background: card background color
+   border: 1px solid creates subtle border
+   border-radius: 16px rounds corners
+   transition: all 0.3s enables smooth hover effects
+   animation: fadeInUp adds entrance animation with staggered delays
+*/
+.stat-card {
+    background: var(--bg-card); 
+    border: 1px solid var(--border-color); 
+    border-radius: 16px;
+    padding: 20px; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInUp 0.6s ease-out backwards;
+}
+
+/* 
+   Staggered animation delays for each card
+   Creates sequential fade-in effect
+*/
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.15s; }
+.stat-card:nth-child(3) { animation-delay: 0.2s; }
+.stat-card:nth-child(4) { animation-delay: 0.25s; }
+.stat-card:nth-child(5) { animation-delay: 0.3s; }
+
+/* 
+   Stat card hover effect
+   transform: translateY(-4px) moves card up slightly
+   border-color changes to blue
+   box-shadow adds depth
+*/
+.stat-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-blue);
+    box-shadow: var(--shadow-md);
+}
+
+/* 
+   Stat label styling
+   font-size: 0.75rem is small uppercase text
+   text-transform: uppercase converts to caps
+   letter-spacing: 0.08em adds spacing between letters
+   color: tertiary gray for muted appearance
+   margin-bottom: 8px spaces from value
+*/
+.stat-label { 
+    font-size: 0.75rem; 
+    text-transform: uppercase; 
+    letter-spacing: 0.08em; 
+    color: var(--text-tertiary); 
+    margin-bottom: 8px; 
+}
+
+/* 
+   Stat value styling
+   font-size: 1.75rem is large for emphasis
+   font-weight: 600 semibold
+   letter-spacing: -0.02em tightens text
+   Color classes (positive/negative/neutral) applied via JavaScript
+*/
+.stat-value { 
+    font-size: 1.75rem; 
+    font-weight: 600; 
+    letter-spacing: -0.02em; 
+}
+.stat-value.positive { color: var(--accent-green); }
+.stat-value.negative { color: var(--accent-red); }
+.stat-value.neutral { color: var(--text-primary); }
+
+/* -----------------------------------------------------------------------------
+   6. CHART WRAPPER
+   ----------------------------------------------------------------------------- */
+/* 
+   Chart container
+   background and border create card-like appearance
+   padding: 24px provides inner spacing
+   margin-bottom: 32px adds bottom spacing
+   box-shadow adds depth
+   animation: fadeInUp with delay
+*/
+.chart-wrapper {
+    background: var(--bg-card); 
+    border: 1px solid var(--border-color); 
+    border-radius: 20px;
+    padding: 24px; 
+    margin-bottom: 32px; 
+    box-shadow: var(--shadow-lg);
+    animation: fadeInUp 0.6s ease-out 0.35s backwards;
+}
+
+/* 
+   Chart header layout
+   display: flex with space-between pushes title and controls apart
+   flex-wrap: wrap allows wrapping on mobile
+   gap: 16px provides spacing
+   margin-bottom adds bottom spacing
+*/
+.chart-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    flex-wrap: wrap; 
+    gap: 16px; 
+    margin-bottom: 20px; 
+}
+
+/* 
+   Chart title
+   font-size: 1.1rem is moderate size
+   font-weight: 600 semibold
+*/
+.chart-title { 
+    font-size: 1.1rem; 
+    font-weight: 600; 
+}
+
+/* 
+   Chart controls container
+   display: flex creates horizontal layout
+   gap: 8px spaces button groups
+   flex-wrap: wrap allows wrapping
+*/
+.chart-controls { 
+    display: flex; 
+    gap: 8px; 
+    flex-wrap: wrap; 
+}
+
+/* 
+   Button group container
+   display: flex creates inline group
+   background and border-radius create unified button group look
+   padding: 4px provides inner spacing
+*/
+.btn-group { 
+    display: flex; 
+    background: var(--bg-tertiary); 
+    border-radius: 10px; 
+    padding: 4px; 
+}
+
+/* -----------------------------------------------------------------------------
+   7. BUTTONS & CONTROLS
+   ----------------------------------------------------------------------------- */
+/* 
+   Base button styles
+   padding provides clickable area
+   border: none removes default border
+   background: transparent makes it blend with group
+   color: secondary text
+   border-radius: 8px rounds corners
+   cursor: pointer shows hand on hover
+   font-size and font-weight for readability
+   transition enables smooth hover effects
+   font-family: inherit uses page font
+*/
+.btn {
+    padding: 10px 20px; 
+    border: none; 
+    background: transparent; 
+    color: var(--text-secondary);
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 0.875rem; 
+    font-weight: 500;
+    transition: all 0.25s ease; 
+    font-family: inherit;
+}
+
+/* 
+   Button hover state
+   color changes to primary (white)
+   background changes to secondary
+*/
+.btn:hover { 
+    color: var(--text-primary); 
+    background: var(--bg-secondary); 
+}
+
+/* 
+   Active button state (selected)
+   background: primary black
+   color: white
+   box-shadow adds depth
+*/
+.btn.active {
+    background: var(--bg-primary); 
+    color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 
+   Outline button variant
+   border: 1px solid creates visible border
+   background: transparent
+*/
+.btn.outline { 
+    border: 1px solid var(--border-color); 
+    background: transparent; 
+}
+
+/* 
+   Active outline button
+   border-color changes to blue
+   color changes to blue
+   background adds subtle blue tint
+*/
+.btn.outline.active { 
+    border-color: var(--accent-blue); 
+    color: var(--accent-blue); 
+    background: rgba(10, 132, 255, 0.1); 
+}
+
+/* 
+   Indicator button (smaller)
+   padding reduced for compact display
+   font-size smaller
+   border-radius smaller
+*/
+.btn.indicator-btn { 
+    padding: 6px 12px; 
+    font-size: 0.75rem; 
+    border-radius: 6px; 
+}
+
+/* 
+   Active indicator button
+   background: blue with white text
+*/
+.btn.indicator-btn.active { 
+    background: var(--accent-blue); 
+    color: white; 
+}
+
+/* 
+   Indicators header container
+   display: flex creates horizontal row
+   gap: 8px spaces buttons
+   flex-wrap: wrap allows wrapping
+   margin-bottom adds spacing
+*/
+.indicators-header { 
+    display: flex; 
+    gap: 8px; 
+    flex-wrap: wrap; 
+    margin-bottom: 12px; 
+}
+
+/* 
+   Indicator panel (holds separate indicator charts)
+   display: none hides by default
+   height: 520px provides fixed height
+   margin-top adds spacing
+   border-radius rounds corners
+   overflow: hidden prevents content spill
+*/
+.indicator-panel { 
+    display: none; 
+    height: 520px; 
+    margin-top: 8px; 
+    border-radius: 12px; 
+    overflow: hidden; 
+}
+
+/* 
+   Active indicator panel
+   display: block shows the panel
+*/
+.indicator-panel.active { 
+    display: block; 
+}
+
+/* 
+   Chart containers
+   width: 100% fills container
+   height: 500px fixed height
+   border-radius rounds corners
+   overflow: hidden prevents spill
+*/
+#candleChart, #lineChart { 
+    width: 100%; 
+    height: 500px; 
+    border-radius: 12px; 
+    overflow: hidden; 
+}
+
+/* 
+   Utility class for hiding elements
+   display: none !important ensures hiding
+*/
+.hidden { 
+    display: none !important; 
+}
+
+/* -----------------------------------------------------------------------------
+   8. TOOLTIP
+   ----------------------------------------------------------------------------- */
+/* 
+   Floating tooltip
+   position: fixed stays in viewport position
+   display: none hidden by default
+   background uses glassmorphism effect
+   backdrop-filter: blur(20px) blurs background
+   -webkit-backdrop-filter for Safari support
+   border and border-radius create card look
+   padding provides inner spacing
+   font-size for readable text
+   pointer-events: none allows clicking through
+   z-index: 1000 ensures above other content
+   box-shadow adds depth
+   min-width ensures minimum width
+   animation adds fade-in effect
+*/
+.floating-tooltip {
+    position: fixed; 
+    display: none;
+    background: var(--glass-bg); 
+    backdrop-filter: blur(20px); 
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color); 
+    border-radius: 12px; 
+    padding: 16px; 
+    font-size: 0.85rem;
+    pointer-events: none; 
+    z-index: 1000; 
+    box-shadow: var(--shadow-lg); 
+    min-width: 200px;
+    animation: tooltipFadeIn 0.15s ease-out;
+}
+
+/* 
+   Tooltip header
+   font-weight: 600 semibold
+   margin-bottom adds spacing
+   color: blue for emphasis
+   font-size slightly larger
+   border-bottom adds separator
+   padding-bottom creates space for line
+*/
+.tooltip-header { 
+    font-weight: 600; 
+    margin-bottom: 12px; 
+    color: var(--accent-blue); 
+    font-size: 0.9rem; 
+    border-bottom: 1px solid var(--border-color); 
+    padding-bottom: 8px; 
+}
+
+/* 
+   Tooltip row
+   display: flex with space-between pushes label and value apart
+   margin provides vertical spacing
+   font-size for readability
+*/
+.tooltip-row { 
+    display: flex; 
+    justify-content: space-between; 
+    margin: 6px 0; 
+    font-size: 0.85rem; 
+}
+
+/* 
+   Tooltip label
+   color: secondary gray
+*/
+.tooltip-label { 
+    color: var(--text-secondary); 
+}
+
+/* 
+   Tooltip value
+   font-weight: 500 medium
+   color: primary white
+*/
+.tooltip-value { 
+    font-weight: 500; 
+    color: var(--text-primary); 
+}
+
+/* 
+   Tooltip divider line
+   height: 1px thin line
+   background uses border color
+   margin provides spacing
+*/
+.tooltip-divider { 
+    height: 1px; 
+    background: var(--border-color); 
+    margin: 8px 0; 
+}
+
+/* 
+   Specific label colors for indicators
+   SMA 50: green
+   SMA 200: orange
+   BB: purple
+   RSI: blue
+   MACD: blue
+   Signal: orange
+*/
+.tooltip-label.sma50-label { color: #30d158; }
+.tooltip-value.sma50-value { color: #30d158; font-weight: 600; }
+.tooltip-label.sma200-label { color: #ff9f0a; }
+.tooltip-value.sma200-value { color: #ff9f0a; font-weight: 600; }
+.tooltip-label.bb-label { color: #bf5af2; }
+.tooltip-label.rsi-label { color: #0a84ff; }
+.tooltip-label.macd-label { color: #0a84ff; }
+.tooltip-label.signal-label { color: #ff9f0a; }
+.tooltip-label.hist-label { color: var(--text-secondary); }
+
+/* 
+   RSI status styling
+   rsi-overbought: red and bold (above 70)
+   rsi-oversold: green and bold (below 30)
+*/
+.rsi-overbought { color: var(--accent-red) !important; font-weight: 600; }
+.rsi-oversold { color: var(--accent-green) !important; font-weight: 600; }
+
+/* 
+   Histogram styling
+   hist-positive: green for positive values
+   hist-negative: red for negative values
+*/
+.hist-positive { color: var(--accent-green) !important; font-weight: 600; }
+.hist-negative { color: var(--accent-red) !important; font-weight: 600; }
+
+/* -----------------------------------------------------------------------------
+   9. INDICATOR LEGEND
+   ----------------------------------------------------------------------------- */
+/* 
+   Indicator legend container
+   display: flex creates horizontal layout
+   gap: 16px spaces items
+   flex-wrap: wrap allows wrapping
+   padding and background create pill look
+   margin-bottom adds spacing
+   font-size small for compact display
+*/
+.indicator-legend {
+    display: flex; 
+    gap: 16px; 
+    flex-wrap: wrap; 
+    padding: 12px 16px;
+    background: var(--bg-tertiary); 
+    border-radius: 8px; 
+    margin-bottom: 12px;
+    font-size: 0.75rem; 
+    color: var(--text-secondary);
+}
+
+/* 
+   Legend item
+   display: flex aligns color dot and text
+   gap: 6px spaces them
+*/
+.indicator-legend .legend-item { 
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+}
+
+/* 
+   Legend color indicator
+   width: 12px, height: 3px creates small bar
+   border-radius: 2px slightly rounds
+*/
+.indicator-legend .legend-color { 
+    width: 12px; 
+    height: 3px; 
+    border-radius: 2px; 
+}
+
+/* -----------------------------------------------------------------------------
+   10. PANELS
+   ----------------------------------------------------------------------------- */
+/* 
+   Panels grid container
+   display: grid creates 2-column layout
+   gap: 24px spaces panels
+   margin-bottom adds bottom spacing
+*/
+.panels-grid { 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 24px; 
+    margin-bottom: 24px; 
+}
+
+/* 
+   Panel styling
+   background and border create card
+   border-radius rounds corners
+   padding provides inner spacing
+   transition enables hover effects
+   animation adds entrance effect
+*/
+.panel {
+    background: var(--bg-card); 
+    border: 1px solid var(--border-color); 
+    border-radius: 16px;
+    padding: 24px; 
+    transition: all 0.3s ease; 
+    animation: fadeInUp 0.6s ease-out backwards;
+}
+
+/* 
+   Staggered animation delays for panels
+*/
+.panel:nth-child(1) { animation-delay: 0.4s; }
+.panel:nth-child(2) { animation-delay: 0.45s; }
+
+/* 
+   Panel hover effect
+   border-color changes to blue
+   box-shadow adds depth
+*/
+.panel:hover { 
+    border-color: var(--accent-blue); 
+    box-shadow: var(--shadow-md); 
+}
+
+/* 
+   Panel heading (h3)
+   font-size moderate
+   font-weight semibold
+   margin-bottom adds spacing
+   display: flex aligns with pseudo-element
+   gap: 10px spaces from accent bar
+*/
+.panel h3 { 
+    font-size: 1rem; 
+    font-weight: 600; 
+    margin-bottom: 20px; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+}
+
+/* 
+   Panel heading accent bar (pseudo-element)
+   Creates vertical colored bar before heading
+   content: '' makes it visible
+   width/height creates bar shape
+   background: blue
+   border-radius rounds
+*/
+.panel h3::before { 
+    content: ''; 
+    width: 4px; 
+    height: 20px; 
+    background: var(--accent-blue); 
+    border-radius: 2px; 
+}
+
+/* 
+   Data row in panel
+   display: flex with space-between
+   padding provides vertical spacing
+   border-bottom adds separator line
+   font-size for readability
+*/
+.data-row { 
+    display: flex; 
+    justify-content: space-between; 
+    padding: 14px 0; 
+    border-bottom: 1px solid var(--border-color); 
+    font-size: 0.9rem; 
+}
+
+/* 
+   Remove border from last data row
+*/
+.data-row:last-child { 
+    border-bottom: none; 
+}
+
+/* 
+   Data label styling
+   color: secondary gray
+*/
+.data-label { 
+    color: var(--text-secondary); 
+}
+
+/* 
+   Colored data labels for indicators
+*/
+.data-label.sma-50 { color: #30d158; }
+.data-label.sma-200 { color: #ff9f0a; }
+.data-label.rsi-line { color: #0a84ff; }
+.data-label.macd-line { color: #0a84ff; }
+
+/* 
+   Performance value colors
+*/
+.performance-positive { color: var(--accent-green); }
+.performance-negative { color: var(--accent-red); }
+
+/* -----------------------------------------------------------------------------
+   11. TABLE STYLES
+   ----------------------------------------------------------------------------- */
+/* 
+   Stats table wrapper
+   overflow-x: auto enables horizontal scroll on mobile
+   margin: 0 -24px extends to edges
+   padding: 0 24px provides inner spacing
+*/
+.stats-table-wrapper { 
+    overflow-x: auto; 
+    margin: 0 -24px; 
+    padding: 0 24px; 
+}
+
+/* 
+   Stats table
+   width: 100% fills container
+   border-collapse: collapse removes gaps between cells
+   min-width: 600px ensures readability
+*/
+.stats-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    min-width: 600px; 
+}
+
+/* 
+   Scrollbar styling for WebKit browsers
+   height: 8px for visibility
+*/
+.stats-table::-webkit-scrollbar { 
+    height: 8px; 
+}
+
+/* 
+   Scrollbar track
+   background: tertiary color
+   border-radius: 4px rounds
+*/
+.stats-table::-webkit-scrollbar-track { 
+    background: var(--bg-tertiary); 
+    border-radius: 4px; 
+}
+
+/* 
+   Scrollbar thumb (draggable part)
+   background: blue
+   border-radius: 4px rounds
+*/
+.stats-table::-webkit-scrollbar-thumb { 
+    background: var(--accent-blue); 
+    border-radius: 4px; 
+}
+
+/* 
+   Table header and cell
+   padding provides spacing
+   text-align: left left-aligns text
+   border-bottom adds separator
+   font-size small
+   white-space: nowrap prevents wrapping
+*/
+.stats-table th, .stats-table td { 
+    padding: 14px 16px; 
+    text-align: left; 
+    border-bottom: 1px solid var(--border-color); 
+    font-size: 0.875rem; 
+    white-space: nowrap; 
+}
+
+/* 
+   Table header specifically
+   color: tertiary gray
+   font-weight: 500 medium
+   font-size even smaller
+   text-transform: uppercase for labels
+   letter-spacing adds spacing
+   background: tertiary for header row
+*/
+.stats-table th { 
+    color: var(--text-tertiary); 
+    font-weight: 500; 
+    font-size: 0.75rem; 
+    text-transform: uppercase; 
+    letter-spacing: 0.05em; 
+    background: var(--bg-tertiary); 
+}
+
+/* 
+   Table row hover
+   background changes on hover
+*/
+.stats-table tbody tr:hover { 
+    background: var(--bg-tertiary); 
+}
+
+/* 
+   Variable column (first column)
+   color: primary white
+   font-weight: 500 medium
+*/
+.stats-table .variable { 
+    color: var(--text-primary); 
+    font-weight: 500; 
+}
+
+/* -----------------------------------------------------------------------------
+   12. LOADING OVERLAY
+   ----------------------------------------------------------------------------- */
+/* 
+   Loading overlay
+   position: fixed covers entire viewport
+   top/left/right/bottom: 0 fills screen
+   background: primary black
+   display: flex centers content
+   z-index: 9999 ensures on top
+   transition enables fade out
+*/
+.loading-overlay {
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0;
+    background: var(--bg-primary); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    z-index: 9999; 
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+/* 
+   Hidden loading overlay
+   opacity: 0 makes invisible
+   visibility: hidden prevents interaction
+*/
+.loading-overlay.hidden { 
+    opacity: 0; 
+    visibility: hidden; 
+}
+
+/* 
+   Loader spinner
+   width/height: 48px creates circle
+   border: 3px solid creates ring
+   border-top-color: blue creates spinning effect
+   border-radius: 50% makes circular
+   animation: spin rotates infinitely
+*/
+.loader { 
+    width: 48px; 
+    height: 48px; 
+    border: 3px solid var(--border-color); 
+    border-top-color: var(--accent-blue); 
+    border-radius: 50%; 
+    animation: spin 1s linear infinite; 
+}
+
+/* -----------------------------------------------------------------------------
+   13. ANIMATIONS
+   ----------------------------------------------------------------------------- */
+/* 
+   fadeInDown animation
+   Starts from opacity: 0 and translated up 20px
+   Ends at opacity: 1 and original position
+   Used for header and elements appearing from top
+*/
+@keyframes fadeInDown { 
+    from { 
+        opacity: 0; 
+        transform: translateY(-20px); 
+    } 
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    } 
+}
+
+/* 
+   fadeInUp animation
+   Starts from opacity: 0 and translated down 20px
+   Ends at opacity: 1 and original position
+   Used for cards and panels appearing from bottom
+*/
+@keyframes fadeInUp { 
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    } 
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    } 
+}
+
+/* 
+   pulse animation
+   Oscillates opacity between 1 and 0.7
+   Used for live indicator dot
+*/
+@keyframes pulse { 
+    0%, 100% { 
+        opacity: 1; 
+    } 
+    50% { 
+        opacity: 0.7; 
+    } 
+}
+
+/* 
+   spin animation
+   Rotates 360 degrees continuously
+   Used for loading spinner
+*/
+@keyframes spin { 
+    to { 
+        transform: rotate(360deg); 
+    } 
+}
+
+/* 
+   tooltipFadeIn animation
+   Starts slightly smaller (scale: 0.95) and invisible
+   Ends at full size and visible
+   Used for tooltip appearance
+*/
+@keyframes tooltipFadeIn { 
+    from { 
+        opacity: 0; 
+        transform: scale(0.95); 
+    } 
+    to { 
+        opacity: 1; 
+        transform: scale(1); 
+    } 
+}
+
+/* -----------------------------------------------------------------------------
+   14. RESPONSIVE DESIGN
+   ----------------------------------------------------------------------------- */
+
+/* 
+   Tablet breakpoint (max-width: 768px)
+   Reduces sizes and stacks elements
+*/
+@media (max-width: 768px) {
+    /* Smaller heading */
+    h1 { 
+        font-size: 1.5rem; 
+    }
+    
+    /* Stack header content vertically */
+    .header-content { 
+        flex-direction: column; 
+        align-items: flex-start; 
+    }
+    
+    /* 2-column stats grid */
+    .stats-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+    }
+    
+    /* Reduced chart height */
+    #candleChart, #lineChart { 
+        height: 350px; 
+    }
+    
+    /* Stack chart header */
+    .chart-header { 
+        flex-direction: column; 
+        align-items: flex-start; 
+    }
+    
+    /* Smaller buttons */
+    .btn { 
+        padding: 8px 14px; 
+        font-size: 0.8rem; 
+    }
+    
+    /* Single column panels */
+    .panels-grid { 
+        grid-template-columns: 1fr; 
+    }
+}
+
+/* 
+   Mobile breakpoint (max-width: 480px)
+   Single column layout
+*/
+@media (max-width: 480px) { 
+    /* Single column stats */
+    .stats-grid { 
+        grid-template-columns: 1fr; 
+    }
+}
