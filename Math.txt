@@ -1,0 +1,715 @@
+MATH EXPLANATION FOR STOCK ANALYSIS WEBSITE
+=============================================
+
+This document explains all the mathematical concepts used in this stock
+analysis dashboard in simple terms.
+
+
+================================================================================
+PART 1: BASIC ARITHMETIC CONCEPTS
+================================================================================
+
+1. ADDITION (+)
+---------------
+Adding numbers together.
+Example: 100 + 50 = 150
+
+
+2. SUBTRACTION (-)
+------------------
+Finding the difference between two numbers.
+Example: 110 - 100 = 10
+
+
+3. MULTIPLICATION (*)
+---------------------
+Repeated addition or scaling.
+Example: 2 × 1000 = 2000 (used for converting millions: price × 1,000,000)
+
+
+4. DIVISION (/)
+---------------
+Splitting into equal parts or finding how many times one number fits into another.
+Example: 500 / 10 = 50
+
+
+5. PERCENTAGE (%)
+-----------------
+A part of 100. Used to show relative change.
+Formula: (New Value - Old Value) / Old Value × 100
+
+Example: Price went from ₹100 to ₹110
+Change = (110 - 100) / 100 × 100 = +10%
+
+
+6. SQUARE ROOT (√)
+-------------------
+The number that when multiplied by itself gives the original number.
+Example: √25 = 5 (because 5 × 5 = 25)
+
+
+================================================================================
+PART 2: STATISTICAL MEASURES
+================================================================================
+
+1. AVERAGE (MEAN)
+-----------------
+The "typical" value in a set of numbers. It represents the center of the data.
+
+What each variable means:
+- values = array of all price numbers you want to average
+- sum = total of all values added together (e.g., 100+102+98 = 300)
+- n = count of how many numbers you have (e.g., 3 prices)
+- mean = the average result
+
+Formula: Mean = sum of all values / number of values
+
+Example: Prices for 5 days = [100, 102, 98, 105, 95]
+- sum = 100 + 102 + 98 + 105 + 95 = 500
+- n = 5
+- Mean = 500 / 5 = 100
+
+What it means: On average, the stock price was ₹100 over these 5 days.
+
+
+2. VARIANCE
+-----------
+Variance measures how spread out the numbers are from the average.
+A high variance means prices fluctuated a lot (risky).
+A low variance means prices were stable (less risky).
+
+What each variable means:
+- mean = the average we calculated above (e.g., 100)
+- v = each individual value in the dataset
+- v - mean = how far that value is from the average
+- Math.pow(v - mean, 2) = squaring that difference (makes it positive)
+- sum = adding up all the squared differences
+- variance = average of those squared differences
+
+Formula: Variance = Σ(value - mean)² / number of values
+
+Example: Prices = [100, 102, 98] with mean = 100
+- Differences: 100-100 = 0, 102-100 = 2, 98-100 = -2
+- Squared differences: 0² = 0, 2² = 4, (-2)² = 4
+- Sum = 0 + 4 + 4 = 8
+- Variance = 8 / 3 = 2.67
+
+What it means: On average, prices deviated by about 2.67 from the mean.
+
+
+3. STANDARD DEVIATION
+---------------------
+The square root of variance. It tells us the average distance from
+the mean, but in the same units as the original data (rupees).
+
+What each variable means:
+- variance = the value we calculated above (e.g., 2.67)
+- std (or stdDev) = standard deviation
+
+Formula: Standard Deviation = √Variance
+
+Example: If variance = 2.67
+Standard Deviation = √2.67 ≈ 1.63
+
+What it means: On average, prices were ₹1.63 away from the mean.
+
+
+4. AVERAGE VOLUME
+-----------------
+The average number of shares traded over a period.
+
+What each variable means:
+- volumes = array of all volume numbers for each day
+- sum = total volume added up
+- avgVol = the average volume
+
+Formula: Average Volume = sum of all volumes / number of days
+
+Example: Volumes = [10M, 12M, 8M] million shares
+- Sum = 10 + 12 + 8 = 30 million
+- Average = 30 / 3 = 10 million
+
+In code:
+  const volumes = currentData.map(d => d.vol);           // Get all volumes
+  const avgVol = volumes.reduce((a, b) => a + b, 0) / volumes.length;  // Sum divided by count
+
+
+================================================================================
+PART 3: MOVING AVERAGES
+================================================================================
+
+1. SIMPLE MOVING AVERAGE (SMA)
+------------------------------
+SMA smooths out price data by averaging prices over a specific period.
+It removes daily fluctuations to show the underlying trend.
+
+What each variable means:
+- data = array of all stock price data (each item has price, date, etc.)
+- period = number of days to average (e.g., 50 or 200)
+- sum = adding up prices for that period
+- sma = the average price for that period
+
+Formula: SMA = Sum of closing prices for N periods / N periods
+
+Example: 3-day SMA with prices [100, 102, 104]
+- Sum = 100 + 102 + 104 = 306
+- SMA = 306 / 3 = 102
+
+The website uses:
+- SMA 50: Short-term average (50 days) - shows recent trend
+- SMA 200: Long-term average (200 days) - shows years trend
+
+In code:
+  for (let i = 0; i < data.length; i++) {
+      if (i < period - 1) {
+          sma.push(null);  // Not enough data yet
+      } else {
+          let sum = 0;
+          for (let j = 0; j < period; j++) {
+              sum += data[i - j].price;  // Add each price in the period
+          }
+          sma.push({ time: data[i].time, value: sum / period });  // Average
+      }
+  }
+
+
+2. EXPONENTIAL MOVING AVERAGE (EMA)
+-----------------------------------
+EMA gives MORE WEIGHT to recent prices. This makes it respond faster
+to price changes than SMA, which treats all prices equally.
+
+What each variable means:
+- multiplier (k) = the smoothing factor, determines how much weight recent prices get
+- prevEMA = the EMA value from the previous day
+- emaValue = the new EMA calculation
+- period = number of days (e.g., 12 or 26)
+
+Formula: EMA = (Today's Price × k) + (Yesterday's EMA × (1 - k))
+where k = 2 / (period + 1)
+
+Example: For period = 10 days
+- k = 2 / (10 + 1) = 2/11 = 0.182 (18.2% weight to today's price)
+- Previous EMA = 100
+- Today's price = 110
+- EMA = (110 × 0.182) + (100 × 0.818) = 20.02 + 81.8 = 101.82
+
+What it means: The recent price (110) gets 18.2% influence, while
+the old average (100) gets 81.8% influence. This makes EMA react
+faster to price changes.
+
+In code:
+  const multiplier = 2 / (period + 1);  // Smoothing factor
+  let prevEMA = sum / period;  // Start with SMA for first value
+  const emaValue = (data[i].price - prevEMA) * multiplier + prevEMA;
+
+
+================================================================================
+PART 4: MOMENTUM INDICATORS
+================================================================================
+
+1. PRICE CHANGE PERCENTAGE
+--------------------------
+Shows how much the price changed from the previous day as a percentage.
+
+What each variable means:
+- currentPrice = today's closing price
+- previousPrice = yesterday's closing price
+- change = the difference expressed as percentage
+
+Formula: ((Current Price - Previous Price) / Previous Price) × 100
+
+Example: Yesterday = ₹100, Today = ₹110
+- Change = ((110 - 100) / 100) × 100 = +10%
+
+
+2. RSI (RELATIVE STRENGTH INDEX)
+--------------------------------
+RSI measures how FAST prices are changing (momentum). It shows if a
+stock is overbought (might fall) or oversold (might rise).
+
+What each variable means:
+- change = difference between today's price and yesterday's price
+- gains = array of positive changes (when price went up)
+- losses = array of negative changes (when price went down, made positive)
+- avgGain = average of all gains over the period
+- avgLoss = average of all losses over the period
+- RS = Relative Strength (ratio of gains to losses)
+- rsi = the final RSI value (0-100)
+
+Formula: RSI = 100 - (100 / (1 + RS))
+         RS = Average Gain / Average Loss
+
+How to calculate step by step:
+1. Calculate daily price changes: today's price - yesterday's price
+2. Put gains in one list (positive changes or 0)
+3. Put losses in another list (negative changes made positive)
+4. Calculate average gain: sum of all gains / 14
+5. Calculate average loss: sum of all losses / 14
+6. If average loss = 0, RSI = 100 (strong upward)
+7. Otherwise, RS = avgGain / avgLoss
+8. RSI = 100 - (100 / (1 + RS))
+
+RSI Interpretation:
+- RSI above 70 = OVERBOUGHT (price may fall soon)
+- RSI below 30 = OVERSOLD (price may rise soon)
+- RSI around 50 = Neutral
+
+In code:
+  // Step 1: Calculate all price changes
+  const change = data[i].price - data[i - 1].price;
+  gains.push(change > 0 ? change : 0);  // Only positive
+  losses.push(change < 0 ? Math.abs(change) : 0);  // Made positive
+
+  // Step 2: Calculate averages
+  avgGain = (avgGain * (period - 1) + gains[i]) / period;  // Smoothed
+  avgLoss = (avgLoss * (period - 1) + losses[i]) / period;
+
+  // Step 3: Calculate RSI
+  const rs = avgGain / avgLoss;
+  rsi = 100 - (100 / (1 + rs));
+
+
+3. MACD (MOVING AVERAGE CONVERGENCE DIVERGENCE)
+------------------------------------------------
+MACD shows the relationship between two EMAs. It helps identify
+trend changes and momentum.
+
+What each variable means:
+- fastEMA = 12-day EMA (short-term, reacts quickly)
+- slowEMA = 26-day EMA (long-term, reacts slower)
+- macdLine = difference between fast and slow EMA
+- signalLine = 9-day EMA of the MACD line
+- histogram = macdLine - signalLine (shows momentum strength)
+
+Formula:
+- Fast EMA = EMA with period 12
+- Slow EMA = EMA with period 26
+- MACD Line = Fast EMA - Slow EMA
+- Signal Line = 9-day EMA of MACD Line
+- Histogram = MACD Line - Signal Line
+
+Example:
+- Fast EMA (12-day) = 105
+- Slow EMA (26-day) = 100
+- MACD Line = 105 - 100 = 5
+- Signal Line = EMA of MACD = 4
+- Histogram = 5 - 4 = 1 (positive = bullish momentum)
+
+How to read MACD:
+- MACD crosses ABOVE Signal Line = BUY signal (momentum turning up)
+- MACD crosses BELOW Signal Line = SELL signal (momentum turning down)
+- Histogram getting bigger = momentum increasing
+- Histogram getting smaller = momentum decreasing
+
+In code:
+  // Calculate EMAs
+  const fastEMA = calculateEMA(data, 12);
+  const slowEMA = calculateEMA(data, 26);
+  
+  // MACD Line
+  macdLine.push({ time: data[i].time, value: fastEMA[i].value - slowEMA[i].value });
+  
+  // Signal Line (EMA of MACD)
+  const sig = (macdLine[i].value - prevSignal) * signalMultiplier + prevSignal;
+  
+  // Histogram
+  histogram.push({ time: data[i].time, value: macdLine[i].value - sig });
+
+
+================================================================================
+PART 5: VOLATILITY INDICATORS
+================================================================================
+
+BOLLINGER BANDS
+---------------
+Bollinger Bands are volatility bands placed around a moving average.
+They show if prices are high or low relative to normal.
+
+What each variable means:
+- sma = Simple Moving Average (middle line)
+- mean = the average price (same as SMA)
+- std = standard deviation (how much prices deviate from average)
+- upper = upper band (SMA + 2 standard deviations)
+- lower = lower band (SMA - 2 standard deviations)
+- period = typically 20 days
+- stdDev = typically 2 (means 95% of prices should stay within bands)
+
+Formulas:
+- Middle Band (SMA) = Sum of prices / 20
+- Variance = Σ(price - mean)² / 20
+- Standard Deviation = √Variance
+- Upper Band = SMA + (2 × StdDev)
+- Lower Band = SMA - (2 × StdDev)
+
+Example: 
+- 20-day SMA = ₹100
+- Standard Deviation = ₹5
+- Upper Band = 100 + (2 × 5) = ₹110
+- Lower Band = 100 - (2 × 5) = ₹90
+
+What it means:
+- Price touches UPPER band = potentially OVERBOUGHT (may fall)
+- Price touches LOWER band = potentially OVERSOLD (may rise)
+- BANDS NARROW = Low volatility (quiet market, possible breakout coming)
+- BANDS WIDEN = High volatility (active market)
+
+In code:
+  // Calculate SMA first
+  const sma = calculateSMA(data, period);
+  
+  // For each point, calculate variance and std dev
+  const slice = data.slice(i - period + 1, i + 1);  // Get 20 prices
+  const mean = slice.reduce((sum, d) => sum + d.price, 0) / period;
+  const variance = slice.reduce((sum, d) => sum + Math.pow(d.price - mean, 2), 0) / period;
+  const std = Math.sqrt(variance);
+  
+  // Calculate bands
+  upper.push({ value: mean + stdDev * std });
+  lower.push({ value: mean - stdDev * std });
+
+
+================================================================================
+PART 6: CODE EXPLANATION - ALL CALCULATIONS
+================================================================================
+
+Here's what each calculation does in the actual code:
+
+------------------------------------------------------------------------------
+VARIABLE DEFINITIONS:
+------------------------------------------------------------------------------
+
+- data / currentData        = Array of all stock data points (each has date, 
+                              price, open, high, low, volume, change)
+                            
+- datasets                  = Object containing all data: { day: [], week: [], month: [] }
+                            
+- currentRange             = Which time view is active ('day', 'week', or 'month')
+                            
+- prices                   = Array of just the closing prices: [100, 102, 98, ...]
+                            
+- volumes                  = Array of just the trading volumes: [1000000, 1500000, ...]
+                            
+- values                   = Generic array of numbers being analyzed
+                            
+- n / values.length        = How many items are in the array (count)
+                            
+- sum / reduce((a,b) => a+b, 0) = Adding all numbers together
+                            
+- mean                     = Average: sum divided by count
+                            
+- variance                 = How spread out: average of squared differences
+                            
+- std / stdDev             = Standard deviation: square root of variance
+                            
+- period                   = Number of days for calculation (14, 20, 50, 200)
+                            
+- latest / first           = Most recent / oldest data point
+
+
+------------------------------------------------------------------------------
+1. PARSE VOLUME (parseVolume)
+------------------------------------------------------------------------------
+
+Converts volume text like "24.37M" to number 24370000
+
+What each part does:
+- vol.includes('B') = checks if letter B exists (billions)
+- parseFloat(vol) = converts "1.5" to number 1.5
+- * 1000000000 = multiplies to get actual number
+
+Code:
+  if (vol.includes('B')) return parseFloat(vol) * 1000000000;  // Billions
+  if (vol.includes('M')) return parseFloat(vol) * 1000000;     // Millions
+  if (vol.includes('K')) return parseFloat(vol) * 1000;        // Thousands
+
+
+------------------------------------------------------------------------------
+2. CALCULATE MEAN (calculateStatsAnalysis)
+------------------------------------------------------------------------------
+
+Formula: mean = sum of all values / number of values
+
+Code:
+  const values = data.map(d => d[varInfo.key]);    // Get array of prices/volumes/etc.
+  const mean = values.reduce((a, b) => a + b, 0) / n;  // Sum ÷ count
+
+Example:
+- values = [100, 102, 98]
+- sum = 100 + 102 + 98 = 300
+- n = 3
+- mean = 300 / 3 = 100
+
+
+------------------------------------------------------------------------------
+3. CALCULATE VARIANCE
+---------------------
+
+Formula: variance = Σ(value - mean)² / n
+
+Code:
+  const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / n;
+
+Breakdown:
+- v - mean          = difference between each value and average
+- Math.pow(..., 2) = square that difference (makes it positive)
+- sum + ...         = add all squared differences together
+- / n               = divide by count to get average
+
+Example:
+- values = [100, 102, 98], mean = 100
+- differences = [0, 2, -2]
+- squared = [0, 4, 4]
+- sum = 8
+- variance = 8 / 3 = 2.67
+
+
+------------------------------------------------------------------------------
+4. CALCULATE AVERAGE VOLUME
+---------------------------
+
+Formula: avgVol = sum of all volumes / number of days
+
+Code:
+  const volumes = currentData.map(d => d.vol);  // Get all volume values
+  const avgVol = volumes.reduce((a, b) => a + b, 0) / volumes.length;
+
+Result shown as: (avgVol / 1000000).toFixed(2) + 'M'  (converts to millions)
+
+
+------------------------------------------------------------------------------
+5. CALCULATE SMA (calculateSMA)
+-------------------------------
+
+Formula: SMA = Sum of last N prices / N
+
+Code:
+  for (let i = 0; i < data.length; i++) {
+      if (i < period - 1) {
+          sma.push(null);  // Can't calculate yet, not enough data
+      } else {
+          let sum = 0;
+          for (let j = 0; j < period; j++) {
+              sum += data[i - j].price;  // Add each price in the period
+          }
+          sma.push({ time: data[i].time, value: sum / period });
+      }
+  }
+
+What happens:
+- i = current position in data
+- j = goes back 0 to period-1 (e.g., 0 to 49 for SMA 50)
+- data[i - j].price = gets price from j days ago
+- sum / period = average of those prices
+
+
+------------------------------------------------------------------------------
+6. CALCULATE EMA (calculateEMA)
+-------------------------------
+
+Formula: EMA = (Price × k) + (Previous EMA × (1 - k))
+         where k = 2 / (period + 1)
+
+Code:
+  const multiplier = 2 / (period + 1);  // The weight for today's price
+  let sum = 0;
+  for (let i = 0; i < period; i++) sum += data[i].price;
+  let prevEMA = sum / period;  // Start with SMA for first value
+  
+  for (let i = 0; i < data.length; i++) {
+      if (i === period - 1) {
+          ema.push({ time: data[i].time, value: prevEMA });
+      } else {
+          const emaValue = (data[i].price - prevEMA) * multiplier + prevEMA;
+          ema.push({ time: data[i].time, value: emaValue });
+          prevEMA = emaValue;
+      }
+  }
+
+What happens:
+- First EMA = SMA (simple average of first period days)
+- Each next EMA = combines today's price with yesterday's EMA
+- multiplier controls how much today's price matters (higher = more reactive)
+
+
+------------------------------------------------------------------------------
+7. CALCULATE RSI (calculateRSI)
+-------------------------------
+
+Formula: RSI = 100 - (100 / (1 + RS))
+         RS = Average Gain / Average Loss
+
+Code:
+  // Step 1: Calculate daily changes
+  for (let i = 1; i < data.length; i++) {
+      const change = data[i].price - data[i - 1].price;
+      gains.push(change > 0 ? change : 0);           // Gain if positive
+      losses.push(change < 0 ? Math.abs(change) : 0); // Loss if negative
+  }
+  
+  // Step 2: Calculate initial averages (first 14 days)
+  for (let i = 0; i < period; i++) { 
+      avgGain += gains[i]; 
+      avgLoss += losses[i]; 
+  }
+  avgGain /= period; 
+  avgLoss /= period;
+  
+  // Step 3: Calculate RSI for remaining days with smoothing
+  for (let i = period; i < gains.length; i++) {
+      if (avgLoss === 0) {
+          rsi.push({ time: data[i + 1].time, value: 100 });
+      } else {
+          const rs = avgGain / avgLoss;
+          rsi.push({ time: data[i + 1].time, value: 100 - (100 / (1 + rs)) });
+      }
+      // Smooth the averages for next calculation
+      avgGain = (avgGain * (period - 1) + gains[i]) / period;
+      avgLoss = (avgLoss * (period - 1) + losses[i]) / period;
+  }
+
+What happens:
+- period = 14 (standard)
+- First 13 days: RSI = null (can't calculate yet)
+- Day 14: RSI based on simple average of first 14 gains/losses
+- Day 15+: RSI uses smoothed averages (gives less weight to old values)
+
+
+------------------------------------------------------------------------------
+8. CALCULATE MACD (calculateMACD)
+---------------------------------
+
+Formulas:
+- Fast EMA = EMA with period 12
+- Slow EMA = EMA with period 26
+- MACD Line = Fast EMA - Slow EMA
+- Signal Line = 9-day EMA of MACD Line
+- Histogram = MACD Line - Signal Line
+
+Code:
+  // Step 1: Get fast and slow EMAs
+  const fastEMA = calculateEMA(data, 12);
+  const slowEMA = calculateEMA(data, 26);
+  
+  // Step 2: MACD Line = Fast - Slow
+  for (let i = 0; i < data.length; i++) {
+      if (fastEMA[i] === null || slowEMA[i] === null) {
+          macdLine.push(null);
+      } else {
+          macdLine.push({ value: fastEMA[i].value - slowEMA[i].value });
+      }
+  }
+  
+  // Step 3: Signal Line = EMA of MACD
+  const signalMultiplier = 2 / (signalPeriod + 1);
+  for (let i = 0; i < data.length; i++) {
+      if (macdLine[i] === null) {
+          signalLine.push(null);
+      } else {
+          // EMA calculation on MACD values
+          const sig = (macdLine[i].value - prevSignal) * signalMultiplier + prevSignal;
+          signalLine.push({ value: sig });
+      }
+  }
+  
+  // Step 4: Histogram = MACD - Signal
+  histogram.push({ value: macdLine[i].value - signalLine[i].value });
+
+
+------------------------------------------------------------------------------
+9. CALCULATE BOLLINGER BANDS (calculateBollingerBands)
+-------------------------------------------------------
+
+Formulas:
+- Middle Band = SMA with period 20
+- Upper Band = Middle Band + (2 × Standard Deviation)
+- Lower Band = Middle Band - (2 × Standard Deviation)
+
+Code:
+  const sma = calculateSMA(data, period);  // Middle band
+  
+  for (let i = 0; i < data.length; i++) {
+      if (i < period - 1) {
+          upper.push(null);
+          lower.push(null);
+      } else {
+          // Get the last 'period' prices
+          const slice = data.slice(i - period + 1, i + 1);
+          
+          // Calculate mean
+          const mean = slice.reduce((sum, d) => sum + d.price, 0) / period;
+          
+          // Calculate variance
+          const variance = slice.reduce((sum, d) => sum + Math.pow(d.price - mean, 2), 0) / period;
+          
+          // Standard deviation
+          const std = Math.sqrt(variance);
+          
+          // Bands
+          upper.push({ value: mean + stdDev * std });
+          lower.push({ value: mean - stdDev * std });
+      }
+  }
+
+
+------------------------------------------------------------------------------
+10. CALCULATE VOLUME MOVING AVERAGE
+-----------------------------------
+
+Formula: Volume MA = Sum of last 20 volumes / 20
+
+Code:
+  const avgVol = currentData.reduce((s, d) => s + d.vol, 0) / currentData.length;
+  
+  const volumeMA = currentData.map((d, i) => {
+      if (i < 20) return null;
+      const slice = currentData.slice(i - 20, i);  // Last 20 days
+      return { time: d.time, value: slice.reduce((s, x) => s + x.vol, 0) / 20 };
+  });
+
+
+------------------------------------------------------------------------------
+11. CALCULATE PERCENTAGE OF POSITIVE/NEGATIVE PERIODS
+-----------------------------------------------------
+
+Formula: percentage = (count of positive / total) × 100
+
+Code:
+  const posPeriods = currentData.filter(d => d.change > 0).length;
+  const negPeriods = currentData.filter(d => d.change < 0).length;
+  
+  // Display as: "50 (45.5%)"
+  positivePeriodsEl.textContent = posPeriods + ' (' + (posPeriods / currentData.length * 100).toFixed(1) + '%)';
+
+
+================================================================================
+PART 7: QUICK REFERENCE
+================================================================================
+
+| Concept              | Formula                                      | Purpose                    |
+|---------------------|---------------------------------------------|---------------------------|
+| Mean                | Sum / Count                                 | Average value             |
+| Variance            | Σ(Value - Mean)² / Count                    | Measure spread            |
+| Std Deviation       | √Variance                                   | Average distance from    |
+|                     |                                             | mean                      |
+| SMA                 | Sum of N prices / N                        | Trend direction           |
+| EMA                 | (Price × k) + (Prev EMA × (1-k))           | Trend (responsive)        |
+| Price Change %      | ((New-Old)/Old) × 100                      | Daily return              |
+| RSI                 | 100 - (100 / (1 + RS))                     | Overbought/Oversold      |
+| MACD Line           | EMA(12) - EMA(26)                          | Trend momentum            |
+| Signal Line         | EMA of MACD                                | Buy/Sell signal          |
+| Bollinger Upper     | SMA + (2 × StdDev)                         | Resistance level          |
+| Bollinger Lower     | SMA - (2 × StdDev)                         | Support level            |
+| Volume MA           | Sum of 20 volumes / 20                     | Normal trading level     |
+
+
+================================================================================
+WHY THESE MATTER
+================================================================================
+
+- SMA/EMA: Shows if stock is in uptrend or downtrend
+- RSI: Tells you if price is too high (may fall) or too low (may rise)
+- MACD: Shows when trend might change and how strong it is
+- Bollinger Bands: Shows volatility and potential reversal points
+- Volume: Confirms if price movements are real (high volume = strong)
+- Variance/StdDev: Higher = riskier stock, Lower = more stable
+- Mean: The "normal" price to compare against current price
