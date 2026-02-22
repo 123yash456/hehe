@@ -4,7 +4,7 @@
     This is a single-page application for analyzing Reliance Power (RPOWER) stock data
     It uses Lightweight Charts library for rendering interactive stock charts
 -->
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <!-- 
         Meta tags for character encoding and responsive viewport 
@@ -46,6 +46,7 @@
     -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loader"></div>
+        <p class="loading-text">Loading stock data...</p>
     </div>
 
     <!-- 
@@ -74,9 +75,29 @@
                 </div>
                 
                 <!-- Live indicator showing stock ticker -->
-                <div class="live-indicator">
-                    <span class="live-dot"></span>
-                    <span>NSE: RPOWER</span>
+                <div class="header-right">
+                    <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+                        <input class="switch__input" type="checkbox" role="switch">
+                        <svg class="switch__letters" viewBox="0 0 24 24" width="24px" height="24px" aria-hidden="true">
+                            <g stroke="currentColor" stroke-linecap="round" stroke-width="4" transform="translate(0,4)">
+                                <g class="switch__letter">
+                                    <polyline class="switch__letter-stroke" points="2 2,2 14" />
+                                    <polyline class="switch__letter-stroke" points="2 2,16 2" stroke-dasharray="14 16" stroke-dashoffset="8" transform="rotate(0,2,2)" />
+                                    <polyline class="switch__letter-stroke" points="2 8,6 8" stroke-dasharray="4 6" />
+                                </g>
+                                <g class="switch__letter" transform="translate(14,0)">
+                                    <polyline class="switch__letter-stroke" points="2 2,2 14" />
+                                    <polyline class="switch__letter-stroke" points="2 2,8 2" stroke-dasharray="6 8" />
+                                    <polyline class="switch__letter-stroke" points="2 8,6 8" stroke-dasharray="4 6" />
+                                </g>
+                            </g>
+                        </svg>
+                        <span class="switch__label">Light mode</span>
+                    </div>
+                    <div class="live-indicator">
+                        <span class="live-dot"></span>
+                        <span>NSE: RPOWER</span>
+                    </div>
                 </div>
             </div>
         </header>
@@ -206,6 +227,26 @@
                 <div class="data-row"><span class="data-label rsi-line">RSI (14)</span><span id="rsiValue">-</span></div>
                 <div class="data-row"><span class="data-label macd-line">MACD</span><span id="macdValue">-</span></div>
                 <div class="data-row"><span class="data-label">Signal Line</span><span id="signalValue">-</span></div>
+            </div>
+        </div>
+
+        <!-- 
+            Calculations Panel
+            Shows detailed math and formulas for all calculations
+        -->
+        <div class="panel calculations-panel">
+            <div class="calc-header">
+                <h3>Math & Calculations</h3>
+                <div class="calc-tabs">
+                    <button class="calc-tab active" data-calc="sma">SMA</button>
+                    <button class="calc-tab" data-calc="rsi">RSI</button>
+                    <button class="calc-tab" data-calc="macd">MACD</button>
+                    <button class="calc-tab" data-calc="bb">Bollinger</button>
+                    <button class="calc-tab" data-calc="stats">Statistics</button>
+                </div>
+            </div>
+            <div id="calculationsContent" class="calc-content">
+                <!-- Populated by JavaScript -->
             </div>
         </div>
 

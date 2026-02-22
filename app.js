@@ -32,7 +32,7 @@
    Data is for Reliance Power (RPOWER) stock on NSE
 */
 
-/* Daily stock data - most recent ~6 months */
+/* Daily stock data - from RPOL Historical Data Day.csv */
 const dayCSV = `Date,Price,Open,High,Low,Vol.,Change %
 13-02-2026,26.80,27.41,27.42,26.70,24.37M,-2.93%
 12-02-2026,27.61,27.75,27.80,27.13,23.12M,-0.90%
@@ -129,7 +129,7 @@ const dayCSV = `Date,Price,Open,High,Low,Vol.,Change %
 01-10-2025,45.70,44.30,45.88,44.12,16.46M,3.02%
 30-09-2025,44.36,45.39,45.78,44.11,9.96M,-1.18%
 29-09-2025,44.89,45.02,45.98,44.18,15.37M,0.29%
-26-09-2025,46.51,44.23,46.30,44.50,10.41M,-2.72%
+26-09-2025,44.76,46.23,46.30,44.50,10.41M,-2.72%
 25-09-2025,46.01,46.61,47.10,45.91,7.08M,-0.97%
 24-09-2025,46.46,47.86,47.99,46.31,9.62M,-2.88%
 23-09-2025,47.84,48.99,49.03,47.61,10.41M,-2.03%
@@ -251,10 +251,36 @@ const dayCSV = `Date,Price,Open,High,Low,Vol.,Change %
 04-04-2025,41.35,43.10,43.40,41.06,35.28M,-4.19%
 03-04-2025,43.16,41.96,44.48,41.91,57.38M,2.01%
 02-04-2025,42.31,41.93,42.76,41.05,31.20M,0.76%
-01-04-2025,41.99,41.95,43.34,41.61,34.63M,-2.30%`;
+01-04-2025,41.99,41.95,43.34,41.61,34.63M,-2.30%
+28-03-2025,42.98,43.17,44.76,42.40,84.94M,0.02%
+27-03-2025,42.97,39.39,43.60,38.72,84.10M,8.87%
+26-03-2025,39.47,37.12,41.40,36.89,101.79M,5.96%
+25-03-2025,37.25,38.58,38.60,36.73,23.12M,-2.51%
+24-03-2025,38.21,38.20,38.86,37.80,24.37M,1.03%
+21-03-2025,37.82,36.46,38.10,36.45,29.35M,3.76%
+20-03-2025,36.45,38.11,38.29,36.30,25.55M,-3.37%
+19-03-2025,37.72,35.11,38.35,35.11,43.89M,8.39%
+18-03-2025,34.80,33.45,34.99,33.45,23.35M,5.39%
+17-03-2025,33.02,33.75,33.95,32.90,16.76M,-1.11%
+13-03-2025,33.39,34.18,34.65,33.32,16.25M,-0.74%
+12-03-2025,33.64,34.30,34.89,33.30,15.48M,-1.06%
+11-03-2025,34.00,34.09,34.34,33.35,17.07M,-1.22%
+10-03-2025,34.42,36.25,36.75,34.05,19.88M,-4.50%
+07-03-2025,36.04,35.30,36.37,34.94,29.89M,2.42%
+06-03-2025,35.19,35.15,36.14,34.44,36.41M,1.53%
+05-03-2025,34.66,33.20,34.82,33.20,22.57M,4.78%
+04-03-2025,33.08,32.10,33.90,32.05,25.68M,0.49%
+03-03-2025,32.92,33.46,34.48,31.27,32.48M,-1.02%
+28-02-2025,33.26,34.33,34.76,33.00,27.89M,-4.29%
+27-02-2025,34.75,36.70,36.89,34.40,20.81M,-4.85%
+25-02-2025,36.52,37.00,37.55,36.21,10.97M,-0.76%
+24-02-2025,36.80,37.40,37.55,36.70,11.57M,-2.39%
+21-02-2025,37.70,37.99,39.15,37.52,15.68M,-1.21%
+20-02-2025,38.16,37.90,38.65,37.50,13.74M,0.55%
+19-02-2025,37.95,36.28,38.40,36.05,19.02M,3.18%`;
 
-/* Weekly stock data - ~2 years of weekly data */
 const weekCSV = `Date,Price,Open,High,Low,Vol.,Change %
+15-02-2026,26.25,26.80,27.90,26.00,122.87M,-6.18%
 08-02-2026,26.80,28.50,29.45,26.70,148.06M,-4.22%
 01-02-2026,27.98,28.30,31.90,25.92,466.47M,-0.96%
 25-01-2026,28.25,28.00,29.96,26.83,219.81M,-0.07%
@@ -273,7 +299,7 @@ const weekCSV = `Date,Price,Open,High,Low,Vol.,Change %
 26-10-2025,46.42,45.15,47.75,43.27,196.33M,2.70%
 19-10-2025,45.20,45.00,46.58,44.04,63.38M,1.25%
 12-10-2025,44.64,43.55,47.51,43.55,166.33M,-8.11%
-05-10-2025,48.58,50.73,46.20,43.75,173.00M,4.52%
+05-10-2025,48.58,46.20,50.73,43.75,173.00M,4.52%
 28-09-2025,46.48,45.02,47.40,44.11,60.04M,3.84%
 21-09-2025,44.76,47.89,49.37,44.50,60.71M,-6.83%
 14-09-2025,48.04,45.66,49.28,45.52,120.33M,4.91%
@@ -376,190 +402,83 @@ const weekCSV = `Date,Price,Open,High,Low,Vol.,Change %
 05-11-2023,20.50,18.40,21.75,18.35,1.00B,12.33%
 29-10-2023,18.25,16.90,18.65,16.45,325.58M,8.63%`;
 
-/* Monthly stock data - ~10 years of monthly data */
 const monthCSV = `Date,Price,Open,High,Low,Vol.,Change %
-31-01-2026,27.26,35.36,32.14,25.92,2.15B,-21.18%
-31-12-2025,34.85,35.36,40.20,33.35,2.12B,-3.91%
-30-11-2025,39.95,34.83,42.38,32.40,2.21B,6.13%
-31-10-2025,46.42,52.16,50.73,43.27,1.76B,-12.04%
-30-09-2025,44.76,51.75,49.37,44.11,1.14B,-13.06%
-31-08-2025,46.92,56.78,51.89,43.00,1.04B,-20.52%
-31-07-2025,52.73,30.90,56.74,25.75,1.36B,57.38%
-30-06-2025,70.29,23.30,72.23,23.30,3.96B,164.94%
-31-05-2025,58.10,18.25,60.50,16.45,6.95B,218.35%
-30-04-2025,41.36,22.55,46.85,19.40,2.19B,84.01%
-31-03-2025,42.98,22.10,44.76,19.40,2.27B,91.31%
-28-02-2025,33.26,18.25,37.55,16.45,1.65B,82.25%
-31-01-2025,38.52,17.50,42.70,16.45,2.04B,120.24%
-31-12-2024,43.16,20.85,48.50,20.15,3.05B,106.76%
-30-11-2024,35.05,18.25,40.73,16.45,1.87B,91.78%
-31-10-2024,44.23,18.25,49.70,16.45,3.08B,142.36%
-30-09-2024,36.34,20.50,53.64,19.40,5.14B,77.24%
-31-08-2024,32.32,17.20,38.11,16.45,5.19B,88.14%
-31-07-2024,29.03,22.10,30.58,19.40,2.90B,31.32%
-30-06-2024,25.00,20.50,33.11,19.40,4.80B,21.95%
-31-05-2024,24.55,20.10,27.40,19.40,2.24B,22.06%
-30-04-2024,27.70,26.20,28.80,22.45,1.77B,5.72%
-31-03-2024,22.10,22.55,26.30,19.40,1.87B,-1.98%
-29-02-2024,27.50,20.85,29.00,18.35,2.65B,31.87%
-31-01-2024,30.20,23.30,31.55,22.15,3.64B,29.61%
-31-12-2023,23.30,18.25,24.65,16.45,6.14B,27.67%
-30-11-2023,20.85,16.90,23.75,15.10,6.41B,23.36%
-31-10-2023,18.25,16.90,21.75,14.65,4.14B,7.97%
-30-09-2023,16.90,17.25,21.95,14.65,4.27B,-1.74%
-31-08-2023,17.20,18.25,21.50,14.60,5.52B,-6.01%
-31-07-2023,18.30,17.50,21.90,13.35,7.19B,4.57%
-30-06-2023,17.50,15.65,20.75,13.85,9.14B,11.81%
-31-05-2023,15.65,15.10,18.40,13.35,6.65B,3.64%
-30-04-2023,15.10,16.55,18.15,13.55,5.47B,-8.76%
-31-03-2023,16.55,16.80,19.75,14.10,5.80B,-1.49%
-28-02-2023,16.80,16.95,19.40,14.55,5.29B,-0.83%
-31-01-2023,16.95,17.60,21.20,14.35,5.87B,-3.42%
-31-12-2022,17.55,17.55,21.50,14.85,5.95B,0.00%
-30-11-2022,17.55,18.80,21.30,14.95,6.17B,-6.65%
-31-10-2022,18.80,17.50,21.70,14.65,8.14B,7.43%
-30-09-2022,17.50,17.15,21.20,13.70,7.15B,2.04%
-31-08-2022,17.15,18.10,21.80,14.05,7.84B,-5.25%
-31-07-2022,18.10,18.90,21.40,14.60,6.87B,-4.23%
-30-06-2022,18.90,18.65,22.20,14.55,7.54B,1.34%
-31-05-2022,18.65,17.90,21.35,14.25,7.20B,4.19%
-30-04-2022,17.90,17.55,20.95,14.35,6.32B,1.99%
-31-03-2022,17.55,18.25,20.80,14.10,5.74B,-3.83%
-28-02-2022,18.25,17.30,20.90,14.05,6.12B,5.49%
-31-01-2022,17.30,16.80,19.75,13.90,5.48B,2.98%
-31-12-2021,16.80,15.35,19.15,13.40,5.85B,9.45%
-30-11-2021,15.35,14.20,18.30,12.50,5.23B,8.10%
-31-10-2021,14.20,14.50,17.55,12.15,4.69B,-2.07%
-30-09-2021,14.50,15.20,17.80,12.25,4.52B,-4.61%
-31-08-2021,15.20,14.65,18.15,12.40,5.19B,3.75%
-31-07-2021,14.65,14.10,17.10,12.25,4.38B,3.90%
-30-06-2021,14.10,13.85,16.55,11.85,4.17B,1.80%
-31-05-2021,13.85,14.40,17.20,12.10,3.92B,-3.82%
-30-04-2021,14.40,14.25,17.30,12.35,3.76B,1.05%
-31-03-2021,14.25,13.50,16.80,11.95,3.84B,5.56%
-28-02-2021,13.50,13.70,16.30,11.80,3.52B,-1.46%
-31-01-2021,13.70,14.15,16.60,11.95,3.45B,-3.18%
-31-12-2020,14.15,14.50,17.10,12.20,3.28B,-2.41%
-30-11-2020,14.50,13.95,17.15,12.00,3.19B,3.94%
-31-10-2020,13.95,13.80,16.60,11.75,3.05B,1.09%
-30-09-2020,13.80,14.25,16.75,12.05,2.97B,-3.16%
-31-08-2020,14.25,13.60,16.90,11.85,3.14B,4.78%
-31-07-2020,13.60,13.90,16.30,11.70,2.89B,-2.16%
-30-06-2020,13.90,14.35,17.05,12.15,2.78B,-3.14%
-31-05-2020,14.35,14.80,17.50,12.40,2.65B,-3.04%
-30-04-2020,14.80,15.10,17.85,12.55,2.52B,-1.99%
-31-03-2020,15.10,15.25,18.10,12.75,2.48B,-0.98%
-29-02-2020,15.25,15.45,18.30,12.90,2.39B,-1.29%
-31-01-2020,15.45,15.60,18.50,13.10,2.31B,-0.96%
-31-12-2019,15.60,15.75,18.65,13.25,2.25B,-0.95%
-30-11-2019,15.75,15.90,18.80,13.40,2.18B,-0.94%
-31-10-2019,15.90,16.05,18.95,13.55,2.12B,-0.93%
-30-09-2019,16.05,16.20,19.10,13.70,2.05B,-0.93%
-31-08-2019,16.20,16.35,19.25,13.85,1.98B,-0.92%
-31-07-2019,16.35,16.50,19.40,14.00,1.92B,-0.91%
-30-06-2019,16.50,16.65,19.55,14.15,1.86B,-0.90%
-31-05-2019,16.65,16.80,19.70,14.30,1.80B,-0.89%
-30-04-2019,16.80,16.95,19.85,14.45,1.74B,-0.89%
-31-03-2019,16.95,17.10,20.00,14.60,1.68B,-0.88%
-28-02-2019,17.10,17.25,20.15,14.75,1.63B,-0.87%
-31-01-2019,17.25,17.40,20.30,14.90,1.57B,-0.86%
-31-12-2018,17.40,17.55,20.45,15.05,1.52B,-0.85%
-30-11-2018,17.55,17.70,20.60,15.20,1.47B,-0.85%
-31-10-2018,17.70,17.85,20.75,15.35,1.42B,-0.84%
-30-09-2018,17.85,18.00,20.90,15.50,1.37B,-0.83%
-31-08-2018,18.00,18.15,21.05,15.65,1.32B,-0.83%
-31-07-2018,18.15,18.30,21.20,15.80,1.27B,-0.82%
-30-06-2018,18.30,18.45,21.35,15.95,1.22B,-0.81%
-31-05-2018,18.45,18.60,21.50,16.10,1.18B,-0.81%
-30-04-2018,18.60,18.75,21.65,16.25,1.13B,-0.80%
-31-03-2018,18.75,18.90,21.80,16.40,1.09B,-0.79%
-28-02-2018,18.90,19.05,21.95,16.55,1.05B,-0.79%
-31-01-2018,19.05,19.20,22.10,16.70,1.01B,-0.78%
-31-12-2017,19.20,19.35,22.25,16.85,0.97B,-0.78%
-30-11-2017,19.35,19.50,22.40,17.00,0.93B,-0.77%
-31-10-2017,19.50,19.65,22.55,17.15,0.90B,-0.76%
-30-09-2017,19.65,19.80,22.70,17.30,0.86B,-0.76%
-31-08-2017,19.80,19.95,22.85,17.45,0.83B,-0.75%
-31-07-2017,19.95,20.10,23.00,17.60,0.80B,-0.75%
-30-06-2017,20.10,20.25,23.15,17.75,0.77B,-0.74%
-31-05-2017,20.25,20.40,23.30,17.90,0.74B,-0.74%
-30-04-2017,20.40,20.55,23.45,18.05,0.71B,-0.73%
-31-03-2017,20.55,20.70,23.60,18.20,0.68B,-0.73%
-28-02-2017,20.70,20.85,23.75,18.35,0.65B,-0.72%
-31-01-2017,20.85,21.00,23.90,18.50,0.63B,-0.71%
-31-12-2016,21.00,21.15,24.05,18.65,0.60B,-0.71%
-30-11-2016,21.15,21.30,24.20,18.80,0.57B,-0.70%
-31-10-2016,21.30,21.45,24.35,18.95,0.55B,-0.70%
-30-09-2016,21.45,21.60,24.50,19.10,0.52B,-0.69%
-31-08-2016,21.60,21.75,24.65,19.25,0.50B,-0.69%
-31-07-2016,21.75,21.90,24.80,19.40,0.48B,-0.68%
-30-06-2016,21.90,22.05,24.95,19.55,0.46B,-0.68%
-31-05-2016,22.05,22.20,25.10,19.70,0.44B,-0.67%
-30-04-2016,22.20,22.35,25.25,19.85,0.42B,-0.67%
-31-03-2016,22.35,22.50,25.40,20.00,0.40B,-0.66%
-29-02-2016,22.50,22.65,25.55,20.15,0.38B,-0.66%
-31-01-2016,22.65,22.80,25.70,20.30,0.36B,-0.65%
-31-12-2015,22.80,22.95,25.85,20.45,0.34B,-0.65%
-30-11-2015,22.95,23.10,26.00,20.60,0.32B,-0.64%
-31-10-2015,23.10,23.25,26.15,20.75,0.31B,-0.64%
-30-09-2015,23.25,23.40,26.30,20.90,0.29B,-0.63%
-31-08-2015,23.40,23.55,26.45,21.05,0.27B,-0.63%
-31-07-2015,23.55,23.70,26.60,21.20,0.26B,-0.62%
-30-06-2015,23.70,23.85,26.75,21.35,0.24B,-0.62%
-31-05-2015,23.85,24.00,26.90,21.50,0.23B,-0.61%
-30-04-2015,24.00,24.15,27.05,21.65,0.22B,-0.61%
-31-03-2015,24.15,24.30,27.20,21.80,0.21B,-0.60%
-28-02-2015,24.30,24.45,27.35,21.95,0.20B,-0.60%
-31-01-2015,24.45,24.60,27.50,22.10,0.19B,-0.59%
-31-12-2014,24.60,24.75,27.65,22.25,0.18B,-0.59%
-30-11-2014,24.75,24.90,27.80,22.40,0.17B,-0.58%
-31-10-2014,24.90,25.05,27.95,22.55,0.16B,-0.58%
-30-09-2014,25.05,25.20,28.10,22.70,0.15B,-0.57%
-31-08-2014,25.20,25.35,28.25,22.85,0.14B,-0.57%
-31-07-2014,25.35,25.50,28.40,23.00,0.13B,-0.56%
-30-06-2014,25.50,25.65,28.55,23.15,0.12B,-0.56%
-31-05-2014,25.65,25.80,28.70,23.30,0.11B,-0.55%
-30-04-2014,25.80,25.95,28.85,23.45,0.10B,-0.55%
-31-03-2014,25.95,26.10,29.00,23.60,0.09B,-0.54%
-28-02-2014,26.10,26.25,29.15,23.75,0.08B,-0.54%`;
+13-02-2026,26.80,27.41,27.42,26.70,24.37M,-2.93%
+31-01-2026,27.26,28.30,28.30,27.11,19.78M,-3.50%
+31-12-2025,34.85,34.00,35.20,33.93,46.88M,3.54%
+30-11-2025,39.95,40.00,40.49,39.21,39.22M,-0.65%
+31-10-2025,46.42,46.30,47.60,45.60,33.05M,-0.28%
+30-09-2025,44.36,45.39,45.78,44.11,9.96M,-1.18%
+31-08-2025,43.92,45.20,45.50,43.55,6.84M,-2.79%
+31-07-2025,52.73,52.20,54.29,51.25,9.08M,-1.18%
+30-06-2025,70.29,70.34,70.90,69.18,23.48M,1.60%
+31-05-2025,58.10,52.48,60.50,52.17,533.95M,11.26%
+30-04-2025,39.99,41.21,41.64,39.60,38.77M,-2.49%
+28-03-2025,42.98,43.17,44.76,42.40,84.94M,0.02%
+28-02-2025,33.26,34.33,34.76,33.00,27.89M,-4.29%
+31-01-2025,40.09,38.83,40.40,38.57,12.69M,3.67%
+31-12-2024,42.60,41.65,42.79,41.40,16.85M,1.79%
+30-11-2024,38.70,40.00,40.00,38.30,12.36M,-3.25%
+31-10-2024,42.73,42.15,43.20,41.40,7.64M,1.91%
+30-09-2024,48.66,46.25,48.66,44.21,209.33M,4.98%
+31-08-2024,30.56,30.71,31.27,30.33,39.43M,-0.03%
+31-07-2024,32.84,31.59,32.84,31.36,79.35M,4.99%
+28-06-2024,28.93,29.05,30.26,28.77,36.54M,0.38%
+31-05-2024,24.55,24.85,25.05,24.40,13.94M,-0.61%
+30-04-2024,27.30,27.65,28.30,27.10,16.66M,-0.91%
+28-03-2024,28.25,28.20,28.50,28.00,18.39M,2.17%
+29-02-2024,24.20,22.50,24.45,22.30,16.89M,3.20%
+31-01-2024,29.80,30.05,30.20,29.00,21.10M,-0.50%
+29-12-2023,23.30,22.40,23.40,22.20,139.42M,4.25%
+30-11-2023,21.15,21.55,21.60,20.80,105.29M,-1.63%
+31-10-2023,17.10,17.05,17.30,16.80,42.27M,0.88%
+31-10-2023,19.25,19.35,19.40,19.05,39.54M,0.52%
+30-09-2023,19.25,19.30,19.55,19.15,52.66M,0.00%
+31-08-2023,19.15,20.40,20.65,18.90,264.12M,-5.20%
+31-07-2023,16.45,16.10,16.60,15.95,107.62M,2.17%
+30-06-2023,14.05,14.30,14.45,13.80,64.80M,-0.71%
+31-05-2023,12.95,13.00,13.15,12.75,72.17M,0.00%
+30-04-2023,12.20,12.60,12.70,12.10,36.72M,-2.40%
+31-03-2023,9.95,9.95,10.40,9.90,30.78M,1.53%
+28-02-2023,9.80,10.00,10.05,9.75,15.58M,-1.01%
+31-01-2023,12.75,12.55,13.10,12.40,23.85M,2.00%
+30-12-2022,14.35,14.45,14.75,14.30,9.99M,0.35%
+30-11-2022,16.05,15.90,16.40,15.80,16.78M,0.94%
+31-10-2022,16.85,17.10,17.40,16.50,13.51M,0.30%
+31-10-2022,16.00,15.85,16.15,15.85,3.72M,-0.62%`;
 
+const newDayCSV = `Date,Price,Open,High,Low,Vol.,Change %
+20-02-2026,26.25,26.50,26.68,26.00,17.44M,-1.83%
+19-02-2026,26.74,27.30,27.43,26.65,21.69M,-2.52%
+18-02-2026,27.43,27.33,27.90,27.23,24.49M,0.37%
+17-02-2026,27.33,26.80,27.50,26.70,36.85M,2.51%
+16-02-2026,26.66,26.80,26.85,26.33,22.53M,-0.52%`;
 
-/* -----------------------------------------------------------------------------
-   2. GLOBAL VARIABLES & STATE
-   ----------------------------------------------------------------------------- */
-
-/* 
-   datasets: Object to store parsed stock data for different time ranges
-   - day: Daily data
-   - week: Weekly data  
-   - month: Monthly data
-*/
-let datasets = { day: [], week: [], month: [] };
-
-/* 
-   currentData: Array holding currently displayed data
-   Updated when user switches time range
-*/
-let currentData = [];
-
-/* 
-   currentRange: String tracking current time range selection
-   Default is 'day'
-*/
-let currentRange = 'day';
-
-/* 
-   Chart instances for Lightweight Charts library
-   These are created and destroyed when updating charts
-*/
-let candleChart, lineChart, volumeChart, rsiChart, macdChart;
-
-/* 
-   activeIndicators: Object tracking which technical indicators are enabled
-   true = visible, false = hidden
-*/
-let activeIndicators = { sma: true, bb: false, rsi: false, macd: false, volume: true };
-
+const newMonthCSV = `Date,Price,Open,High,Low,Vol.,Change %
+20-02-2026,26.25,26.50,26.68,26.00,17.44M,-1.83%
+31-01-2026,26.25,28.30,31.90,25.92,737.53M,-7.08%
+31-12-2025,28.25,35.36,36.41,26.83,751.66M,-18.94%
+30-11-2025,34.85,39.86,40.13,32.40,1.23B,-12.77%
+31-10-2025,39.95,46.00,46.58,36.70,1.03B,-13.94%
+30-09-2025,46.42,44.30,50.73,43.27,633.74M,4.64%
+31-08-2025,44.36,44.50,49.37,43.55,319.47M,1.00%
+31-07-2025,43.92,50.43,51.89,41.76,280.53M,-16.71%
+30-06-2025,52.73,70.19,70.90,51.25,309.48M,-24.98%
+31-05-2025,70.29,58.64,76.49,58.51,3.11B,20.98%
+30-04-2025,58.10,40.75,60.50,37.00,2.44B,45.29%
+31-03-2025,39.99,41.95,46.85,35.11,829.28M,-6.96%
+28-02-2025,42.98,33.46,44.76,31.27,672.94M,29.22%
+31-01-2025,33.26,40.23,43.94,33.00,450.58M,-17.04%
+31-12-2024,40.09,42.89,47.25,35.19,474.84M,-5.89%
+30-11-2024,42.60,38.70,48.50,37.35,298.14M,10.08%
+31-10-2024,38.70,43.40,45.76,33.30,320.28M,-9.43%
+30-09-2024,48.66,30.60,48.66,29.21,1.21B,59.23%
+31-08-2024,30.56,33.39,38.11,29.26,1.80B,-6.94%
+31-07-2024,32.84,29.38,32.84,25.75,612.58M,13.52%
+30-06-2024,28.93,25.75,33.11,23.30,1.03B,17.84%
+31-05-2024,24.55,27.35,27.45,23.90,368.57M,-10.07%
+31-03-2024,27.30,28.85,34.45,25.50,495.36M,-3.36%
+29-02-2024,28.25,24.45,28.50,19.40,269.63M,16.74%`;
 
 /* -----------------------------------------------------------------------------
    3. DATA PARSING FUNCTIONS
@@ -600,33 +519,37 @@ function parseVolume(vol) {
 /**
  * parseCSV - Parses CSV string into array of data objects
  * 
- * Converts CSV format to JavaScript objects with:
- * - time: Unix timestamp (UTC)
- * - date: Original date string
- * - price: Closing price
- * - open: Opening price
- * - high: High price
- * - low: Low price
- * - vol: Trading volume (numeric)
- * - change: Percentage change
- * 
  * @param {string} csvText - CSV data string
  * @returns {Array} - Array of parsed data objects sorted by date
  */
 function parseCSV(csvText) {
-    // Split CSV into lines and remove empty lines
     const lines = csvText.trim().split('\n');
     const data = [];
     
-    // Start from index 1 to skip header row
-    for (let i = 1; i < lines.length; i++) {
-        // Split line by comma
-        const parts = lines[i].split(',');
+    function parseLine(line) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
         
-        // Skip incomplete rows
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                result.push(current.trim().replace(/^"|"$/g, ''));
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        result.push(current.trim().replace(/^"|"$/g, ''));
+        return result;
+    }
+    
+    for (let i = 1; i < lines.length; i++) {
+        const parts = parseLine(lines[i]);
         if (parts.length < 7) continue;
         
-        // Extract and parse each field
         const dateStr = parts[0].trim();
         const price = parseFloat(parts[1]);
         const open = parseFloat(parts[2]);
@@ -635,37 +558,87 @@ function parseCSV(csvText) {
         const vol = parseVolume(parts[5]);
         const change = parseFloat(parts[6].replace('%', ''));
         
-        // Parse date string (format: DD-MM-YYYY)
         const dateParts = dateStr.split('-');
-        // Create UTC timestamp: Date.UTC(year, monthIndex, day)
-        // monthIndex is 0-based, so subtract 1 from month
         const time = Date.UTC(
-            parseInt(dateParts[2]),  // Year
-            parseInt(dateParts[1]) - 1, // Month (0-indexed)
-            parseInt(dateParts[0])    // Day
+            parseInt(dateParts[2]),
+            parseInt(dateParts[1]) - 1,
+            parseInt(dateParts[0])
         );
         
-        // Add parsed object to data array
-        data.push({ 
-            time, 
-            date: dateStr, 
-            price, 
-            open, 
-            high, 
-            low, 
-            vol, 
-            change 
-        });
+        if (isNaN(price) || isNaN(time)) continue;
+        
+        data.push({ time, date: dateStr, price, open, high, low, vol, change });
     }
     
-    // Sort data by timestamp (oldest first) for chart rendering
     return data.sort((a, b) => a.time - b.time);
 }
 
+/* -----------------------------------------------------------------------------
+   2. GLOBAL VARIABLES & STATE
+   ----------------------------------------------------------------------------- */
+
+let datasets = { day: [], week: [], month: [] };
+let currentData = [];
+let currentRange = 'day';
+let candleChart, lineChart, volumeChart, rsiChart, macdChart;
+let activeIndicators = { sma: true, bb: false, rsi: false, macd: false, volume: true };
+let currentTheme = 'dark';
 
 /* -----------------------------------------------------------------------------
-   4. INITIALIZATION
+   THEME TOGGLE
    ----------------------------------------------------------------------------- */
+
+function toggleTheme() {
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    localStorage.setItem('theme', currentTheme);
+    
+    const checkbox = document.querySelector('.switch__input');
+    if (checkbox) {
+        checkbox.checked = currentTheme === 'light';
+    }
+    
+    updateCharts();
+}
+
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    currentTheme = savedTheme;
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    const checkbox = document.querySelector('.switch__input');
+    if (checkbox) {
+        checkbox.checked = savedTheme === 'light';
+    }
+}
+
+/* -----------------------------------------------------------------------------
+   3. DATA PARSING FUNCTIONS
+   ----------------------------------------------------------------------------- */
+
+/**
+ * mergeAndDeduplicateData - Merges two datasets and removes duplicates based on time
+ * 
+ * @param {Array} existingData - The existing dataset
+ * @param {Array} newData - The new data to merge
+ * @returns {Array} - Merged and sorted dataset without duplicates
+ */
+function mergeAndDeduplicateData(existingData, newData) {
+    const timeMap = new Map();
+    
+    // Add existing data to map
+    existingData.forEach(d => timeMap.set(d.time, d));
+    
+    // Add new data, overwriting only if newer (higher time = more recent)
+    newData.forEach(d => {
+        if (!timeMap.has(d.time) || d.time > timeMap.get(d.time).time) {
+            timeMap.set(d.time, d);
+        }
+    });
+    
+    // Convert back to array and sort by time
+    return Array.from(timeMap.values()).sort((a, b) => a.time - b.time);
+}
 
 /**
  * loadAllData - Main initialization function
@@ -675,13 +648,31 @@ function parseCSV(csvText) {
  */
 function loadAllData() {
     try {
-        // Parse all three CSV datasets
-        datasets.day = parseCSV(dayCSV);
-        datasets.week = parseCSV(weekCSV);
-        datasets.month = parseCSV(monthCSV);
+        initTheme();
+        
+        // Parse embedded CSV data
+        let parsedDay = parseCSV(dayCSV);
+        let parsedWeek = parseCSV(weekCSV);
+        let parsedMonth = parseCSV(monthCSV);
+        
+        // Parse new data from additional CSV constants
+        const newDayData = parseCSV(newDayCSV);
+        const newMonthData = parseCSV(newMonthCSV);
+        
+        // Merge new data with existing, removing duplicates
+        parsedDay = mergeAndDeduplicateData(parsedDay, newDayData);
+        parsedMonth = mergeAndDeduplicateData(parsedMonth, newMonthData);
+        
+        // Store merged datasets
+        datasets.day = parsedDay;
+        datasets.week = parsedWeek;
+        datasets.month = parsedMonth;
         
         // Calculate and render statistics table
         calculateStatsAnalysis();
+        
+        // Initialize calculations panel
+        initCalculationsPanel();
         
         // Initialize with daily data
         switchTimeRange('day');
@@ -919,16 +910,24 @@ function updateIndicatorValues() {
     const macdEl = document.getElementById('macdValue');
     const signalEl = document.getElementById('signalValue');
     
+    // Get SMA start date based on current range
+    const smaStartDates = {
+        day: new Date('2025-04-01'),
+        week: new Date('2023-10-29'),
+        month: new Date('2022-10-31')
+    };
+    const smaStartDate = smaStartDates[currentRange] || null;
+    
     // Calculate and display SMA 50 if enough data exists
     if (currentData.length >= 50) {
-        const sma50 = calculateSMA(currentData, 50);
+        const sma50 = calculateSMA(currentData, 50, smaStartDate);
         const lastSMA50 = sma50.filter(d => d !== null).pop();
         if (lastSMA50 && sma50El) sma50El.textContent = '₹' + lastSMA50.value.toFixed(2);
     }
     
     // Calculate and display SMA 200 if enough data exists
     if (currentData.length >= 200) {
-        const sma200 = calculateSMA(currentData, 200);
+        const sma200 = calculateSMA(currentData, 200, smaStartDate);
         const lastSMA200 = sma200.filter(d => d !== null).pop();
         if (lastSMA200 && sma200El) sma200El.textContent = '₹' + lastSMA200.value.toFixed(2);
     }
@@ -954,6 +953,692 @@ function updateIndicatorValues() {
     if (validSignal.length > 0 && signalEl) {
         signalEl.textContent = validSignal[validSignal.length - 1].value.toFixed(3);
     }
+    
+    updateCalculationsPanel();
+}
+
+
+/* -----------------------------------------------------------------------------
+   9A. CALCULATIONS PANEL
+   ----------------------------------------------------------------------------- */
+
+let currentCalcTab = 'sma';
+
+function initCalculationsPanel() {
+    document.querySelectorAll('.calc-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.calc-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            currentCalcTab = tab.dataset.calc;
+            updateCalculationsPanel();
+        });
+    });
+    updateCalculationsPanel();
+}
+
+function updateCalculationsPanel() {
+    const content = document.getElementById('calculationsContent');
+    if (!content || currentData.length === 0) {
+        if (content) content.innerHTML = '<div class="calc-empty">No data available</div>';
+        return;
+    }
+    
+    switch(currentCalcTab) {
+        case 'sma': renderSMACalculations(content); break;
+        case 'rsi': renderRSICalculations(content); break;
+        case 'macd': renderMACDCalculations(content); break;
+        case 'bb': renderBollingerCalculations(content); break;
+        case 'stats': renderStatsCalculations(content); break;
+    }
+}
+
+function renderSMACalculations(container) {
+    const sma50 = calculateSMA(currentData, 50);
+    const sma200 = calculateSMA(currentData, 200);
+    const last50 = sma50.filter(d => d !== null).pop();
+    const last200 = sma200.filter(d => d !== null).pop();
+    
+    const latestIdx = currentData.length - 1;
+    const prices50 = currentData.slice(latestIdx - 49, latestIdx + 1);
+    const prices200 = currentData.slice(latestIdx - 199, latestIdx + 1);
+    
+    const sum50 = prices50.reduce((a,b) => a + b.price, 0);
+    const sum200 = prices200.reduce((a,b) => a + b.price, 0);
+    
+    let priceData50 = '';
+    if (prices50.length <= 10) {
+        priceData50 = prices50.map((p, i) => `P${i+1}: ₹${p.price.toFixed(2)}`).join(' + ');
+    } else {
+        priceData50 = prices50.slice(0, 5).map((p, i) => `P${i+1}: ₹${p.price.toFixed(2)}`).join(' + ') + ' + ... + ' + prices50.slice(-5).map((p, i) => `P${prices50.length-5+i+1}: ₹${p.price.toFixed(2)}`).join(' + ');
+    }
+    
+    let priceData200 = '';
+    if (prices200.length <= 10) {
+        priceData200 = prices200.map((p, i) => `P${i+1}: ₹${p.price.toFixed(2)}`).join(' + ');
+    } else {
+        priceData200 = prices200.slice(0, 5).map((p, i) => `P${i+1}: ₹${p.price.toFixed(2)}`).join(' + ') + ' + ... + ' + prices200.slice(-5).map((p, i) => `P${prices200.length-5+i+1}: ₹${p.price.toFixed(2)}`).join(' + ');
+    }
+    
+    let html = `
+        <div class="calc-section">
+            <div class="calc-section-title">SMA 50 Calculation</div>
+            <div class="calc-formula">SMA = (P₁ + P₂ + ... + Pₙ) / n</div>
+            <table class="calc-data-table">
+                <tr><th>Parameter</th><th>Value</th></tr>
+                <tr><td>Period (n)</td><td>50</td></tr>
+                <tr><td>Start Date</td><td>${prices50[0].date}</td></tr>
+                <tr><td>End Date</td><td>${prices50[prices50.length-1].date}</td></tr>
+            </table>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">1</span>
+                    <span class="step-content">Collect last 50 closing prices (P₁ to P₅₀):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.7rem; word-break: break-all;">${priceData50}</div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">2</span>
+                    <span class="step-content">Add all prices (Sum):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                = ${sum50.toFixed(2)}
+            </div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">3</span>
+                    <span class="step-content">Divide by period (50):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                = ${sum50.toFixed(2)} / 50 = <span class="highlight">₹${last50 ? last50.value.toFixed(2) : 'N/A'}</span>
+            </div>
+            
+            <div class="calc-result">
+                <span class="calc-result-label">SMA 50 Value</span>
+                <span class="calc-result-value">₹${last50 ? last50.value.toFixed(2) : 'N/A'}</span>
+            </div>
+        </div>
+        
+        <div class="calc-section">
+            <div class="calc-section-title">SMA 200 Calculation</div>
+            <div class="calc-formula">SMA = (P₁ + P₂ + ... + P₂₀₀) / 200</div>
+            <table class="calc-data-table">
+                <tr><th>Parameter</th><th>Value</th></tr>
+                <tr><td>Period (n)</td><td>200</td></tr>
+                <tr><td>Start Date</td><td>${prices200[0].date}</td></tr>
+                <tr><td>End Date</td><td>${prices200[prices200.length-1].date}</td></tr>
+            </table>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">1</span>
+                    <span class="step-content">Collect last 200 closing prices (showing first 5 + last 5):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.7rem; word-break: break-all;">${priceData200}</div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">2</span>
+                    <span class="step-content">Add all prices (Sum):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                = ${sum200.toFixed(2)}
+            </div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">3</span>
+                    <span class="step-content">Divide by period (200):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                = ${sum200.toFixed(2)} / 200 = <span class="highlight">₹${last200 ? last200.value.toFixed(2) : 'N/A'}</span>
+            </div>
+            
+            <div class="calc-result">
+                <span class="calc-result-label">SMA 200 Value</span>
+                <span class="calc-result-value">₹${last200 ? last200.value.toFixed(2) : 'N/A'}</span>
+            </div>
+        </div>
+    `;
+    container.innerHTML = html;
+}
+
+function renderRSICalculations(container) {
+    const rsi = calculateRSI(currentData, 14);
+    const validRSI = rsi.filter(d => d !== null);
+    const lastRSI = validRSI.length > 0 ? validRSI[validRSI.length - 1] : null;
+    
+    const latestIdx = currentData.length - 1;
+    const periods = 14;
+    const gains = [];
+    const losses = [];
+    const changes = [];
+    
+    for (let i = latestIdx - periods + 1; i <= latestIdx; i++) {
+        if (i > 0) {
+            const change = currentData[i].price - currentData[i-1].price;
+            const prevPrice = currentData[i-1].price;
+            changes.push({ date: currentData[i].date, prevDate: currentData[i-1].date, price: currentData[i].price, prevPrice: prevPrice, change: change });
+            gains.push(change > 0 ? change : 0);
+            losses.push(change < 0 ? Math.abs(change) : 0);
+        }
+    }
+    
+    // For demonstration, show first RSI calculation (simple average) as educational
+    const firstAvgGain = gains.reduce((a,b) => a+b, 0) / periods;
+    const firstAvgLoss = losses.reduce((a,b) => a+b, 0) / periods;
+    const firstRS = firstAvgLoss === 0 ? 100 : firstAvgGain / firstAvgLoss;
+    const firstRSI = firstAvgLoss === 0 ? 100 : 100 - (100 / (1 + firstRS));
+    
+    // The actual RSI uses Wilder's smoothing - use the calculated value from the function
+    const actualRSI = lastRSI ? lastRSI.value : firstRSI;
+    
+    let status = 'Neutral';
+    let statusClass = '';
+    if (actualRSI > 70) { status = 'Overbought'; statusClass = 'rsi-overbought'; }
+    else if (actualRSI < 30) { status = 'Oversold'; statusClass = 'rsi-oversold'; }
+    
+    let changesHtml = changes.map((c, i) => `<tr><td>${i+1}</td><td>${c.prevDate}</td><td>₹${c.prevPrice.toFixed(2)}</td><td>₹${c.price.toFixed(2)}</td><td class="${c.change >= 0 ? 'hist-positive' : 'hist-negative'}">${c.change >= 0 ? '+' : ''}${c.change.toFixed(2)}</td></tr>`).join('');
+    
+    let gainsLossesHtml = '';
+    if (periods <= 10) {
+        gainsLossesHtml = changes.map((c, i) => 
+            `<tr><td>${i+1}</td><td>Gain: ${c.change > 0 ? c.change.toFixed(2) : '0.00'}</td><td>Loss: ${c.change < 0 ? Math.abs(c.change).toFixed(2) : '0.00'}</td></tr>`
+        ).join('');
+    } else {
+        gainsLossesHtml = changes.slice(0, 5).map((c, i) => 
+            `<tr><td>${i+1}</td><td>Gain: ${c.change > 0 ? c.change.toFixed(2) : '0.00'}</td><td>Loss: ${c.change < 0 ? Math.abs(c.change).toFixed(2) : '0.00'}</td></tr>`
+        ).join('') + '<tr><td colspan="3" style="text-align:center">... (showing 5 of 14)</td></tr>' + 
+        changes.slice(-5).map((c, i) => 
+            `<tr><td>${10+i}</td><td>Gain: ${c.change > 0 ? c.change.toFixed(2) : '0.00'}</td><td>Loss: ${c.change < 0 ? Math.abs(c.change).toFixed(2) : '0.00'}</td></tr>`
+        ).join('');
+    }
+    
+    let html = `
+        <div class="calc-section">
+            <div class="calc-section-title">RSI (Relative Strength Index) - Wilder's Smoothing</div>
+            <div class="calc-formula">RSI = 100 - (100 / (1 + RS)) where RS = Avg Gain / Avg Loss</div>
+            <div class="calc-formula" style="color: var(--accent-orange); font-size: 0.7rem; margin-top: 4px;">
+                Note: RSI uses Wilder's Smoothing: Avg = (PrevAvg × 13 + Current) / 14
+            </div>
+            <table class="calc-data-table">
+                <tr><th>Parameter</th><th>Value</th></tr>
+                <tr><td>Period</td><td>${periods}</td></tr>
+                <tr><td>Current Date</td><td>${currentData[latestIdx].date}</td></tr>
+                <tr><td>Start Date</td><td>${changes[0].prevDate}</td></tr>
+            </table>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">1</span>
+                    <span class="step-content">Calculate price changes (Current - Previous) for each period:</span>
+                </div>
+            </div>
+            <table class="calc-data-table" style="font-size: 0.7rem;">
+                <tr><th>#</th><th>Prev Date</th><th>Prev Price</th><th>Current Price</th><th>Change</th></tr>
+                ${changesHtml}
+            </table>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">2</span>
+                    <span class="step-content">Separate Gains (positive changes) and Losses (negative changes):</span>
+                </div>
+            </div>
+            <table class="calc-data-table" style="font-size: 0.7rem;">
+                <tr><th>#</th><th>Gain</th><th>Loss</th></tr>
+                ${gainsLossesHtml}
+            </table>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">3</span>
+                    <span class="step-content">Calculate Total Gains and Total Losses:</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                Total Gains = ${gains.map(g => g.toFixed(2)).join(' + ')} = <span class="highlight">${gains.reduce((a,b)=>a+b,0).toFixed(2)}</span><br>
+                Total Losses = ${losses.map(l => l.toFixed(2)).join(' + ')} = <span class="highlight">${losses.reduce((a,b)=>a+b,0).toFixed(2)}</span>
+            </div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">4</span>
+                    <span class="step-content">Calculate Average Gain and Average Loss (Wilder's Smoothing):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                First Avg Gain = ${gains.reduce((a,b)=>a+b,0).toFixed(2)} / ${periods} = <span class="highlight">${firstAvgGain.toFixed(4)}</span><br>
+                First Avg Loss = ${losses.reduce((a,b)=>a+b,0).toFixed(2)} / ${periods} = <span class="highlight">${firstAvgLoss.toFixed(4)}</span>
+            </div>
+            <div class="calc-formula" style="font-size: 0.7rem; color: var(--accent-orange);">
+                Subsequent values use: Avg = (PrevAvg × 13 + Current) / 14
+            </div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">5</span>
+                    <span class="step-content">Calculate RS (Relative Strength):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                RS = Avg Gain / Avg Loss = ${firstAvgGain.toFixed(4)} / ${firstAvgLoss.toFixed(4)} = <span class="highlight">${firstRS.toFixed(4)}</span>
+            </div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">6</span>
+                    <span class="step-content">Calculate RSI (with Wilder's smoothing applied):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                RSI = 100 - (100 / (1 + ${firstRS.toFixed(4)}))<br>
+                RSI = <span class="highlight">${actualRSI.toFixed(2)}</span> (using Wilder's smoothing)
+            </div>
+            
+            <div class="calc-result">
+                <span class="calc-result-label">RSI Value (${status})</span>
+                <span class="calc-result-value ${statusClass}">${actualRSI.toFixed(2)}</span>
+            </div>
+        </div>
+        
+        <div class="calc-section">
+            <div class="calc-section-title">RSI Interpretation</div>
+            <table class="calc-data-table">
+                <tr><th>Range</th><th>Signal</th></tr>
+                <tr><td>0 - 30</td><td class="hist-positive">Oversold (Buy Signal)</td></tr>
+                <tr><td>30 - 70</td><td>Neutral</td></tr>
+                <tr><td>70 - 100</td><td class="hist-negative">Overbought (Sell Signal)</td></tr>
+            </table>
+        </div>
+    `;
+    container.innerHTML = html;
+}
+
+function renderMACDCalculations(container) {
+    const macd = calculateMACD(currentData, 12, 26, 9);
+    const validMACD = macd.macdLine.filter(d => d !== null);
+    const validSignal = macd.signalLine.filter(d => d !== null);
+    const lastMACD = validMACD.length > 0 ? validMACD[validMACD.length - 1] : null;
+    const lastSignal = validSignal.length > 0 ? validSignal[validSignal.length - 1] : null;
+    const lastHist = macd.histogram.filter(d => d !== null).pop();
+    
+    const ema12 = calculateEMA(currentData, 12);
+    const ema26 = calculateEMA(currentData, 26);
+    const latestIdx = currentData.length - 1;
+    
+    const prices12 = currentData.slice(latestIdx - 11, latestIdx + 1).map(d => d.price);
+    const prices26 = currentData.slice(latestIdx - 25, latestIdx + 1).map(d => d.price);
+    
+    const val12 = ema12[latestIdx] ? ema12[latestIdx].value : 0;
+    const val26 = ema26[latestIdx] ? ema26[latestIdx].value : 0;
+    const macdLine = val12 - val26;
+    
+    const k12 = 2 / (12 + 1);
+    const k26 = 2 / (26 + 1);
+    
+    const sma12 = prices12.reduce((a,b) => a+b, 0) / 12;
+    const sma26 = prices26.reduce((a,b) => a+b, 0) / 26;
+    
+    let prices12Str = prices12.length <= 8 ? prices12.map((p, i) => `P${i+1}: ₹${p.toFixed(2)}`).join(' + ') : 
+        prices12.slice(0, 4).map((p, i) => `P${i+1}: ₹${p.toFixed(2)}`).join(' + ') + ' + ... + ' + prices12.slice(-4).map((p, i) => `P${prices12.length-4+i+1}: ₹${p.toFixed(2)}`).join(' + ');
+    
+    let prices26Str = prices26.length <= 10 ? prices26.map((p, i) => `P${i+1}: ₹${p.toFixed(2)}`).join(' + ') : 
+        prices26.slice(0, 5).map((p, i) => `P${i+1}: ₹${p.toFixed(2)}`).join(' + ') + ' + ... + ' + prices26.slice(-5).map((p, i) => `P${prices26.length-5+i+1}: ₹${p.toFixed(2)}`).join(' + ');
+    
+    let html = `
+        <div class="calc-section">
+            <div class="calc-section-title">MACD (Moving Average Convergence Divergence)</div>
+            <div class="calc-formula">MACD Line = EMA₁₂ - EMA₂₆ | Signal = EMA₉(MACD) | Histogram = MACD - Signal</div>
+            <table class="calc-data-table">
+                <tr><th>Parameter</th><th>Value</th></tr>
+                <tr><td>Fast EMA</td><td>12 periods</td></tr>
+                <tr><td>Slow EMA</td><td>26 periods</td></tr>
+                <tr><td>Signal Line</td><td>9 periods</td></tr>
+                <tr><td>Multiplier (k)</td><td>2/(n+1)</td></tr>
+            </table>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">1</span>
+                    <span class="step-content">Calculate EMA 12 (Multiplier k = 2/13 = ${k12.toFixed(4)}):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.7rem; word-break: break-all;">
+                First EMA = SMA of first 12 prices:<br>
+                = (${prices12.map(p => p.toFixed(2)).join(' + ')}) / 12<br>
+                = ${prices12.reduce((a,b)=>a+b,0).toFixed(2)} / 12 = <span class="highlight">₹${sma12.toFixed(4)}</span>
+            </div>
+            <div class="calc-formula" style="font-size: 0.7rem;">
+                Subsequent EMA = (Price × k) + (Previous EMA × (1-k))<br>
+                Latest EMA 12 = (Current Price × ${k12.toFixed(4)}) + (Previous EMA × ${(1-k12).toFixed(4)})<br>
+                = <span class="highlight">₹${val12.toFixed(4)}</span>
+            </div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">2</span>
+                    <span class="step-content">Calculate EMA 26 (Multiplier k = 2/27 = ${k26.toFixed(4)}):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.7rem;">
+                First EMA = SMA of first 26 prices = <span class="highlight">₹${sma26.toFixed(4)}</span>
+            </div>
+            <div class="calc-formula" style="font-size: 0.7rem;">
+                Latest EMA 26 = (Current Price × ${k26.toFixed(4)}) + (Previous EMA × ${(1-k26).toFixed(4)})<br>
+                = <span class="highlight">₹${val26.toFixed(4)}</span>
+            </div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">3</span>
+                    <span class="step-content">Calculate MACD Line:</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                MACD = EMA₁₂ - EMA₂₆ = ₹${val12.toFixed(4)} - ₹${val26.toFixed(4)}<br>
+                MACD = <span class="highlight">${macdLine.toFixed(4)}</span>
+            </div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">4</span>
+                    <span class="step-content">Calculate Signal Line (EMA of MACD):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                Signal = EMA₉ of MACD Line = <span class="highlight">${lastSignal ? lastSignal.value.toFixed(4) : 'N/A'}</span>
+            </div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">5</span>
+                    <span class="step-content">Calculate Histogram:</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                Histogram = MACD Line - Signal Line<br>
+                = ${macdLine.toFixed(4)} - ${lastSignal ? lastSignal.value.toFixed(4) : 'N/A'}<br>
+                = <span class="highlight">${lastHist ? lastHist.value.toFixed(4) : 'N/A'}</span>
+            </div>
+            
+            <div class="calc-result">
+                <span class="calc-result-label">MACD Line</span>
+                <span class="calc-result-value">${lastMACD ? lastMACD.value.toFixed(4) : 'N/A'}</span>
+            </div>
+        </div>
+        
+        <div class="calc-section">
+            <div class="calc-section-title">MACD Components</div>
+            <table class="calc-data-table">
+                <tr><th>Component</th><th>Value</th><th>Interpretation</th></tr>
+                <tr>
+                    <td>EMA 12</td>
+                    <td>₹${val12.toFixed(2)}</td>
+                    <td>Fast moving average</td>
+                </tr>
+                <tr>
+                    <td>EMA 26</td>
+                    <td>₹${val26.toFixed(2)}</td>
+                    <td>Slow moving average</td>
+                </tr>
+                <tr>
+                    <td>MACD Line</td>
+                    <td>${lastMACD ? lastMACD.value.toFixed(4) : 'N/A'}</td>
+                    <td>${lastMACD && lastMACD.value > 0 ? 'Bullish (Above Zero)' : 'Bearish (Below Zero)'}</td>
+                </tr>
+                <tr>
+                    <td>Signal Line</td>
+                    <td>${lastSignal ? lastSignal.value.toFixed(4) : 'N/A'}</td>
+                    <td>Trigger line</td>
+                </tr>
+                <tr>
+                    <td>Histogram</td>
+                    <td>${lastHist ? lastHist.value.toFixed(4) : 'N/A'}</td>
+                    <td class="${lastHist && lastHist.value > 0 ? 'hist-positive' : 'hist-negative'}">${lastHist && lastHist.value > 0 ? 'Positive (Bullish)' : 'Negative (Bearish)'}</td>
+                </tr>
+            </table>
+        </div>
+    `;
+    container.innerHTML = html;
+}
+
+function renderBollingerCalculations(container) {
+    const bb = calculateBollingerBands(currentData, 20, 2);
+    const latestIdx = currentData.length - 1;
+    const upper = bb.upper[latestIdx];
+    const middle = bb.sma[latestIdx];
+    const lower = bb.lower[latestIdx];
+    const currentPrice = currentData[latestIdx].price;
+    
+    const pricesData = currentData.slice(latestIdx - 19, latestIdx + 1);
+    const prices = pricesData.map(d => d.price);
+    const mean = prices.reduce((a,b) => a+b, 0) / 20;
+    const variance = prices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / 20;
+    const stdDev = Math.sqrt(variance);
+    
+    let priceTable = '';
+    if (prices.length <= 10) {
+        priceTable = prices.map((p, i) => `<tr><td>P${i+1}</td><td>${pricesData[i].date}</td><td>₹${p.toFixed(2)}</td><td>₹${(p - mean).toFixed(2)}</td><td>${Math.pow(p - mean, 2).toFixed(4)}</td></tr>`).join('');
+    } else {
+        priceTable = prices.slice(0, 5).map((p, i) => `<tr><td>P${i+1}</td><td>${pricesData[i].date}</td><td>₹${p.toFixed(2)}</td><td>₹${(p - mean).toFixed(2)}</td><td>${Math.pow(p - mean, 2).toFixed(4)}</td></tr>`).join('') +
+            '<tr><td colspan="5" style="text-align:center">... (showing 5 of 20)</td></tr>' +
+            prices.slice(-5).map((p, i) => `<tr><td>P${16+i}</td><td>${pricesData[15+i].date}</td><td>₹${p.toFixed(2)}</td><td>₹${(p - mean).toFixed(2)}</td><td>${Math.pow(p - mean, 2).toFixed(4)}</td></tr>`).join('');
+    }
+    
+    let html = `
+        <div class="calc-section">
+            <div class="calc-section-title">Bollinger Bands (20, 2)</div>
+            <div class="calc-formula">Upper = SMA + (2 × σ) | Middle = SMA₂₀ | Lower = SMA - (2 × σ)</div>
+            <table class="calc-data-table">
+                <tr><th>Parameter</th><th>Value</th></tr>
+                <tr><td>Period (SMA)</td><td>20</td></tr>
+                <tr><td>Standard Deviations</td><td>2</td></tr>
+                <tr><td>Current Date</td><td>${currentData[latestIdx].date}</td></tr>
+            </table>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">1</span>
+                    <span class="step-content">Collect last 20 closing prices and calculate Mean (SMA 20):</span>
+                </div>
+            </div>
+            <table class="calc-data-table" style="font-size: 0.65rem;">
+                <tr><th>#</th><th>Date</th><th>Price (x)</th><th>x - μ</th><th>(x - μ)²</th></tr>
+                ${priceTable}
+            </table>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">2</span>
+                    <span class="step-content">Calculate Mean (SMA 20):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                Sum of prices = ${prices.reduce((a,b)=>a+b,0).toFixed(2)}<br>
+                Mean (μ) = ${prices.reduce((a,b)=>a+b,0).toFixed(2)} / 20 = <span class="highlight">₹${mean.toFixed(4)}</span>
+            </div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">3</span>
+                    <span class="step-content">Calculate Variance and Standard Deviation:</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                Variance (σ²) = Σ(x - μ)² / n<br>
+                = ${prices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0).toFixed(4)} / 20<br>
+                = ${variance.toFixed(4)}
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                Std Dev (σ) = √${variance.toFixed(4)} = <span class="highlight">${stdDev.toFixed(4)}</span>
+            </div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">4</span>
+                    <span class="step-content">Calculate Upper and Lower Bands:</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                Upper Band = μ + (2 × σ) = ${mean.toFixed(4)} + (2 × ${stdDev.toFixed(4)})<br>
+                = ${mean.toFixed(4)} + ${(2 * stdDev).toFixed(4)} = <span class="highlight">₹${upper.value.toFixed(2)}</span>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                Middle Band = μ = <span class="highlight">₹${middle.value.toFixed(2)}</span>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                Lower Band = μ - (2 × σ) = ${mean.toFixed(4)} - (2 × ${stdDev.toFixed(4)})<br>
+                = ${mean.toFixed(4)} - ${(2 * stdDev).toFixed(4)} = <span class="highlight">₹${lower.value.toFixed(2)}</span>
+            </div>
+            
+            <div class="calc-result">
+                <span class="calc-result-label">Current Price</span>
+                <span class="calc-result-value">₹${currentPrice.toFixed(2)}</span>
+            </div>
+        </div>
+        
+        <div class="calc-section">
+            <div class="calc-section-title">Bollinger Bands Values</div>
+            <table class="calc-data-table">
+                <tr><th>Band</th><th>Value</th><th>Position</th></tr>
+                <tr><td>Upper Band</td><td>₹${upper.value.toFixed(2)}</td><td>${currentPrice >= upper.value ? '<span class="hist-negative">Above (Overbought)</span>' : 'Below'}</td></tr>
+                <tr><td>Middle Band (SMA 20)</td><td>₹${middle.value.toFixed(2)}</td><td>Moving Average</td></tr>
+                <tr><td>Lower Band</td><td>₹${lower.value.toFixed(2)}</td><td>${currentPrice <= lower.value ? '<span class="hist-positive">Below (Oversold)</span>' : 'Above'}</td></tr>
+                <tr><td>Band Width</td><td>₹${(upper.value - lower.value).toFixed(2)}</td><td>${(upper.value - lower.value).toFixed(2)} / ${currentPrice.toFixed(2)} = ${((upper.value - lower.value) / currentPrice * 100).toFixed(1)}%</td></tr>
+            </table>
+        </div>
+    `;
+    container.innerHTML = html;
+}
+
+function renderStatsCalculations(container) {
+    const prices = currentData.map(d => d.price);
+    const volumes = currentData.map(d => d.vol);
+    const changes = currentData.map(d => d.change);
+    
+    const n = prices.length;
+    const mean = prices.reduce((a,b) => a+b, 0) / n;
+    const variance = prices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / n;
+    const stdDev = Math.sqrt(variance);
+    const meanVol = volumes.reduce((a,b) => a+b, 0) / n;
+    const meanChange = changes.reduce((a,b) => a+b, 0) / n;
+    
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const range = max - min;
+    const cv = (stdDev / mean) * 100;
+    
+    let pricesHtml = '';
+    if (n <= 15) {
+        pricesHtml = prices.map((p, i) => `<tr><td>${i+1}</td><td>${currentData[i].date}</td><td>₹${p.toFixed(2)}</td><td>₹${(p - mean).toFixed(2)}</td><td>${Math.pow(p - mean, 2).toFixed(4)}</td></tr>`).join('');
+    } else {
+        pricesHtml = prices.slice(0, 8).map((p, i) => `<tr><td>${i+1}</td><td>${currentData[i].date}</td><td>₹${p.toFixed(2)}</td><td>₹${(p - mean).toFixed(2)}</td><td>${Math.pow(p - mean, 2).toFixed(4)}</td></tr>`).join('') +
+            '<tr><td colspan="5" style="text-align:center">... (showing 8 of ' + n + ')</td></tr>' +
+            prices.slice(-7).map((p, i) => `<tr><td>${n-7+i+1}</td><td>${currentData[n-7+i].date}</td><td>₹${p.toFixed(2)}</td><td>₹${(p - mean).toFixed(2)}</td><td>${Math.pow(p - mean, 2).toFixed(4)}</td></tr>`).join('');
+    }
+    
+    let html = `
+        <div class="calc-section">
+            <div class="calc-section-title">Price Statistics - Detailed Calculation</div>
+            <div class="calc-formula">Mean = Σx/n | Variance = Σ(x - μ)²/n | Std Dev = √Variance</div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">1</span>
+                    <span class="step-content">List all ${n} prices and calculate deviation from mean:</span>
+                </div>
+            </div>
+            <table class="calc-data-table" style="font-size: 0.6rem;">
+                <tr><th>#</th><th>Date</th><th>Price (x)</th><th>x - μ</th><th>(x - μ)²</th></tr>
+                ${pricesHtml}
+            </table>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">2</span>
+                    <span class="step-content">Calculate Mean (μ):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                μ = (${prices.slice(0, 5).map(p => p.toFixed(2)).join(' + ')} + ... + ${prices.slice(-3).map(p => p.toFixed(2)).join(' + ')}) / ${n}<br>
+                μ = ${prices.reduce((a,b) => a+b, 0).toFixed(2)} / ${n} = <span class="highlight">₹${mean.toFixed(4)}</span>
+            </div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">3</span>
+                    <span class="step-content">Calculate Variance (σ²):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                σ² = Σ(x - μ)² / n<br>
+                σ² = ${prices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0).toFixed(4)} / ${n} = <span class="highlight">${variance.toFixed(4)}</span>
+            </div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">4</span>
+                    <span class="step-content">Calculate Standard Deviation (σ):</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                σ = √${variance.toFixed(4)} = <span class="highlight">₹${stdDev.toFixed(4)}</span>
+            </div>
+            
+            <div class="calc-steps">
+                <div class="calc-step">
+                    <span class="step-number">5</span>
+                    <span class="step-content">Calculate Coefficient of Variation:</span>
+                </div>
+            </div>
+            <div class="calc-formula" style="font-size: 0.75rem;">
+                CV = (σ / μ) × 100 = (${stdDev.toFixed(4)} / ${mean.toFixed(4)}) × 100 = <span class="highlight">${cv.toFixed(2)}%</span>
+            </div>
+        </div>
+        
+        <div class="calc-section">
+            <div class="calc-section-title">Summary Statistics</div>
+            <table class="calc-data-table">
+                <tr><th>Metric</th><th>Formula</th><th>Value</th></tr>
+                <tr><td>Count (n)</td><td>Number of data points</td><td>${n}</td></tr>
+                <tr><td>Sum of Prices</td><td>Σ Price</td><td>₹${prices.reduce((a,b) => a+b, 0).toFixed(2)}</td></tr>
+                <tr><td>Mean (μ)</td><td>Σ Price / n</td><td class="highlight">₹${mean.toFixed(2)}</td></tr>
+                <tr><td>Variance (σ²)</td><td>Σ(Price - μ)² / n</td><td>${variance.toFixed(4)}</td></tr>
+                <tr><td>Std Dev (σ)</td><td>√Variance</td><td>₹${stdDev.toFixed(2)}</td></tr>
+                <tr><td>Coefficient of Var</td><td>(σ / μ) × 100</td><td>${cv.toFixed(2)}%</td></tr>
+            </table>
+        </div>
+        
+        <div class="calc-section">
+            <div class="calc-section-title">Range Analysis</div>
+            <table class="calc-data-table">
+                <tr><th>Metric</th><th>Value</th><th>Date</th></tr>
+                <tr><td>Minimum Price</td><td class="hist-positive">₹${min.toFixed(2)}</td><td>${currentData.find(d => d.price === min).date}</td></tr>
+                <tr><td>Maximum Price</td><td class="hist-negative">₹${max.toFixed(2)}</td><td>${currentData.find(d => d.price === max).date}</td></tr>
+                <tr><td>Range</td><td>₹${range.toFixed(2)}</td><td>${((range / min) * 100).toFixed(1)}% move</td></tr>
+            </table>
+        </div>
+        
+        <div class="calc-section">
+            <div class="calc-section-title">Volume Statistics</div>
+            <table class="calc-data-table">
+                <tr><th>Metric</th><th>Calculation</th><th>Value</th></tr>
+                <tr><td>Total Volume</td><td>Σ Volume</td><td>${(volumes.reduce((a,b) => a+b, 0) / 1000000).toFixed(2)}M</td></tr>
+                <tr><td>Avg Volume</td><td>Total / ${n}</td><td>${(meanVol / 1000000).toFixed(2)}M</td></tr>
+                <tr><td>Avg Change</td><td>Σ Change% / ${n}</td><td>${meanChange.toFixed(2)}%</td></tr>
+            </table>
+        </div>
+    `;
+    container.innerHTML = html;
 }
 
 
@@ -965,26 +1650,40 @@ function updateIndicatorValues() {
  * calculateSMA - Simple Moving Average
  * 
  * SMA = Sum of closing prices for N periods / N periods
+ * Data is sorted newest to oldest (descending)
  * 
- * @param {Array} data - Array of stock data objects
+ * @param {Array} data - Array of stock data objects (sorted newest to oldest)
  * @param {number} period - Number of periods for SMA (e.g., 50, 200)
- * @returns {Array} - Array of {time, value} objects (null for insufficient data)
+ * @param {Date} startDate - Optional start date from which SMA should be displayed
+ * @returns {Array} - Array of {time, value} objects (null for insufficient data or before startDate)
  */
-function calculateSMA(data, period) {
+function calculateSMA(data, period, startDate = null) {
     const sma = [];
+    // Use UTC to match the data timestamps which are in UTC
+    const startTime = startDate ? Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()) : null;
     
+    // Data is sorted oldest to newest (index 0 = oldest, last index = newest)
+    // We iterate from oldest to newest
     for (let i = 0; i < data.length; i++) {
+        const currentTime = data[i].time;
+        
+        // If current date is before startDate, don't show SMA
+        if (startTime && currentTime < startTime) {
+            sma.push(null);
+            continue;
+        }
+        
+        // Check if we have enough data points BEFORE this date (past data)
+        // We need 'period' number of data points with indices i-period+1, i-period+2, ... i
         if (i < period - 1) {
-            // Not enough data points yet
             sma.push(null);
         } else {
-            // Sum the last 'period' prices
+            // Sum the previous 'period' prices (going to past dates)
             let sum = 0;
             for (let j = 0; j < period; j++) {
                 sum += data[i - j].price;
             }
-            // Calculate average and store with timestamp
-            sma.push({ time: data[i].time, value: sum / period });
+            sma.push({ time: currentTime, value: sum / period });
         }
     }
     return sma;
@@ -1333,6 +2032,12 @@ function updateCharts() {
     // Guard clause - no data to display
     if (!currentData || currentData.length === 0) return;
     
+    // Get theme colors
+    const isDark = currentTheme === 'dark';
+    const chartBg = isDark ? '#1e1e20' : '#ffffff';
+    const chartText = isDark ? '#8e8e93' : '#6e6e73';
+    const chartGrid = isDark ? '#2c2c2e' : '#e5e5ea';
+    
     // Prepare data in format expected by Lightweight Charts
     const candleData = currentData.map(d => ({ 
         time: d.time, 
@@ -1360,17 +2065,17 @@ function updateCharts() {
     // CREATE MAIN CANDLESTICK CHART
     // =========================================================================
     
-    // Initialize chart with dark theme colors
+    // Initialize chart with theme-aware colors
     candleChart = LightweightCharts.createChart(document.getElementById('candleChart'), {
         // Layout configuration
         layout: { 
-            background: { color: '#1e1e20' }, 
-            textColor: '#8e8e93' 
+            background: { color: chartBg }, 
+            textColor: chartText 
         },
         // Grid lines
         grid: { 
-            vertLines: { color: '#2c2c2e' }, 
-            horzLines: { color: '#2c2c2e' } 
+            vertLines: { color: chartGrid }, 
+            horzLines: { color: chartGrid } 
         },
         // Crosshair configuration
         crosshair: { 
@@ -1390,13 +2095,13 @@ function updateCharts() {
         },
         // Right price scale
         rightPriceScale: { 
-            borderColor: '#38383a', 
+            borderColor: isDark ? '#38383a' : '#d2d2d7', 
             scaleMargins: { top: 0.1, bottom: 0.15 }, 
             width: 70 
         },
         // Time scale configuration
         timeScale: { 
-            borderColor: '#38383a', 
+            borderColor: isDark ? '#38383a' : '#d2d2d7', 
             timeVisible: true, 
             tickMarkFormatter: (time) => {
                 const date = new Date(time);
@@ -1424,10 +2129,18 @@ function updateCharts() {
     // ADD TECHNICAL INDICATORS TO CANDLESTICK CHART
     // =========================================================================
     
+    // Get SMA start date based on current range
+    const smaStartDates = {
+        day: new Date('2025-04-01'),
+        week: new Date('2023-10-29'),
+        month: new Date('2022-10-31')
+    };
+    const smaStartDate = smaStartDates[currentRange] || null;
+    
     // Add SMA lines if enabled
     if (activeIndicators.sma) {
-        const sma50 = calculateSMA(currentData, 50);
-        const sma200 = calculateSMA(currentData, 200);
+        const sma50 = calculateSMA(currentData, 50, smaStartDate);
+        const sma200 = calculateSMA(currentData, 200, smaStartDate);
         
         // SMA 50 line (green)
         const sma50Series = candleChart.addLineSeries({ 
@@ -1486,109 +2199,258 @@ function updateCharts() {
     }
     
     // =========================================================================
-    // TOOLTIP ON CURSOR MOVE
+    // TOOLTIP ON CURSOR MOVE - Unified handler for all charts
     // =========================================================================
     
     const tooltip = document.getElementById('tooltip');
     
-    // Subscribe to crosshair movement for tooltip display
-    candleChart.subscribeCrosshairMove((param) => {
-        // Hide tooltip if no data point under cursor
-        if (!param.time || !param.seriesData.size) { 
-            tooltip.style.display = 'none'; 
-            return; 
-        }
-        
-        // Get candle data at cursor position
-        const data = param.seriesData.get(candlestickSeries);
-        if (!data) return;
-        
-        // Find index in current data array
-        const idx = currentData.findIndex(d => d.time === param.time);
-        
-        // Format date for display
-        const date = new Date(param.time).toLocaleDateString('en-GB', { 
-            day: '2-digit', 
-            month: 'short', 
-            year: 'numeric' 
-        });
-        
-        // Build tooltip HTML
-        let html = `<div class="tooltip-header">${date}</div>`;
-        html += `<div class="tooltip-row"><span class="tooltip-label">Open</span><span class="tooltip-value">₹${data.open.toFixed(2)}</span></div>`;
-        html += `<div class="tooltip-row"><span class="tooltip-label">High</span><span class="tooltip-value">₹${data.high.toFixed(2)}</span></div>`;
-        html += `<div class="tooltip-row"><span class="tooltip-label">Low</span><span class="tooltip-value">₹${data.low.toFixed(2)}</span></div>`;
-        html += `<div class="tooltip-row"><span class="tooltip-label">Close</span><span class="tooltip-value">₹${data.close.toFixed(2)}</span></div>`;
-        html += `<div class="tooltip-divider"></div>`;
-        
-        // Show SMA values if enabled
-        if (activeIndicators.sma && idx >= 0) {
-            const sma50 = calculateSMA(currentData, 50);
-            const sma200 = calculateSMA(currentData, 200);
-            if (sma50[idx] && sma200[idx]) {
-                html += `<div class="tooltip-row"><span class="tooltip-label sma50-label">SMA 50</span><span class="tooltip-value sma50-value">₹${sma50[idx].value.toFixed(2)}</span></div>`;
-                html += `<div class="tooltip-row"><span class="tooltip-label sma200-label">SMA 200</span><span class="tooltip-value sma200-value">₹${sma200[idx].value.toFixed(2)}</span></div>`;
+    // Function to generate tooltip HTML with all indicator data
+    function generateTooltipHTML(idx, priceData) {
+        try {
+            if (idx < 0) return '';
+            
+            const data = currentData[idx];
+            if (!data) return '';
+            
+            // Format date for display
+            const date = new Date(data.time).toLocaleDateString('en-GB', { 
+                day: '2-digit', 
+                month: 'short', 
+                year: 'numeric' 
+            });
+            
+            // Build active indicators badge
+            let activeIndicatorsList = [];
+            if (activeIndicators.sma) activeIndicatorsList.push('SMA');
+            if (activeIndicators.bb) activeIndicatorsList.push('BB');
+            if (activeIndicators.rsi) activeIndicatorsList.push('RSI');
+            if (activeIndicators.macd) activeIndicatorsList.push('MACD');
+            if (activeIndicators.volume) activeIndicatorsList.push('VOL');
+            
+            const indicatorsBadge = activeIndicatorsList.length > 0 
+                ? `<span class="active-indicators-badge">${activeIndicatorsList.join(' • ')}</span>` 
+                : '';
+            
+            let html = `
+                <div class="tooltip-title-row">
+                    <span class="tooltip-date">📅 ${date}</span>
+                    ${indicatorsBadge}
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-section-title">💰 Price</div>
+            `;
+            
+            // Price data (candle or line)
+            if (priceData && priceData.open !== undefined) {
+                const isGreen = priceData.close >= priceData.open;
+                html += `
+                    <div class="tooltip-price-grid">
+                        <div class="tooltip-price-item"><span class="tp-label">Open</span><span class="tp-value">₹${priceData.open.toFixed(2)}</span></div>
+                        <div class="tooltip-price-item"><span class="tp-label">High</span><span class="tp-value tp-high">₹${priceData.high.toFixed(2)}</span></div>
+                        <div class="tooltip-price-item"><span class="tp-label">Low</span><span class="tp-value tp-low">₹${priceData.low.toFixed(2)}</span></div>
+                        <div class="tooltip-price-item"><span class="tp-label">Close</span><span class="tp-value ${isGreen ? 'tp-green' : 'tp-red'}">₹${priceData.close.toFixed(2)}</span></div>
+                    </div>
+                `;
+            } else if (priceData && priceData.value !== undefined) {
+                html += `<div class="tooltip-single-price">₹${priceData.value.toFixed(2)}</div>`;
             }
-        }
-        
-        // Show Bollinger Bands if enabled
-        if (activeIndicators.bb && idx >= 0) {
-            const bb = calculateBollingerBands(currentData);
-            if (bb.upper[idx] && bb.middle[idx] && bb.lower[idx]) {
-                html += `<div class="tooltip-row"><span class="tooltip-label bb-label">BB Upper</span><span class="tooltip-value">₹${bb.upper[idx].value.toFixed(2)}</span></div>`;
-                html += `<div class="tooltip-row"><span class="tooltip-label bb-label">BB Middle</span><span class="tooltip-value">₹${bb.middle[idx].value.toFixed(2)}</span></div>`;
-                html += `<div class="tooltip-row"><span class="tooltip-label bb-label">BB Lower</span><span class="tooltip-value">₹${bb.lower[idx].value.toFixed(2)}</span></div>`;
+            
+            html += `</div>`;
+            
+            // Get SMA start dates
+            const smaStartDates = {
+                day: new Date('2025-04-01'),
+                week: new Date('2023-10-29'),
+                month: new Date('2022-10-31')
+            };
+            const smaStartDate = smaStartDates[currentRange] || null;
+            
+            // Show SMA values if enabled
+            if (activeIndicators.sma) {
+                const sma50 = calculateSMA(currentData, 50, smaStartDate);
+                const sma200 = calculateSMA(currentData, 200, smaStartDate);
+                if (sma50[idx] || sma200[idx]) {
+                    html += `<div class="tooltip-section"><div class="tooltip-section-title">📈 Moving Averages</div><div class="tooltip-indi-grid">`;
+                    if (sma50[idx]) {
+                        html += `<div class="tooltip-indi-item sma50-bg"><span class="ti-label">SMA 50</span><span class="ti-value">₹${sma50[idx].value.toFixed(2)}</span></div>`;
+                    }
+                    if (sma200[idx]) {
+                        html += `<div class="tooltip-indi-item sma200-bg"><span class="ti-label">SMA 200</span><span class="ti-value">₹${sma200[idx].value.toFixed(2)}</span></div>`;
+                    }
+                    html += `</div></div>`;
+                }
             }
-        }
-        
-        // Show RSI if enabled
-        if (activeIndicators.rsi && idx >= 0) {
-            const rsi = calculateRSI(currentData);
-            if (rsi[idx]) {
-                const rsiVal = rsi[idx].value;
-                let rsiStatus = '';
-                if (rsiVal > 70) rsiStatus = ' (Overbought)';
-                else if (rsiVal < 30) rsiStatus = ' (Oversold)';
-                html += `<div class="tooltip-row"><span class="tooltip-label rsi-label">RSI ${rsiStatus}</span><span class="tooltip-value ${rsiVal > 70 ? 'rsi-overbought' : rsiVal < 30 ? 'rsi-oversold' : ''}">${rsiVal.toFixed(1)}</span></div>`;
+            
+            // Show Bollinger Bands if enabled
+            if (activeIndicators.bb) {
+                const bb = calculateBollingerBands(currentData);
+                if (bb && bb.upper && bb.middle && bb.lower && bb.upper[idx] && bb.middle[idx] && bb.lower[idx]) {
+                    html += `<div class="tooltip-section"><div class="tooltip-section-title">📊 Bollinger Bands</div><div class="tooltip-indi-grid">`;
+                    html += `<div class="tooltip-indi-item bb-bg"><span class="ti-label">Upper</span><span class="ti-value">₹${bb.upper[idx].value.toFixed(2)}</span></div>`;
+                    html += `<div class="tooltip-indi-item bb-bg"><span class="ti-label">Middle</span><span class="ti-value">₹${bb.middle[idx].value.toFixed(2)}</span></div>`;
+                    html += `<div class="tooltip-indi-item bb-bg"><span class="ti-label">Lower</span><span class="ti-value">₹${bb.lower[idx].value.toFixed(2)}</span></div>`;
+                    html += `</div></div>`;
+                }
             }
-        }
-        
-        // Show MACD if enabled
-        if (activeIndicators.macd && idx >= 0) {
-            const macd = calculateMACD(currentData);
-            if (macd.macdLine[idx] && macd.signalLine[idx]) {
-                const hist = macd.histogram[idx] ? macd.histogram[idx].value : 0;
-                html += `<div class="tooltip-divider"></div>`;
-                html += `<div class="tooltip-row"><span class="tooltip-label macd-label">MACD</span><span class="tooltip-value">${macd.macdLine[idx].value.toFixed(3)}</span></div>`;
-                html += `<div class="tooltip-row"><span class="tooltip-label signal-label">Signal</span><span class="tooltip-value">${macd.signalLine[idx].value.toFixed(3)}</span></div>`;
-                html += `<div class="tooltip-row"><span class="tooltip-label hist-label">Histogram</span><span class="tooltip-value ${hist >= 0 ? 'hist-positive' : 'hist-negative'}">${hist >= 0 ? '+' : ''}${hist.toFixed(3)}</span></div>`;
+            
+            // Show RSI if enabled
+            if (activeIndicators.rsi) {
+                const rsi = calculateRSI(currentData);
+                // RSI[i] has time = data[i+1].time (first RSI at index 13 has time = data[14].time)
+                // So when hovering at data[idx], show rsi[idx-1]
+                const rsiIdx = idx - 1;
+                if (rsiIdx >= 0 && rsi[rsiIdx]) {
+                    const rsiVal = rsi[rsiIdx].value;
+                    let rsiStatus = '';
+                    let rsiClass = 'rsi-neutral';
+                    if (rsiVal > 70) { rsiStatus = 'Overbought'; rsiClass = 'rsi-overbought'; }
+                    else if (rsiVal < 30) { rsiStatus = 'Oversold'; rsiClass = 'rsi-oversold'; }
+                    else { rsiStatus = 'Neutral'; }
+                    html += `<div class="tooltip-section"><div class="tooltip-section-title">📉 RSI</div>`;
+                    html += `<div class="tooltip-rsi-display ${rsiClass}">
+                        <span class="rsi-value">${rsiVal.toFixed(1)}</span>
+                        <span class="rsi-status">${rsiStatus}</span>
+                    </div></div>`;
+                }
             }
+            
+            // Show MACD if enabled
+            if (activeIndicators.macd) {
+                const macd = calculateMACD(currentData);
+                if (macd.macdLine[idx] && macd.macdLine[idx].value !== undefined && macd.signalLine[idx] && macd.signalLine[idx].value !== undefined) {
+                    const hist = macd.histogram[idx] ? macd.histogram[idx].value : 0;
+                    const histClass = hist >= 0 ? 'hist-positive' : 'hist-negative';
+                    html += `<div class="tooltip-section"><div class="tooltip-section-title">📊 MACD</div><div class="tooltip-macd-grid">`;
+                    html += `<div class="macd-item"><span class="mi-label">MACD Line</span><span class="mi-value">${macd.macdLine[idx].value.toFixed(4)}</span></div>`;
+                    html += `<div class="macd-item"><span class="mi-label">Signal Line</span><span class="mi-value">${macd.signalLine[idx].value.toFixed(4)}</span></div>`;
+                    html += `<div class="macd-item hist-item ${histClass}"><span class="mi-label">Histogram</span><span class="mi-value">${hist >= 0 ? '+' : ''}${hist.toFixed(4)}</span></div>`;
+                    html += `</div></div>`;
+                }
+            }
+            
+            // Show volume if enabled
+            if (activeIndicators.volume) {
+                const volM = (data.vol / 1000000).toFixed(2);
+                html += `<div class="tooltip-section"><div class="tooltip-section-title">📊 Volume</div>`;
+                html += `<div class="tooltip-volume-display">
+                    <span class="vol-value">${volM}M</span>
+                </div></div>`;
+            }
+            
+            // Show change percentage
+            html += `<div class="tooltip-footer">
+                <span class="change-label">Change</span>
+                <span class="change-value ${data.change >= 0 ? 'hist-positive' : 'hist-negative'}">${data.change >= 0 ? '▲' : '▼'} ${Math.abs(data.change).toFixed(2)}%</span>
+            </div>`;
+            
+            return html;
+        } catch (e) {
+            console.error('Tooltip error:', e);
+            return '';
         }
-        
-        // Show volume if enabled
-        if (activeIndicators.volume && idx >= 0) {
-            const vol = currentData[idx].vol;
-            html += `<div class="tooltip-divider"></div>`;
-            html += `<div class="tooltip-row"><span class="tooltip-label">Volume</span><span class="tooltip-value">${(vol / 1000000).toFixed(2)}M</span></div>`;
-        }
-        
-        // Update tooltip content
-        tooltip.innerHTML = html;
-        
-        // Position tooltip near cursor
-        const chartEl = document.getElementById('candleChart');
+    }
+    
+    // Function to position tooltip
+    function positionTooltip(chartEl, pointX, pointY) {
+        const tooltipWidth = tooltip.offsetWidth || 240;
+        const tooltipHeight = tooltip.offsetHeight || 200;
         const chartRect = chartEl.getBoundingClientRect();
-        let left = chartRect.left + param.point.x + 20;
-        let top = chartRect.top + param.point.y + 20;
         
-        // Adjust position if tooltip would go off screen
-        if (left + 220 > window.innerWidth - 20) left = chartRect.left + param.point.x - 220;
-        if (top + 350 > window.innerHeight) top = chartRect.top + param.point.y - 300;
+        // Position tooltip with dynamic offset based on its size
+        const offsetX = 20;
+        const offsetY = 20;
+        
+        let left = chartRect.left + pointX + offsetX;
+        let top = chartRect.top + pointY + offsetY;
+        
+        // Adjust if tooltip would go off right edge
+        if (left + tooltipWidth + 20 > window.innerWidth) {
+            left = chartRect.left + pointX - tooltipWidth - 10;
+        }
+        
+        // Adjust if tooltip would go off bottom edge
+        if (top + tooltipHeight + 20 > window.innerHeight) {
+            top = chartRect.top + pointY - tooltipHeight - 10;
+        }
+        
+        // Adjust if tooltip would go off left edge
+        if (left < 10) left = 10;
+        
+        // Adjust if tooltip would go off top edge
+        if (top < 10) top = 10;
         
         tooltip.style.left = left + 'px';
         tooltip.style.top = top + 'px';
-        tooltip.style.display = 'block';
-    });
+    }
+    
+    // Subscribe to candlestick chart crosshair
+    if (candleChart) {
+        candleChart.subscribeCrosshairMove((param) => {
+            if (!param.time || !param.seriesData.size) { 
+                tooltip.style.display = 'none'; 
+                return; 
+            }
+            
+            const data = param.seriesData.get(candlestickSeries);
+            if (!data) return;
+            
+            // Find matching data point - convert times to same format for comparison
+            let idx = -1;
+            const paramTime = typeof param.time === 'number' ? param.time : new Date(param.time).getTime();
+            
+            idx = currentData.findIndex(d => d.time === paramTime);
+            
+            // If not found by exact match, try by date string
+            if (idx === -1) {
+                const paramDateStr = new Date(paramTime).toISOString().split('T')[0];
+                idx = currentData.findIndex(d => {
+                    return new Date(d.time).toISOString().split('T')[0] === paramDateStr;
+                });
+            }
+            
+            if (idx >= 0) {
+                const html = generateTooltipHTML(idx, data);
+                if (html) {
+                    tooltip.innerHTML = html;
+                    positionTooltip(document.getElementById('candleChart'), param.point.x, param.point.y);
+                    tooltip.style.display = 'block';
+                }
+            }
+        });
+    }
+    
+    // Subscribe to line chart crosshair
+    if (lineChart) {
+        lineChart.subscribeCrosshairMove((param) => {
+            if (!param.time || !param.seriesData.size) { 
+                tooltip.style.display = 'none'; 
+                return; 
+            }
+            
+            const data = param.seriesData.get(lineAreaSeries);
+            if (!data) return;
+            
+            let idx = -1;
+            if (typeof param.time === 'number') {
+                idx = currentData.findIndex(d => d.time === param.time);
+            } else {
+                const timeStr = param.time;
+                idx = currentData.findIndex(d => {
+                    const dDate = new Date(d.time);
+                    const tDate = new Date(timeStr);
+                    return dDate.toISOString().split('T')[0] === tDate.toISOString().split('T')[0];
+                });
+            }
+            
+            const html = generateTooltipHTML(idx, { value: data.value });
+            
+            if (html) {
+                tooltip.innerHTML = html;
+                positionTooltip(document.getElementById('lineChart'), param.point.x, param.point.y);
+                tooltip.style.display = 'block';
+            }
+        });
+    }
     
     // Fit chart content to view
     candleChart.timeScale().fitContent();
@@ -1622,10 +2484,10 @@ function updateCharts() {
         
         // Create volume chart
         volumeChart = LightweightCharts.createChart(document.getElementById('volumeChart'), {
-            layout: { background: { color: '#1e1e20' }, textColor: '#8e8e93' },
-            grid: { vertLines: { color: '#2c2c2e' }, horzLines: { color: '#2c2c2e' } },
-            rightPriceScale: { borderColor: '#38383a', width: 70 },
-            timeScale: { borderColor: '#38383a', timeVisible: true },
+            layout: { background: { color: chartBg }, textColor: chartText },
+            grid: { vertLines: { color: chartGrid }, horzLines: { color: chartGrid } },
+            rightPriceScale: { borderColor: isDark ? '#38383a' : '#d2d2d7', width: 70 },
+            timeScale: { borderColor: isDark ? '#38383a' : '#d2d2d7', timeVisible: true },
             height: 500,
             width: chartWidth
         });
@@ -1648,6 +2510,36 @@ function updateCharts() {
         
         volumeChart.timeScale().fitContent();
         
+        // Subscribe to volume chart crosshair
+        if (volumeChart) {
+            volumeChart.subscribeCrosshairMove((param) => {
+                if (!param.time || !param.seriesData.size) { 
+                    tooltip.style.display = 'none'; 
+                    return; 
+                }
+                
+                let idx = -1;
+                if (typeof param.time === 'number') {
+                    idx = currentData.findIndex(d => d.time === param.time);
+                } else {
+                    const timeStr = param.time;
+                    idx = currentData.findIndex(d => {
+                        const dDate = new Date(d.time);
+                        const tDate = new Date(timeStr);
+                        return dDate.toISOString().split('T')[0] === tDate.toISOString().split('T')[0];
+                    });
+                }
+                
+                const html = generateTooltipHTML(idx, null);
+                
+                if (html) {
+                    tooltip.innerHTML = html;
+                    positionTooltip(document.getElementById('volumeChart'), param.point.x, param.point.y);
+                    tooltip.style.display = 'block';
+                }
+            });
+        }
+        
         // Sync time scale with main chart
         candleChart.timeScale().subscribeVisibleLogicalRangeChange((logicalRange) => {
             if (logicalRange) volumeChart.timeScale().setVisibleLogicalRange(logicalRange);
@@ -1662,15 +2554,15 @@ function updateCharts() {
         const rsiData = calculateRSI(currentData);
         
         rsiChart = LightweightCharts.createChart(document.getElementById('rsiChart'), {
-            layout: { background: { color: '#1e1e20' }, textColor: '#8e8e93' },
-            grid: { vertLines: { color: '#2c2c2e' }, horzLines: { color: '#2c2c2e' } },
+            layout: { background: { color: chartBg }, textColor: chartText },
+            grid: { vertLines: { color: chartGrid }, horzLines: { color: chartGrid } },
             rightPriceScale: { 
-                borderColor: '#38383a', 
+                borderColor: isDark ? '#38383a' : '#d2d2d7', 
                 scaleMargins: { top: 0.1, bottom: 0.1 }, 
                 minRange: 100, 
                 width: 70 
             },
-            timeScale: { borderColor: '#38383a', timeVisible: true },
+            timeScale: { borderColor: isDark ? '#38383a' : '#d2d2d7', timeVisible: true },
             height: 500,
             width: chartWidth
         });
@@ -1691,6 +2583,158 @@ function updateCharts() {
         
         rsiChart.timeScale().fitContent();
         
+        // Subscribe to RSI chart crosshair
+        if (rsiChart) {
+            rsiChart.subscribeCrosshairMove((param) => {
+                if (!param.time || !param.seriesData.size) { 
+                    tooltip.style.display = 'none'; 
+                    return; 
+                }
+                
+                // Get RSI value directly from the chart's series data
+                const rsiSeriesData = param.seriesData.get(rsiLine);
+                if (!rsiSeriesData || rsiSeriesData.value === undefined) {
+                    tooltip.style.display = 'none';
+                    return;
+                }
+                
+                // Find the data index for additional info
+                let idx = -1;
+                if (typeof param.time === 'number') {
+                    idx = currentData.findIndex(d => d.time === param.time);
+                } else {
+                    const timeStr = param.time;
+                    idx = currentData.findIndex(d => {
+                        const dDate = new Date(d.time);
+                        const tDate = new Date(timeStr);
+                        return dDate.toISOString().split('T')[0] === tDate.toISOString().split('T')[0];
+                    });
+                }
+                
+                if (idx < 0) return;
+                const data = currentData[idx];
+                
+                // Format date
+                const date = new Date(data.time).toLocaleDateString('en-GB', { 
+                    day: '2-digit', 
+                    month: 'short', 
+                    year: 'numeric' 
+                });
+                
+                const rsiValue = rsiSeriesData.value;
+                let status = 'Neutral';
+                let statusClass = 'rsi-neutral';
+                if (rsiValue > 70) { status = 'Overbought'; statusClass = 'rsi-overbought'; }
+                else if (rsiValue < 30) { status = 'Oversold'; statusClass = 'rsi-oversold'; }
+                
+                // Build active indicators badge
+                let activeIndicatorsList = [];
+                if (activeIndicators.sma) activeIndicatorsList.push('SMA');
+                if (activeIndicators.bb) activeIndicatorsList.push('BB');
+                if (activeIndicators.rsi) activeIndicatorsList.push('RSI');
+                if (activeIndicators.macd) activeIndicatorsList.push('MACD');
+                if (activeIndicators.volume) activeIndicatorsList.push('VOL');
+                
+                const indicatorsBadge = activeIndicatorsList.length > 0 
+                    ? `<span class="active-indicators-badge">${activeIndicatorsList.join(' • ')}</span>` 
+                    : '';
+                
+                let html = `
+                    <div class="tooltip-title-row">
+                        <span class="tooltip-date">${date}</span>
+                        ${indicatorsBadge}
+                    </div>
+                    <div class="tooltip-main-grid">
+                        <div class="tooltip-section">
+                            <div class="tooltip-section-title">Price</div>
+                            <div class="tooltip-price-grid">
+                                <div class="tooltip-price-item"><span class="tp-label">O</span><span class="tp-value">${data.open.toFixed(1)}</span></div>
+                                <div class="tooltip-price-item"><span class="tp-label">H</span><span class="tp-value tp-high">${data.high.toFixed(1)}</span></div>
+                                <div class="tooltip-price-item"><span class="tp-label">L</span><span class="tp-value tp-low">${data.low.toFixed(1)}</span></div>
+                                <div class="tooltip-price-item"><span class="tp-label">C</span><span class="tp-value ${data.change >= 0 ? 'tp-green' : 'tp-red'}">${data.price.toFixed(1)}</span></div>
+                            </div>
+                        </div>
+                        <div class="tooltip-section">
+                            <div class="tooltip-section-title">RSI</div>
+                            <div class="tooltip-rsi-display ${statusClass}" style="flex-direction: column; align-items: center; gap: 0;">
+                                <span class="rsi-value" style="font-size: 1.1rem;">${rsiValue.toFixed(1)}</span>
+                                <span class="rsi-status" style="font-size: 0.55rem;">${status}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Get SMA start dates
+                const smaStartDates = {
+                    day: new Date('2025-04-01'),
+                    week: new Date('2023-10-29'),
+                    month: new Date('2022-10-31')
+                };
+                const smaStartDate = smaStartDates[currentRange] || null;
+                
+                // Show SMA values if enabled
+                if (activeIndicators.sma) {
+                    const sma50 = calculateSMA(currentData, 50, smaStartDate);
+                    const sma200 = calculateSMA(currentData, 200, smaStartDate);
+                    if (sma50[idx] || sma200[idx]) {
+                        html += `<div class="tooltip-section" style="margin-top: 6px; padding: 5px;"><div class="tooltip-section-title">SMA</div><div class="tooltip-indi-grid">`;
+                        if (sma50[idx]) {
+                            html += `<div class="tooltip-indi-item sma50-bg" style="padding: 2px;"><span class="ti-label">50</span><span class="ti-value">${sma50[idx].value.toFixed(1)}</span></div>`;
+                        }
+                        if (sma200[idx]) {
+                            html += `<div class="tooltip-indi-item sma200-bg" style="padding: 2px;"><span class="ti-label">200</span><span class="ti-value">${sma200[idx].value.toFixed(1)}</span></div>`;
+                        }
+                        html += `</div></div>`;
+                    }
+                }
+                
+                // Show Bollinger Bands if enabled
+                if (activeIndicators.bb) {
+                    const bb = calculateBollingerBands(currentData);
+                    if (bb && bb.upper && bb.middle && bb.lower && bb.upper[idx] && bb.middle[idx] && bb.lower[idx]) {
+                        html += `<div class="tooltip-section" style="margin-top: 6px; padding: 5px;"><div class="tooltip-section-title">BB</div><div class="tooltip-indi-grid">`;
+                        html += `<div class="tooltip-indi-item bb-bg" style="padding: 2px;"><span class="ti-label">U</span><span class="ti-value">${bb.upper[idx].value.toFixed(1)}</span></div>`;
+                        html += `<div class="tooltip-indi-item bb-bg" style="padding: 2px;"><span class="ti-label">M</span><span class="ti-value">${bb.middle[idx].value.toFixed(1)}</span></div>`;
+                        html += `<div class="tooltip-indi-item bb-bg" style="padding: 2px;"><span class="ti-label">L</span><span class="ti-value">${bb.lower[idx].value.toFixed(1)}</span></div>`;
+                        html += `</div></div>`;
+                    }
+                }
+                
+                // Show MACD if enabled
+                if (activeIndicators.macd) {
+                    const macd = calculateMACD(currentData);
+                    if (macd.macdLine[idx] && macd.macdLine[idx].value !== undefined && macd.signalLine[idx] && macd.signalLine[idx].value !== undefined) {
+                        const hist = macd.histogram[idx] ? macd.histogram[idx].value : 0;
+                        const histClass = hist >= 0 ? 'hist-positive' : 'hist-negative';
+                        html += `<div class="tooltip-section" style="margin-top: 6px; padding: 5px;"><div class="tooltip-section-title">MACD</div><div class="tooltip-macd-grid">`;
+                        html += `<div class="macd-item" style="padding: 2px;"><span class="mi-label">M</span><span class="mi-value">${macd.macdLine[idx].value.toFixed(2)}</span></div>`;
+                        html += `<div class="macd-item" style="padding: 2px;"><span class="mi-label">S</span><span class="mi-value">${macd.signalLine[idx].value.toFixed(2)}</span></div>`;
+                        html += `<div class="macd-item hist-item ${histClass}" style="grid-column: span 2; padding: 2px;"><span class="mi-label">Hist</span><span class="mi-value">${hist >= 0 ? '+' : ''}${hist.toFixed(2)}</span></div>`;
+                        html += `</div></div>`;
+                    }
+                }
+                
+                // Show volume if enabled
+                if (activeIndicators.volume) {
+                    const volM = (data.vol / 1000000).toFixed(1);
+                    html += `<div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary); font-size: 0.65rem;">Vol</span>
+                        <span style="font-weight: 600; color: #fff;">${volM}M</span>
+                    </div>`;
+                }
+                
+                // Show change percentage
+                html += `<div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-secondary); font-size: 0.65rem;">Change</span>
+                    <span style="font-weight: 600; ${data.change >= 0 ? 'color: var(--accent-green);' : 'color: var(--accent-red);'}">${data.change >= 0 ? '▲' : '▼'} ${Math.abs(data.change).toFixed(2)}%</span>
+                </div>`;
+                
+                tooltip.innerHTML = html;
+                positionTooltip(document.getElementById('rsiChart'), param.point.x, param.point.y);
+                tooltip.style.display = 'block';
+            });
+        }
+        
         // Sync time scale with main chart
         candleChart.timeScale().subscribeVisibleLogicalRangeChange((logicalRange) => {
             if (logicalRange) rsiChart.timeScale().setVisibleLogicalRange(logicalRange);
@@ -1705,14 +2749,14 @@ function updateCharts() {
         const macdData = calculateMACD(currentData);
         
         macdChart = LightweightCharts.createChart(document.getElementById('macdChart'), {
-            layout: { background: { color: '#1e1e20' }, textColor: '#8e8e93' },
-            grid: { vertLines: { color: '#2c2c2e' }, horzLines: { color: '#2c2c2e' } },
+            layout: { background: { color: chartBg }, textColor: chartText },
+            grid: { vertLines: { color: chartGrid }, horzLines: { color: chartGrid } },
             rightPriceScale: { 
-                borderColor: '#38383a', 
+                borderColor: isDark ? '#38383a' : '#d2d2d7', 
                 scaleMargins: { top: 0.1, bottom: 0.1 }, 
                 width: 70 
             },
-            timeScale: { borderColor: '#38383a', timeVisible: true },
+            timeScale: { borderColor: isDark ? '#38383a' : '#d2d2d7', timeVisible: true },
             height: 500,
             width: chartWidth
         });
@@ -1745,6 +2789,164 @@ function updateCharts() {
         
         macdChart.timeScale().fitContent();
         
+        // Subscribe to MACD chart crosshair
+        if (macdChart) {
+            macdChart.subscribeCrosshairMove((param) => {
+                if (!param.time || !param.seriesData.size) { 
+                    tooltip.style.display = 'none'; 
+                    return; 
+                }
+                
+                // Get MACD values directly from chart series data
+                const macdLineData = param.seriesData.get(macdLineSeries);
+                const signalLineData = param.seriesData.get(signalLineSeries);
+                
+                if (!macdLineData || !signalLineData) {
+                    tooltip.style.display = 'none';
+                    return;
+                }
+                
+                // Find the data index for additional info
+                let idx = -1;
+                if (typeof param.time === 'number') {
+                    idx = currentData.findIndex(d => d.time === param.time);
+                } else {
+                    const timeStr = param.time;
+                    idx = currentData.findIndex(d => {
+                        const dDate = new Date(d.time);
+                        const tDate = new Date(timeStr);
+                        return dDate.toISOString().split('T')[0] === tDate.toISOString().split('T')[0];
+                    });
+                }
+                
+                if (idx < 0) return;
+                const data = currentData[idx];
+                
+                // Format date
+                const date = new Date(data.time).toLocaleDateString('en-GB', { 
+                    day: '2-digit', 
+                    month: 'short', 
+                    year: 'numeric' 
+                });
+                
+                const macdVal = macdLineData.value;
+                const signalVal = signalLineData.value;
+                const histVal = macdVal - signalVal;
+                const histClass = histVal >= 0 ? 'hist-positive' : 'hist-negative';
+                
+                // Build active indicators badge
+                let activeIndicatorsList = [];
+                if (activeIndicators.sma) activeIndicatorsList.push('SMA');
+                if (activeIndicators.bb) activeIndicatorsList.push('BB');
+                if (activeIndicators.rsi) activeIndicatorsList.push('RSI');
+                if (activeIndicators.macd) activeIndicatorsList.push('MACD');
+                if (activeIndicators.volume) activeIndicatorsList.push('VOL');
+                
+                const indicatorsBadge = activeIndicatorsList.length > 0 
+                    ? `<span class="active-indicators-badge">${activeIndicatorsList.join(' • ')}</span>` 
+                    : '';
+                
+                let html = `
+                    <div class="tooltip-title-row">
+                        <span class="tooltip-date">📅 ${date}</span>
+                        ${indicatorsBadge}
+                    </div>
+                    <div class="tooltip-main-grid">
+                        <div class="tooltip-section">
+                            <div class="tooltip-section-title">💰 Price</div>
+                            <div class="tooltip-price-grid">
+                                <div class="tooltip-price-item"><span class="tp-label">O</span><span class="tp-value">₹${data.open.toFixed(2)}</span></div>
+                                <div class="tooltip-price-item"><span class="tp-label">H</span><span class="tp-value tp-high">₹${data.high.toFixed(2)}</span></div>
+                                <div class="tooltip-price-item"><span class="tp-label">L</span><span class="tp-value tp-low">₹${data.low.toFixed(2)}</span></div>
+                                <div class="tooltip-price-item"><span class="tp-label">C</span><span class="tp-value ${data.change >= 0 ? 'tp-green' : 'tp-red'}">₹${data.price.toFixed(2)}</span></div>
+                            </div>
+                        </div>
+                        <div class="tooltip-section">
+                            <div class="tooltip-section-title">📊 MACD</div>
+                            <div class="tooltip-macd-grid" style="font-size: 0.65rem;">
+                                <div class="macd-item" style="padding: 2px 4px;"><span class="mi-label">M</span><span class="mi-value">${macdVal.toFixed(2)}</span></div>
+                                <div class="macd-item" style="padding: 2px 4px;"><span class="mi-label">S</span><span class="mi-value">${signalVal.toFixed(2)}</span></div>
+                                <div class="macd-item hist-item ${histClass}" style="grid-column: span 2; padding: 2px 4px;"><span class="mi-label">Hist</span><span class="mi-value">${histVal >= 0 ? '+' : ''}${histVal.toFixed(2)}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Get SMA start dates
+                const smaStartDates = {
+                    day: new Date('2025-04-01'),
+                    week: new Date('2023-10-29'),
+                    month: new Date('2022-10-31')
+                };
+                const smaStartDate = smaStartDates[currentRange] || null;
+                
+                // Show SMA values if enabled
+                if (activeIndicators.sma) {
+                    const sma50 = calculateSMA(currentData, 50, smaStartDate);
+                    const sma200 = calculateSMA(currentData, 200, smaStartDate);
+                    if (sma50[idx] || sma200[idx]) {
+                        html += `<div class="tooltip-section" style="margin-top: 6px; padding: 5px;"><div class="tooltip-section-title">SMA</div><div class="tooltip-indi-grid">`;
+                        if (sma50[idx]) {
+                            html += `<div class="tooltip-indi-item sma50-bg" style="padding: 2px;"><span class="ti-label">50</span><span class="ti-value">${sma50[idx].value.toFixed(1)}</span></div>`;
+                        }
+                        if (sma200[idx]) {
+                            html += `<div class="tooltip-indi-item sma200-bg" style="padding: 2px;"><span class="ti-label">200</span><span class="ti-value">${sma200[idx].value.toFixed(1)}</span></div>`;
+                        }
+                        html += `</div></div>`;
+                    }
+                }
+                
+                // Show Bollinger Bands if enabled
+                if (activeIndicators.bb) {
+                    const bb = calculateBollingerBands(currentData);
+                    if (bb && bb.upper && bb.middle && bb.lower && bb.upper[idx] && bb.middle[idx] && bb.lower[idx]) {
+                        html += `<div class="tooltip-section" style="margin-top: 6px; padding: 5px;"><div class="tooltip-section-title">BB</div><div class="tooltip-indi-grid">`;
+                        html += `<div class="tooltip-indi-item bb-bg" style="padding: 2px;"><span class="ti-label">U</span><span class="ti-value">${bb.upper[idx].value.toFixed(1)}</span></div>`;
+                        html += `<div class="tooltip-indi-item bb-bg" style="padding: 2px;"><span class="ti-label">M</span><span class="ti-value">${bb.middle[idx].value.toFixed(1)}</span></div>`;
+                        html += `<div class="tooltip-indi-item bb-bg" style="padding: 2px;"><span class="ti-label">L</span><span class="ti-value">${bb.lower[idx].value.toFixed(1)}</span></div>`;
+                        html += `</div></div>`;
+                    }
+                }
+                
+                // Show RSI if enabled
+                if (activeIndicators.rsi) {
+                    const rsi = calculateRSI(currentData);
+                    const rsiIdx = idx - 1;
+                    if (rsiIdx >= 0 && rsi[rsiIdx]) {
+                        const rsiVal = rsi[rsiIdx].value;
+                        let rsiStatus = 'Neutral';
+                        let rsiClass = 'rsi-neutral';
+                        if (rsiVal > 70) { rsiStatus = 'Overbought'; rsiClass = 'rsi-overbought'; }
+                        else if (rsiVal < 30) { rsiStatus = 'Oversold'; rsiClass = 'rsi-oversold'; }
+                        html += `<div class="tooltip-section" style="margin-top: 6px; padding: 5px;"><div class="tooltip-section-title">RSI</div>`;
+                        html += `<div class="tooltip-rsi-display ${rsiClass}" style="flex-direction: column; align-items: center; gap: 0; padding: 4px;">
+                            <span class="rsi-value" style="font-size: 1.1rem;">${rsiVal.toFixed(1)}</span>
+                            <span class="rsi-status" style="font-size: 0.55rem;">${rsiStatus}</span>
+                        </div></div>`;
+                    }
+                }
+                
+                // Show volume if enabled
+                if (activeIndicators.volume) {
+                    const volM = (data.vol / 1000000).toFixed(1);
+                    html += `<div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary); font-size: 0.65rem;">Vol</span>
+                        <span style="font-weight: 600; color: #fff;">${volM}M</span>
+                    </div>`;
+                }
+                
+                // Show change percentage
+                html += `<div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-secondary); font-size: 0.65rem;">Change</span>
+                    <span style="font-weight: 600; ${data.change >= 0 ? 'color: var(--accent-green);' : 'color: var(--accent-red);'}">${data.change >= 0 ? '▲' : '▼'} ${Math.abs(data.change).toFixed(2)}%</span>
+                </div>`;
+                
+                tooltip.innerHTML = html;
+                positionTooltip(document.getElementById('macdChart'), param.point.x, param.point.y);
+                tooltip.style.display = 'block';
+            });
+        }
+        
         // Sync time scale with main chart
         candleChart.timeScale().subscribeVisibleLogicalRangeChange((logicalRange) => {
             if (logicalRange) macdChart.timeScale().setVisibleLogicalRange(logicalRange);
@@ -1756,20 +2958,20 @@ function updateCharts() {
     // =========================================================================
     
     lineChart = LightweightCharts.createChart(document.getElementById('lineChart'), {
-        layout: { background: { color: '#1e1e20' }, textColor: '#8e8e93' },
-        grid: { vertLines: { color: '#2c2c2e' }, horzLines: { color: '#2c2c2e' } },
+        layout: { background: { color: chartBg }, textColor: chartText },
+        grid: { vertLines: { color: chartGrid }, horzLines: { color: chartGrid } },
         crosshair: { 
             mode: LightweightCharts.CrosshairMode.Normal, 
             vertLine: { color: '#0a84ff', width: 1, style: 2 }, 
             horzLine: { color: '#0a84ff', width: 1, style: 2 } 
         },
         rightPriceScale: { 
-            borderColor: '#38383a', 
+            borderColor: isDark ? '#38383a' : '#d2d2d7', 
             scaleMargins: { top: 0.1, bottom: 0.1 }, 
             width: 70 
         },
         timeScale: { 
-            borderColor: '#38383a', 
+            borderColor: isDark ? '#38383a' : '#d2d2d7', 
             timeVisible: true, 
             tickMarkFormatter: (time) => {
                 const date = new Date(time);
