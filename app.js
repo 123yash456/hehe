@@ -2509,7 +2509,18 @@ function updateCharts() {
             layout: { background: { color: chartBg }, textColor: chartText },
             grid: { vertLines: { color: chartGrid }, horzLines: { color: chartGrid } },
             rightPriceScale: { borderColor: isDark ? '#38383a' : '#d2d2d7', width: 70 },
-            timeScale: { borderColor: isDark ? '#38383a' : '#d2d2d7', timeVisible: true },
+            timeScale: { 
+                borderColor: isDark ? '#38383a' : '#d2d2d7', 
+                timeVisible: true,
+                tickMarkFormatter: (time) => {
+                    const date = new Date(time);
+                    return date.toLocaleDateString('en-GB', { 
+                        day: '2-digit', 
+                        month: 'short', 
+                        year: '2-digit' 
+                    });
+                }
+            },
             height: 500,
             width: chartWidth
         });
@@ -2584,7 +2595,18 @@ function updateCharts() {
                 minRange: 100, 
                 width: 70 
             },
-            timeScale: { borderColor: isDark ? '#38383a' : '#d2d2d7', timeVisible: true },
+            timeScale: { 
+                borderColor: isDark ? '#38383a' : '#d2d2d7', 
+                timeVisible: true,
+                tickMarkFormatter: (time) => {
+                    const date = new Date(time);
+                    return date.toLocaleDateString('en-GB', { 
+                        day: '2-digit', 
+                        month: 'short', 
+                        year: '2-digit' 
+                    });
+                }
+            },
             height: 500,
             width: chartWidth
         });
@@ -2597,6 +2619,25 @@ function updateCharts() {
             title: 'RSI' 
         });
         rsiLine.setData(rsiData.filter(d => d !== null));
+        
+        // Add horizontal lines at 30 and 70
+        rsiChart.addPriceLine({
+            price: 70,
+            color: '#ff453a',
+            lineWidth: 1,
+            lineStyle: 2,
+            axisLabelVisible: true,
+            title: '70',
+        });
+        
+        rsiChart.addPriceLine({
+            price: 30,
+            color: '#30d158',
+            lineWidth: 1,
+            lineStyle: 2,
+            axisLabelVisible: true,
+            title: '30',
+        });
         
         // Lock price scale to 0-100 range
         rsiChart.priceScale().applyOptions({
@@ -2778,7 +2819,18 @@ function updateCharts() {
                 scaleMargins: { top: 0.1, bottom: 0.1 }, 
                 width: 70 
             },
-            timeScale: { borderColor: isDark ? '#38383a' : '#d2d2d7', timeVisible: true },
+            timeScale: { 
+                borderColor: isDark ? '#38383a' : '#d2d2d7', 
+                timeVisible: true,
+                tickMarkFormatter: (time) => {
+                    const date = new Date(time);
+                    return date.toLocaleDateString('en-GB', { 
+                        day: '2-digit', 
+                        month: 'short', 
+                        year: '2-digit' 
+                    });
+                }
+            },
             height: 500,
             width: chartWidth
         });
