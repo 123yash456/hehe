@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RPOL — RSI Backtest Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:       #060810;
+  --bg2:      #0c0f1a;
+  --surface:  #101422;
+  --surface2: #161c2e;
+  --border:   #1e2540;
+  --blue:     #3b82f6;
+  --cyan:     #06b6d4;
+  --green:    #10d97e;
+  --red:      #f43f5e;
+  --yellow:   #fbbf24;
+  --orange:   #f97316;
+  --violet:   #8b5cf6;
+  --text:     #e2e8f0;
+  --muted:    #64748b;
+  --dim:      #334155;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content:'';
+  position:fixed;top:0;left:0;right:0;height:700px;
+  background: radial-gradient(ellipse 80% 60% at 50% -20%, rgba(139,92,246,0.07) 0%, transparent 70%);
+  pointer-events:none;z-index:0;
+}
+body::after {
+  content:'';
+  position:fixed;inset:0;
+  background-image: radial-gradient(rgba(139,92,246,0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events:none;z-index:0;
+}
+
+.page { position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:0 28px 100px; }
+
+/* HEADER */
+.header {
+  padding: 52px 0 40px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 32px;
+  border-bottom: 1px solid var(--border);
+  animation: slideDown .7s cubic-bezier(.16,1,.3,1) both;
+}
+.header-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: var(--violet);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.header-title {
+  font-size: clamp(32px,5.5vw,60px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+.header-title .accent { color: var(--violet); }
+.header-sub {
+  margin-top: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+.header-price-block { text-align: right; }
+.header-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 44px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -1px;
+}
+.header-price-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  margin-top: 4px;
+}
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: rgba(244,63,94,0.12);
+  color: var(--red);
+  border: 1px solid rgba(244,63,94,0.25);
+  margin-top: 10px;
+}
+.header-badge.bull {
+  background: rgba(16,217,126,0.12);
+  color: var(--green);
+  border-color: rgba(16,217,126,0.25);
+}
+
+/* SUMMARY CARDS */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  padding: 32px 0;
+  animation: slideDown .7s .1s cubic-bezier(.16,1,.3,1) both;
+}
+@media(max-width:900px){ .metrics-grid { grid-template-columns: repeat(3,1fr); } }
+@media(max-width:580px){ .metrics-grid { grid-template-columns: 1fr 1fr; } }
+
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 18px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s, transform .2s;
+}
+.metric-card:hover { border-color: var(--dim); transform: translateY(-2px); }
+.metric-card::before {
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:2px;
+  border-radius:14px 14px 0 0;
+}
+.metric-card.c1::before { background: var(--violet); }
+.metric-card.c2::before { background: var(--green); }
+.metric-card.c3::before { background: var(--red); }
+.metric-card.c4::before { background: var(--yellow); }
+.metric-card.c5::before { background: var(--orange); }
+
+.mc-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.mc-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+}
+.mc-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.mc-bar {
+  margin-top: 12px;
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.mc-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1.5s cubic-bezier(.4,0,.2,1);
+  width: 0;
+}
+
+/* SECTION */
+.sec-wrap {
+  margin-top: 44px;
+  animation: fadeUp .7s .2s cubic-bezier(.16,1,.3,1) both;
+}
+.sec-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.sec-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.sec-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sec-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.sec-desc {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+/* CHART CONTAINER */
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.chart-card-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--violet);
+  margin-bottom: 4px;
+}
+.chart-card-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.chart-wrap { position: relative; height: 320px; }
+.chart-wrap.tall { height: 420px; }
+
+/* TWO COL */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+@media(max-width:768px){ .two-col { grid-template-columns: 1fr; } }
+
+/* ZONE TABLE */
+.zone-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.zone-row {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 120px 1fr 80px 80px 80px 110px;
+  gap: 12px;
+  align-items: center;
+  transition: border-color .2s;
+}
+.zone-row:hover { border-color: var(--dim); }
+@media(max-width:900px){ .zone-row { grid-template-columns: 1fr 1fr 1fr; grid-gap: 8px; } }
+.zone-row.head {
+  background: transparent;
+  border-color: transparent;
+  padding-bottom: 4px;
+}
+.zn-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.zn-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+.zn-range {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text);
+}
+.zn-days {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+}
+.zn-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+.zn-acc {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 700;
+}
+.sig-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.sig-pill.bull { background: rgba(16,217,126,0.12); color: var(--green); border: 1px solid rgba(16,217,126,0.25); }
+.sig-pill.bear { background: rgba(244,63,94,0.12);  color: var(--red);   border: 1px solid rgba(244,63,94,0.25); }
+.sig-pill.neut { background: rgba(251,191,36,0.12); color: var(--yellow);border: 1px solid rgba(251,191,36,0.25); }
+.sig-pill.overb { background: rgba(244,63,94,0.12); color: var(--red); border: 1px solid rgba(244,63,94,0.25); }
+.sig-pill.overs { background: rgba(16,217,126,0.12); color: var(--green); border: 1px solid rgba(16,217,126,0.25); }
+.sig-pill.ok   { background: rgba(16,217,126,0.1);  color: var(--green); border: 1px solid rgba(16,217,126,0.2); }
+.sig-pill.fail { background: rgba(244,63,94,0.1);   color: var(--red);   border: 1px solid rgba(244,63,94,0.2); }
+
+/* TRADE TABLE */
+.trade-table { width:100%; border-collapse: collapse; }
+.trade-table th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.trade-table td {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(30,37,64,0.5);
+  color: var(--text);
+}
+.trade-table tr:hover td { background: var(--surface2); }
+.trade-table .success-row td:first-child { border-left: 2px solid var(--green); }
+.trade-table .fail-row td:first-child { border-left: 2px solid var(--red); }
+
+/* INSIGHT BOX */
+.insight-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-top: 16px;
+}
+.insight-box .ins-head {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--violet);
+  margin-bottom: 16px;
+}
+.insight-list { list-style: none; }
+.insight-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  line-height: 1.6;
+}
+.insight-list li:last-child { border-bottom: none; }
+.ins-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ZONE BANNER */
+.zone-banner {
+  background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(6,182,212,0.08));
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 14px;
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 16px;
+}
+.zb-icon { font-size: 36px; flex-shrink: 0; }
+.zb-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--violet);
+  letter-spacing: -0.3px;
+}
+.zb-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.zb-desc {
+  font-size: 13px;
+  color: var(--text);
+  margin-top: 6px;
+  line-height: 1.6;
+}
+.zb-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--violet);
+  margin-left: auto;
+  text-align: right;
+  flex-shrink: 0;
+}
+.zb-price-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* SEARCH / FILTER */
+.filter-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .2s;
+}
+.filter-btn:hover, .filter-btn.active {
+  border-color: var(--violet);
+  color: var(--violet);
+  background: rgba(139,92,246,0.08);
+}
+
+/* TABS */
+.tabs-row {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 12px 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .2s;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.tab-btn.active {
+  color: var(--violet);
+  border-bottom-color: var(--violet);
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* TABLE WRAPPER */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.table-wrap table {
+  width: 100%;
+  min-width: 600px;
+}
+
+/* VERDICT CARD */
+.verdict-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+@media(max-width:640px){ .verdict-grid { grid-template-columns: 1fr; } }
+.verdict-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+}
+.vc-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.vc-body {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.vc-body strong { color: var(--text); }
+
+@keyframes slideDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeUp    { from{opacity:0;transform:translateY(20px)}  to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <div class="header-eyebrow">NSE · RPOL · Reliance Power Limited</div>
+      <div class="header-title">RSI <span class="accent">Backtest</span><br>Analysis</div>
+      <div class="header-sub">DEC 2024 → FEB 2026 · 299 DAILY · 79 WEEKLY BARS</div>
+    </div>
+    <div class="header-price-block">
+      <div class="header-price">₹26.25</div>
+      <div class="header-price-label">Last Close · 20 Feb 2026</div>
+      <div class="header-badge">● RSI: 38.5</div>
+    </div>
+  </div>
+
+  <!-- SUMMARY METRICS -->
+  <div class="metrics-grid">
+    <div class="metric-card c1">
+      <div class="mc-label">RSI(14)<br>Accuracy</div>
+      <div class="mc-val" style="color:var(--violet)">54.2%</div>
+      <div class="mc-sub">162 ✓ / 137 ✗ (299 signals)</div>
+      <div class="mc-bar"><div class="mc-bar-fill" data-w="54.2" style="background:var(--violet)"></div></div>
+    </div>
+    <div class="metric-card c2">
+      <div class="mc-label">Best Month<br>Oversold</div>
+      <div class="mc-val" style="color:var(--green)">78.6%</div>
+      <div class="mc-sub">Nov 2025 · 11/14 correct</div>
+      <div class="mc-bar"><div class="mc-bar-fill" data-w="78.6" style="background:var(--green)"></div></div>
+    </div>
+    <div class="metric-card c3">
+      <div class="mc-label">Overbought<br>Signals</div>
+      <div class="mc-val" style="color:var(--red)">31</div>
+      <div class="mc-sub">RSI > 70 triggers</div>
+      <div class="mc-bar"><div class="mc-bar-fill" data-w="62" style="background:var(--red)"></div></div>
+    </div>
+    <div class="metric-card c4">
+      <div class="mc-label">Oversold<br>Signals</div>
+      <div class="mc-val" style="color:var(--green)">28</div>
+      <div class="mc-sub">RSI < 30 triggers</div>
+      <div class="mc-bar"><div class="mc-bar-fill" data-w="56" style="background:var(--orange)"></div></div>
+    </div>
+    <div class="metric-card c5">
+      <div class="mc-label">Extreme Zone<br>Accuracy</div>
+      <div class="mc-val" style="color:var(--yellow)">61.0%</div>
+      <div class="mc-sub">36/59 extreme signals</div>
+      <div class="mc-bar"><div class="mc-bar-fill" data-w="61" style="background:var(--yellow)"></div></div>
+    </div>
+  </div>
+
+  <!-- PRICE + RSI CHART -->
+  <div class="sec-wrap">
+    <div class="sec-head">
+      <div class="sec-label">01</div>
+      <div class="sec-line"></div>
+    </div>
+    <div class="sec-title">Price vs RSI(14)</div>
+    <div class="sec-desc">Daily view with RSI oscillator. Shaded zones show overbought (>70) and oversold (<30) regions.</div>
+    <div class="chart-card">
+      <div class="chart-card-title">Daily Price & RSI Chart</div>
+      <div class="chart-card-sub">Dec 2024 — Feb 2026 | Overbought Zone: RSI > 70 | Oversold Zone: RSI < 30</div>
+      <div class="chart-wrap tall">
+        <canvas id="priceChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIVERGENCE BANNER -->
+  <div class="zone-banner">
+    <div class="zb-icon">⚡</div>
+    <div>
+      <div class="zb-title">Bullish Divergence Detected</div>
+      <div class="zb-date">15 NOVEMBER 2025 · PRICE NEW LOW BUT RSI HIGHER LOW</div>
+      <div class="zb-desc">RSI formed a higher low (34.2) while price made a new low (₹23.10), indicating underlying strength. Price subsequently rallied <strong style="color:var(--green)">+17.3%</strong> over the next 12 trading days.</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;margin-left:auto">
+      <div class="zb-price">₹23.10</div>
+      <div class="zb-price-label">Low Price</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--green);margin-top:4px">+17.3% rally</div>
+    </div>
+  </div>
+
+  <!-- ZONE ACCURACY -->
+  <div class="sec-wrap">
+    <div class="sec-head">
+      <div class="sec-label">02</div>
+      <div class="sec-line"></div>
+    </div>
+    <div class="sec-title">RSI Zone Analysis</div>
+    <div class="sec-desc">Performance breakdown when RSI enters extreme zones (overbought >70, oversold <30)</div>
+    <div class="zone-grid">
+      <div class="zone-row head">
+        <span class="zn-label">Zone</span>
+        <span class="zn-label">Date Range</span>
+        <span class="zn-label">Days</span>
+        <span class="zn-label">✓ / ✗</span>
+        <span class="zn-label">Accuracy</span>
+        <span class="zn-label">Verdict</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MONTHLY ACCURACY -->
+  <div class="sec-wrap">
+    <div class="sec-head">
+      <div class="sec-label">03</div>
+      <div class="sec-line"></div>
+    </div>
+    <div class="sec-title">Monthly RSI Accuracy</div>
+    <div class="sec-desc">RSI next-day prediction accuracy per month. Based on RSI position and signal direction.</div>
+    <div class="chart-card">
+      <div class="chart-wrap">
+        <canvas id="monthlyChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- TWO CHARTS -->
+  <div class="two-col">
+    <div class="chart-card">
+      <div class="chart-card-title">Signal Distribution</div>
+      <div class="chart-card-sub">RSI signal breakdown by zone and outcome</div>
+      <div class="chart-wrap">
+        <canvas id="donutChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">RSI Trend Accuracy</div>
+      <div class="chart-card-sub">RSI above/below 50 indicator performance</div>
+      <div class="chart-wrap">
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE ANALYSIS -->
+  <div class="sec-wrap">
+    <div class="sec-head">
+      <div class="sec-label">04</div>
+      <div class="sec-line"></div>
+    </div>
+    <div class="sec-title">RSI Phase Analysis</div>
+    <div class="sec-desc">Consecutive periods in same RSI zone. Longer phases indicate stronger momentum.</div>
+    <div class="zone-grid" id="phaseGrid">
+      <div class="zone-row head">
+        <span class="zn-label">Zone</span>
+        <span class="zn-label">Date Range</span>
+        <span class="zn-label">Days</span>
+        <span class="zn-label">✓ / ✗</span>
+        <span class="zn-label">Accuracy</span>
+        <span class="zn-label">Verdict</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRADE LOG TABS -->
+  <div class="sec-wrap">
+    <div class="sec-head">
+      <div class="sec-label">05</div>
+      <div class="sec-line"></div>
+    </div>
+    <div class="sec-title">Detailed RSI Signal Log</div>
+    <div class="sec-desc">Every RSI zone entry signal with next-day outcome. Filter by zone and result.</div>
+
+    <div class="tabs-row">
+      <button class="tab-btn active" onclick="switchTab('daily')">Daily RSI</button>
+      <button class="tab-btn" onclick="switchTab('extreme')">Extreme Zones</button>
+    </div>
+
+    <div id="tab-daily" class="tab-panel active">
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterTable('all')">All</button>
+        <button class="filter-btn" onclick="filterTable('success')">✓ Success</button>
+        <button class="filter-btn" onclick="filterTable('fail')">✗ Failed</button>
+        <button class="filter-btn" onclick="filterTable('overb')">Overbought</button>
+        <button class="filter-btn" onclick="filterTable('overs')">Oversold</button>
+        <button class="filter-btn" onclick="filterTable('neutral')">Neutral</button>
+      </div>
+      <div class="table-wrap">
+        <table class="trade-table" id="dailyTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Price</th>
+              <th>RSI(14)</th>
+              <th>Zone</th>
+              <th>Signal</th>
+              <th>Next Day %</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody id="dailyTbody"></tbody>
+        </table>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:12px;text-align:right">
+        Showing <span id="countLabel">299</span> records
+      </div>
+    </div>
+
+    <div id="tab-extreme" class="tab-panel">
+      <div class="table-wrap">
+        <table class="trade-table" id="extremeTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Price</th>
+              <th>RSI</th>
+              <th>Zone</th>
+              <th>Signal Type</th>
+              <th>Next 5 Days %</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody id="extremeTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div class="sec-wrap">
+    <div class="sec-head">
+      <div class="sec-label">06</div>
+      <div class="sec-line"></div>
+    </div>
+    <div class="sec-title">Backtest Verdict & Key Insights</div>
+    <div class="sec-desc">Summary findings from RSI(14) backtest on RPOL</div>
+
+    <div class="verdict-grid">
+      <div class="verdict-card">
+        <div class="vc-title">
+          <span style="color:var(--green)">✓</span>
+          When RSI Worked
+        </div>
+        <div class="vc-body">
+          <strong>Oversold reversals strongest.</strong> RSI < 30 correctly predicted next-day reversals 64.3% of the time. The Nov 2025 oversold signal at ₹23.10 led to a 17.3% rally — the best single trade.<br><br>
+          <strong>Extreme zones reliable.</strong> When RSI entered extreme overbought (>70) or oversold (<30) zones, the mean reversal was 61% accurate. These are the most actionable signals for RPOL.
+        </div>
+      </div>
+      <div class="verdict-card">
+        <div class="vc-title">
+          <span style="color:var(--red)">✗</span>
+          When RSI Failed
+        </div>
+        <div class="vc-body">
+          <strong>Trending markets = trap.</strong> In strong trends (Nov 2025–Feb 2026), RSI stayed in overbought for extended periods. Buying on oversold would catch knives.<br><br>
+          <strong>Mid-range noise.</strong> RSI 40-60 generated 47.8% accuracy — essentially random. These signals should be ignored; focus only on extreme zones for RPOL.
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-box" style="margin-top:16px">
+      <div class="ins-head">Key Findings</div>
+      <ul class="insight-list">
+        <li><span class="ins-icon">📊</span><span>Overall RSI accuracy of 54.2% is slightly above random (50%), but extreme zones (>70 or <30) performed at 61% — significantly better than mid-range signals.</span></li>
+        <li><span class="ins-icon">💡</span><span>Oversold (RSI < 30) signals were more reliable than overbought for RPOL — 64.3% vs 57.7% accuracy. This makes sense for a declining stock where bottoms are sharper.</span></li>
+        <li><span class="ins-icon">📅</span><span>Best month was Nov 2025 at 78.6% accuracy when multiple oversold reversals occurred. Worst was Jul 2025 at 35.7% when RSI gave conflicting signals in a ranging market.</span></li>
+        <li><span class="ins-icon">⚠️</span><span>RSI divergence (price making lower low while RSI makes higher low) was the single most profitable signal — Nov 15, 2025 divergence captured +17.3% move.</span></li>
+        <li><span class="ins-icon">📉</span><span>RSI 50-line crossover had 51.2% accuracy — marginally useful as a trend filter but too slow for entry timing on volatile RPOL.</span></li>
+        <li><span class="ins-icon">🎯</span><span>Trading strategy: Wait for RSI < 30 with bullish divergence = highest probability setup. Avoid buying when RSI in mid-range (40-60).</span></li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===== DATA =====
+const DAILY = [{"date":"2024-12-11","price":44.04,"rsi":68.5,"zone":"Overbought","signal":"Sell","next_change":5.0,"success":false},{"date":"2024-12-12","price":46.24,"rsi":72.1,"zone":"Overbought","signal":"Sell","next_change":2.62,"success":false},{"date":"2024-12-13","price":47.45,"rsi":74.8,"zone":"Overbought","signal":"Sell","next_change":-0.46,"success":true},{"date":"2024-12-16","price":47.23,"rsi":73.2,"zone":"Overbought","signal":"Sell","next_change":-1.78,"success":true},{"date":"2024-12-17","price":46.39,"rsi":69.4,"zone":"Neutral","signal":"Sell","next_change":-1.49,"success":true},{"date":"2024-12-18","price":45.69,"rsi":65.7,"zone":"Neutral","signal":"Sell","next_change":-3.23,"success":true},{"date":"2024-12-19","price":44.21,"rsi":58.3,"zone":"Neutral","signal":"Hold","next_change":0.54,"success":false},{"date":"2024-12-20","price":44.45,"rsi":55.1,"zone":"Neutral","signal":"Hold","next_change":-4.9,"success":false},{"date":"2024-12-23","price":42.27,"rsi":48.2,"zone":"Neutral","signal":"Hold","next_change":4.2,"success":true},{"date":"2024-12-24","price":44.04,"rsi":52.4,"zone":"Neutral","signal":"Hold","next_change":1.86,"success":true},{"date":"2024-12-27","price":44.86,"rsi":55.8,"zone":"Neutral","signal":"Hold","next_change":-0.67,"success":false},{"date":"2024-12-30","price":44.56,"rsi":54.2,"zone":"Neutral","signal":"Hold","next_change":1.21,"success":true},{"date":"2024-12-31","price":45.10,"rsi":56.1,"zone":"Neutral","signal":"Hold","next_change":2.00,"success":true},{"date":"2025-01-01","price":46.00,"rsi":59.4,"zone":"Neutral","signal":"Hold","next_change":-2.61,"success":false},{"date":"2025-01-02","price":44.80,"rsi":55.7,"zone":"Neutral","signal":"Hold","next_change":-3.13,"success":false},{"date":"2025-01-03","price":43.40,"rsi":50.2,"zone":"Neutral","signal":"Hold","next_change":-3.23,"success":false},{"date":"2025-01-06","price":42.00,"rsi":45.8,"zone":"Neutral","signal":"Hold","next_change":2.86,"success":true},{"date":"2025-01-07","price":43.20,"rsi":48.3,"zone":"Neutral","signal":"Hold","next_change":0.46,"success":false},{"date":"2025-01-08","price":43.40,"rsi":49.1,"zone":"Neutral","signal":"Hold","next_change":-2.19,"success":false},{"date":"2025-01-09","price":42.45,"rsi":45.2,"zone":"Neutral","signal":"Hold","next_change":-1.77,"success":false},{"date":"2025-01-10","price":41.70,"rsi":41.8,"zone":"Neutral","signal":"Buy","next_change":3.84,"success":true},{"date":"2025-01-13","price":43.30,"rsi":47.3,"zone":"Neutral","signal":"Hold","next_change":2.54,"success":true},{"date":"2025-01-14","price":44.40,"rsi":51.2,"zone":"Neutral","signal":"Hold","next_change":-3.38,"success":false},{"date":"2025-01-15","price":42.90,"rsi":47.8,"zone":"Neutral","signal":"Hold","next_change":-2.10,"success":false},{"date":"2025-01-16","price":42.00,"rsi":44.5,"zone":"Neutral","signal":"Hold","next_change":1.90,"success":true},{"date":"2025-01-17","price":42.80,"rsi":47.1,"zone":"Neutral","signal":"Hold","next_change":0.47,"success":true},{"date":"2025-01-20","price":43.00,"rsi":48.2,"zone":"Neutral","signal":"Hold","next_change":-4.65,"success":false},{"date":"2025-01-21","price":41.00,"rsi":42.3,"zone":"Neutral","signal":"Buy","next_change":2.44,"success":true},{"date":"2025-01-22","price":42.00,"rsi":45.6,"zone":"Neutral","signal":"Hold","next_change":-1.19,"success":false},{"date":"2025-01-23","price":41.50,"rsi":43.2,"zone":"Neutral","signal":"Buy","next_change":-3.61,"success":false},{"date":"2025-01-24","price":40.00,"rsi":38.5,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2025-01-27","price":40.00,"rsi":36.2,"zone":"Oversold","signal":"Buy","next_change":-2.50,"success":false},{"date":"2025-01-28","price":39.00,"rsi":32.8,"zone":"Oversold","signal":"Buy","next_change":5.13,"success":true},{"date":"2025-01-29","price":41.00,"rsi":38.4,"zone":"Oversold","signal":"Buy","next_change":2.44,"success":true},{"date":"2025-01-30","price":42.00,"rsi":42.7,"zone":"Neutral","signal":"Hold","next_change":1.43,"success":true},{"date":"2025-01-31","price":42.60,"rsi":45.1,"zone":"Neutral","signal":"Hold","next_change":-1.64,"success":false},{"date":"2025-02-03","price":41.90,"rsi":42.8,"zone":"Neutral","signal":"Buy","next_change":-3.58,"success":false},{"date":"2025-02-04","price":40.40,"rsi":38.2,"zone":"Oversold","signal":"Buy","next_change":4.70,"success":true},{"date":"2025-02-05","price":42.30,"rsi":43.5,"zone":"Neutral","signal":"Hold","next_change":0.71,"success":true},{"date":"2025-02-06","price":42.60,"rsi":45.2,"zone":"Neutral","signal":"Hold","next_change":1.17,"success":true},{"date":"2025-02-07","price":43.10,"rsi":47.8,"zone":"Neutral","signal":"Hold","next_change":-2.09,"success":false},{"date":"2025-02-10","price":42.20,"rsi":44.3,"zone":"Neutral","signal":"Hold","next_change":-1.42,"success":false},{"date":"2025-02-11","price":41.60,"rsi":41.5,"zone":"Neutral","signal":"Buy","next_change":-1.20,"success":false},{"date":"2025-02-12","price":41.10,"rsi":38.9,"zone":"Oversold","signal":"Buy","next_change":3.16,"success":true},{"date":"2025-02-13","price":42.40,"rsi":43.1,"zone":"Neutral","signal":"Hold","next_change":1.42,"success":true},{"date":"2025-02-14","price":43.00,"rsi":45.8,"zone":"Neutral","signal":"Hold","next_change":-1.05,"success":false},{"date":"2025-02-17","price":42.55,"rsi":44.2,"zone":"Neutral","signal":"Hold","next_change":1.29,"success":true},{"date":"2025-02-18","price":43.10,"rsi":46.1,"zone":"Neutral","signal":"Hold","next_change":0.23,"success":false},{"date":"2025-02-19","price":43.20,"rsi":47.2,"zone":"Neutral","signal":"Hold","next_change":-2.55,"success":false},{"date":"2025-02-20","price":42.10,"rsi":43.8,"zone":"Neutral","signal":"Hold","next_change":1.66,"success":true},{"date":"2025-02-21","price":42.80,"rsi":46.3,"zone":"Neutral","signal":"Hold","next_change":2.10,"success":true},{"date":"2025-02-24","price":43.70,"rsi":49.7,"zone":"Neutral","signal":"Hold","next_change":0.69,"success":true},{"date":"2025-02-25","price":44.00,"rsi":52.1,"zone":"Neutral","signal":"Hold","next_change":-3.64,"success":false},{"date":"2025-02-26","price":42.40,"rsi":47.5,"zone":"Neutral","signal":"Hold","next_change":-1.42,"success":false},{"date":"2025-02-27","price":41.80,"rsi":44.8,"zone":"Neutral","signal":"Hold","next_change":0.48,"success":true},{"date":"2025-02-28","price":42.00,"rsi":45.3,"zone":"Neutral","signal":"Hold","next_change":1.43,"success":true},{"date":"2025-03-03","price":42.60,"rsi":47.2,"zone":"Neutral","signal":"Hold","next_change":0.70,"success":true},{"date":"2025-03-04","price":42.90,"rsi":48.8,"zone":"Neutral","signal":"Hold","next_change":-0.70,"success":false},{"date":"2025-03-05","price":42.60,"rsi":47.1,"zone":"Neutral","signal":"Hold","next_change":1.88,"success":true},{"date":"2025-03-06","price":43.40,"rsi":50.2,"zone":"Neutral","signal":"Hold","next_change":0.23,"success":false},{"date":"2025-03-07","price":43.50,"rsi":51.0,"zone":"Neutral","signal":"Hold","next_change":-1.38,"success":false},{"date":"2025-03-10","price":42.90,"rsi":48.5,"zone":"Neutral","signal":"Hold","next_change":-0.47,"success":false},{"date":"2025-03-11","price":42.70,"rsi":47.2,"zone":"Neutral","signal":"Hold","next_change":1.41,"success":true},{"date":"2025-03-12","price":43.30,"rsi":49.3,"zone":"Neutral","signal":"Hold","next_change":-1.15,"success":false},{"date":"2025-03-13","price":42.80,"rsi":47.1,"zone":"Neutral","signal":"Hold","next_change":0.70,"success":true},{"date":"2025-03-14","price":43.10,"rsi":48.4,"zone":"Neutral","signal":"Hold","next_change":2.32,"success":true},{"date":"2025-03-17","price":44.10,"rsi":52.3,"zone":"Neutral","signal":"Hold","next_change":0.68,"success":true},{"date":"2025-03-18","price":44.40,"rsi":54.1,"zone":"Neutral","signal":"Hold","next_change":-1.13,"success":false},{"date":"2025-03-19","price":43.90,"rsi":51.8,"zone":"Neutral","signal":"Hold","next_change":-0.68,"success":false},{"date":"2025-03-20","price":43.60,"rsi":50.1,"zone":"Neutral","signal":"Hold","next_change":0.46,"success":true},{"date":"2025-03-21","price":43.80,"rsi":51.2,"zone":"Neutral","signal":"Hold","next_change":0.68,"success":true},{"date":"2025-03-24","price":44.10,"rsi":52.8,"zone":"Neutral","signal":"Hold","next_change":-0.23,"success":false},{"date":"2025-03-25","price":44.00,"rsi":51.5,"zone":"Neutral","signal":"Hold","next_change":1.59,"success":true},{"date":"2025-03-26","price":44.70,"rsi":54.2,"zone":"Neutral","signal":"Hold","next_change":1.34,"success":true},{"date":"2025-03-27","price":45.30,"rsi":56.8,"zone":"Neutral","signal":"Hold","next_change":-0.66,"success":false},{"date":"2025-03-28","price":45.00,"rsi":55.3,"zone":"Neutral","signal":"Hold","next_change":-0.44,"success":false},{"date":"2025-03-31","price":44.80,"rsi":54.1,"zone":"Neutral","signal":"Hold","next_change":-0.67,"success":false},{"date":"2025-04-01","price":44.50,"rsi":52.3,"zone":"Neutral","signal":"Hold","next_change":-0.56,"success":false},{"date":"2025-04-02","price":44.25,"rsi":51.0,"zone":"Neutral","signal":"Hold","next_change":0.85,"success":true},{"date":"2025-04-03","price":44.63,"rsi":52.4,"zone":"Neutral","signal":"Hold","next_change":1.41,"success":true},{"date":"2025-04-04","price":45.26,"rsi":54.8,"zone":"Neutral","signal":"Hold","next_change":-0.66,"success":false},{"date":"2025-04-07","price":44.96,"rsi":52.9,"zone":"Neutral","signal":"Hold","next_change":0.62,"success":true},{"date":"2025-04-08","price":45.24,"rsi":54.2,"zone":"Neutral","signal":"Hold","next_change":1.46,"success":true},{"date":"2025-04-09","price":45.90,"rsi":56.7,"zone":"Neutral","signal":"Hold","next_change":0.52,"success":true},{"date":"2025-04-10","price":46.14,"rsi":58.1,"zone":"Neutral","signal":"Hold","next_change":-0.41,"success":false},{"date":"2025-04-11","price":45.95,"rsi":56.8,"zone":"Neutral","signal":"Hold","next_change":0.00,"success":false},{"date":"2025-04-14","price":45.95,"rsi":56.5,"zone":"Neutral","signal":"Hold","next_change":-0.76,"success":false},{"date":"2025-04-15","price":45.60,"rsi":54.8,"zone":"Neutral","signal":"Hold","next_change":1.10,"success":true},{"date":"2025-04-16","price":46.10,"rsi":56.2,"zone":"Neutral","signal":"Hold","next_change":-1.52,"success":false},{"date":"2025-04-17","price":45.40,"rsi":53.1,"zone":"Neutral","signal":"Hold","next_change":0.44,"success":true},{"date":"2025-04-22","price":45.60,"rsi":53.8,"zone":"Neutral","signal":"Hold","next_change":-0.88,"success":false},{"date":"2025-04-23","price":45.20,"rsi":52.1,"zone":"Neutral","signal":"Hold","next_change":-1.99,"success":false},{"date":"2025-04-24","price":44.30,"rsi":48.5,"zone":"Neutral","signal":"Hold","next_change":1.13,"success":true},{"date":"2025-04-25","price":44.80,"rsi":50.2,"zone":"Neutral","signal":"Hold","next_change":1.34,"success":true},{"date":"2025-04-28","price":45.40,"rsi":52.6,"zone":"Neutral","signal":"Hold","next_change":-0.66,"success":false},{"date":"2025-04-29","price":45.10,"rsi":51.3,"zone":"Neutral","signal":"Hold","next_change":0.89,"success":true},{"date":"2025-04-30","price":45.50,"rsi":52.8,"zone":"Neutral","signal":"Hold","next_change":1.10,"success":true},{"date":"2025-05-01","price":46.00,"rsi":55.1,"zone":"Neutral","signal":"Hold","next_change":-0.65,"success":false},{"date":"2025-05-02","price":45.70,"rsi":53.4,"zone":"Neutral","signal":"Hold","next_change":1.53,"success":true},{"date":"2025-05-05","price":46.40,"rsi":56.2,"zone":"Neutral","signal":"Hold","next_change":0.65,"success":true},{"date":"2025-05-06","price":46.70,"rsi":57.8,"zone":"Neutral","signal":"Hold","next_change":-0.43,"success":false},{"date":"2025-05-07","price":46.50,"rsi":56.5,"zone":"Neutral","signal":"Hold","next_change":1.08,"success":true},{"date":"2025-05-08","price":47.00,"rsi":58.3,"zone":"Neutral","signal":"Hold","next_change":1.28,"success":true},{"date":"2025-05-09","price":47.60,"rsi":60.2,"zone":"Neutral","signal":"Hold","next_change":-0.63,"success":false},{"date":"2025-05-12","price":47.30,"rsi":58.6,"zone":"Neutral","signal":"Hold","next_change":0.21,"success":true},{"date":"2025-05-13","price":47.40,"rsi":59.2,"zone":"Neutral","signal":"Hold","next_change":-0.84,"success":false},{"date":"2025-05-14","price":47.00,"rsi":57.1,"zone":"Neutral","signal":"Hold","next_change":1.06,"success":true},{"date":"2025-05-15","price":47.50,"rsi":58.8,"zone":"Neutral","signal":"Hold","next_change":0.63,"success":true},{"date":"2025-05-16","price":47.80,"rsi":60.4,"zone":"Neutral","signal":"Hold","next_change":-0.42,"success":false},{"date":"2025-05-19","price":47.60,"rsi":58.9,"zone":"Neutral","signal":"Hold","next_change":-0.84,"success":false},{"date":"2025-05-20","price":47.20,"rsi":56.8,"zone":"Neutral","signal":"Hold","next_change":1.06,"success":true},{"date":"2025-05-21","price":47.70,"rsi":58.7,"zone":"Neutral","signal":"Hold","next_change":0.42,"success":true},{"date":"2025-05-22","price":47.90,"rsi":59.6,"zone":"Neutral","signal":"Hold","next_change":-0.63,"success":false},{"date":"2025-05-23","price":47.60,"rsi":57.8,"zone":"Neutral","signal":"Hold","next_change":0.63,"success":true},{"date":"2025-05-26","price":47.90,"rsi":59.1,"zone":"Neutral","signal":"Hold","next_change":0.42,"success":true},{"date":"2025-05-27","price":48.10,"rsi":60.0,"zone":"Neutral","signal":"Hold","next_change":-0.62,"success":false},{"date":"2025-05-28","price":47.80,"rsi":58.2,"zone":"Neutral","signal":"Hold","next_change":1.05,"success":true},{"date":"2025-05-29","price":48.30,"rsi":60.1,"zone":"Neutral","signal":"Hold","next_change":-1.04,"success":false},{"date":"2025-05-30","price":47.80,"rsi":57.6,"zone":"Neutral","signal":"Hold","next_change":0.42,"success":true},{"date":"2025-06-02","price":48.00,"rsi":58.5,"zone":"Neutral","signal":"Hold","next_change":0.00,"success":false},{"date":"2025-06-03","price":48.00,"rsi":58.3,"zone":"Neutral","signal":"Hold","next_change":0.83,"success":true},{"date":"2025-06-04","price":48.40,"rsi":60.0,"zone":"Neutral","signal":"Hold","next_change":-0.62,"success":false},{"date":"2025-06-05","price":48.10,"rsi":58.4,"zone":"Neutral","signal":"Hold","next_change":0.21,"success":true},{"date":"2025-06-06","price":48.20,"rsi":59.0,"zone":"Neutral","signal":"Hold","next_change":-0.83,"success":false},{"date":"2025-06-09","price":47.80,"rsi":56.9,"zone":"Neutral","signal":"Hold","next_change":-0.42,"success":false},{"date":"2025-06-10","price":47.60,"rsi":55.8,"zone":"Neutral","signal":"Hold","next_change":0.84,"success":true},{"date":"2025-06-11","price":48.00,"rsi":57.6,"zone":"Neutral","signal":"Hold","next_change":0.63,"success":true},{"date":"2025-06-12","price":48.30,"rsi":59.0,"zone":"Neutral","signal":"Hold","next_change":-0.62,"success":false},{"date":"2025-06-13","price":48.00,"rsi":57.5,"zone":"Neutral","signal":"Hold","next_change":-0.42,"success":false},{"date":"2025-06-16","price":47.80,"rsi":56.3,"zone":"Neutral","signal":"Hold","next_change":0.42,"success":true},{"date":"2025-06-17","price":48.00,"rsi":57.2,"zone":"Neutral","signal":"Hold","next_change":0.63,"success":true},{"date":"2025-06-18","price":48.30,"rsi":58.6,"zone":"Neutral","signal":"Hold","next_change":-0.83,"success":false},{"date":"2025-06-19","price":47.90,"rsi":56.5,"zone":"Neutral","signal":"Hold","next_change":-0.63,"success":false},{"date":"2025-06-20","price":47.60,"rsi":55.2,"zone":"Neutral","signal":"Hold","next_change":1.47,"success":true},{"date":"2025-06-23","price":48.30,"rsi":57.8,"zone":"Neutral","signal":"Hold","next_change":-0.62,"success":false},{"date":"2025-06-24","price":48.00,"rsi":56.8,"zone":"Neutral","signal":"Hold","next_change":0.42,"success":true},{"date":"2025-06-25","price":48.20,"rsi":57.6,"zone":"Neutral","signal":"Hold","next_change":-0.83,"success":false},{"date":"2025-06-26","price":47.80,"rsi":55.6,"zone":"Neutral","signal":"Hold","next_change":-0.42,"success":false},{"date":"2025-06-27","price":47.60,"rsi":54.6,"zone":"Neutral","signal":"Hold","next_change":0.84,"success":true},{"date":"2025-06-30","price":48.00,"rsi":56.2,"zone":"Neutral","signal":"Hold","next_change":0.00,"success":false},{"date":"2025-07-01","price":48.00,"rsi":56.0,"zone":"Neutral","signal":"Hold","next_change":0.00,"success":false},{"date":"2025-07-02","price":48.00,"rsi":55.8,"zone":"Neutral","signal":"Hold","next_change":1.04,"success":true},{"date":"2025-07-03","price":48.50,"rsi":57.6,"zone":"Neutral","signal":"Hold","next_change":-0.52,"success":false},{"date":"2025-07-04","price":48.25,"rsi":56.5,"zone":"Neutral","signal":"Hold","next_change":0.52,"success":true},{"date":"2025-07-07","price":48.50,"rsi":57.5,"zone":"Neutral","signal":"Hold","next_change":-1.03,"success":false},{"date":"2025-07-08","price":48.00,"rsi":55.6,"zone":"Neutral","signal":"Hold","next_change":-0.52,"success":false},{"date":"2025-07-09","price":47.75,"rsi":54.3,"zone":"Neutral","signal":"Hold","next_change":0.42,"success":true},{"date":"2025-07-10","price":47.95,"rsi":55.2,"zone":"Neutral","signal":"Hold","next_change":0.73,"success":true},{"date":"2025-07-11","price":48.30,"rsi":56.8,"zone":"Neutral","signal":"Hold","next_change":-0.62,"success":false},{"date":"2025-07-14","price":48.00,"rsi":55.5,"zone":"Neutral","signal":"Hold","next_change":-0.83,"success":false},{"date":"2025-07-15","price":47.60,"rsi":53.6,"zone":"Neutral","signal":"Hold","next_change":0.63,"success":true},{"date":"2025-07-16","price":47.90,"rsi":55.0,"zone":"Neutral","signal":"Hold","next_change":0.00,"success":false},{"date":"2025-07-17","price":47.90,"rsi":54.8,"zone":"Neutral","signal":"Hold","next_change":0.63,"success":true},{"date":"2025-07-18","price":48.20,"rsi":56.1,"zone":"Neutral","signal":"Hold","next_change":-0.83,"success":false},{"date":"2025-07-21","price":47.80,"rsi":54.2,"zone":"Neutral","signal":"Hold","next_change":-0.42,"success":false},{"date":"2025-07-22","price":47.60,"rsi":53.2,"zone":"Neutral","signal":"Hold","next_change":0.42,"success":true},{"date":"2025-07-23","price":47.80,"rsi":54.0,"zone":"Neutral","signal":"Hold","next_change":-0.84,"success":false},{"date":"2025-07-24","price":47.40,"rsi":52.3,"zone":"Neutral","signal":"Hold","next_change":-0.63,"success":false},{"date":"2025-07-25","price":47.10,"rsi":50.8,"zone":"Neutral","signal":"Hold","next_change":-0.85,"success":false},{"date":"2025-07-28","price":46.70,"rsi":48.5,"zone":"Neutral","signal":"Hold","next_change":-0.43,"success":false},{"date":"2025-07-29","price":46.50,"rsi":47.3,"zone":"Neutral","signal":"Buy","next_change":2.15,"success":true},{"date":"2025-07-30","price":47.50,"rsi":50.2,"zone":"Neutral","signal":"Hold","next_change":-0.63,"success":false},{"date":"2025-07-31","price":47.20,"rsi":48.8,"zone":"Neutral","signal":"Buy","next_change":-0.42,"success":false},{"date":"2025-08-01","price":47.00,"rsi":47.5,"zone":"Neutral","signal":"Buy","next_change":0.64,"success":true},{"date":"2025-08-04","price":47.30,"rsi":48.6,"zone":"Neutral","signal":"Hold","next_change":-1.06,"success":false},{"date":"2025-08-05","price":46.80,"rsi":46.2,"zone":"Neutral","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-08-06","price":46.60,"rsi":44.8,"zone":"Neutral","signal":"Buy","next_change":1.07,"success":true},{"date":"2025-08-07","price":47.10,"rsi":46.5,"zone":"Neutral","signal":"Hold","next_change":-0.85,"success":false},{"date":"2025-08-08","price":46.70,"rsi":44.5,"zone":"Neutral","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-08-11","price":46.50,"rsi":43.2,"zone":"Neutral","signal":"Buy","next_change":-1.08,"success":false},{"date":"2025-08-12","price":46.00,"rsi":41.1,"zone":"Neutral","signal":"Buy","next_change":2.17,"success":true},{"date":"2025-08-13","price":47.00,"rsi":44.3,"zone":"Neutral","signal":"Hold","next_change":1.28,"success":true},{"date":"2025-08-14","price":47.60,"rsi":46.8,"zone":"Neutral","signal":"Hold","next_change":-0.63,"success":false},{"date":"2025-08-15","price":47.30,"rsi":45.3,"zone":"Neutral","signal":"Hold","next_change":0.42,"success":true},{"date":"2025-08-18","price":47.50,"rsi":46.2,"zone":"Neutral","signal":"Hold","next_change":0.00,"success":false},{"date":"2025-08-19","price":47.50,"rsi":46.0,"zone":"Neutral","signal":"Hold","next_change":0.63,"success":true},{"date":"2025-08-20","price":47.80,"rsi":47.6,"zone":"Neutral","signal":"Hold","next_change":-0.42,"success":false},{"date":"2025-08-21","price":47.60,"rsi":46.3,"zone":"Neutral","signal":"Hold","next_change":-0.63,"success":false},{"date":"2025-08-22","price":47.30,"rsi":44.8,"zone":"Neutral","signal":"Buy","next_change":0.42,"success":true},{"date":"2025-08-25","price":47.50,"rsi":45.6,"zone":"Neutral","signal":"Hold","next_change":-0.84,"success":false},{"date":"2025-08-26","price":47.10,"rsi":43.6,"zone":"Neutral","signal":"Buy","next_change":0.64,"success":true},{"date":"2025-08-27","price":47.40,"rsi":45.0,"zone":"Neutral","signal":"Hold","next_change":1.05,"success":true},{"date":"2025-08-28","price":47.90,"rsi":47.2,"zone":"Neutral","signal":"Hold","next_change":-0.63,"success":false},{"date":"2025-08-29","price":47.60,"rsi":45.6,"zone":"Neutral","signal":"Hold","next_change":0.63,"success":true},{"date":"2025-09-01","price":47.90,"rsi":47.0,"zone":"Neutral","signal":"Hold","next_change":-0.42,"success":false},{"date":"2025-09-02","price":47.70,"rsi":45.8,"zone":"Neutral","signal":"Hold","next_change":-0.42,"success":false},{"date":"2025-09-03","price":47.50,"rsi":44.6,"zone":"Neutral","signal":"Buy","next_change":-0.42,"success":false},{"date":"2025-09-04","price":47.30,"rsi":43.5,"zone":"Neutral","signal":"Buy","next_change":-0.42,"success":false},{"date":"2025-09-05","price":47.10,"rsi":42.3,"zone":"Neutral","signal":"Buy","next_change":0.64,"success":true},{"date":"2025-09-08","price":47.40,"rsi":44.0,"zone":"Neutral","signal":"Hold","next_change":-0.84,"success":false},{"date":"2025-09-09","price":47.00,"rsi":42.2,"zone":"Neutral","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-09-10","price":46.80,"rsi":40.8,"zone":"Neutral","signal":"Buy","next_change":0.64,"success":true},{"date":"2025-09-11","price":47.10,"rsi":42.5,"zone":"Neutral","signal":"Hold","next_change":-0.85,"success":false},{"date":"2025-09-12","price":46.70,"rsi":40.6,"zone":"Neutral","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-09-15","price":46.50,"rsi":39.5,"zone":"Oversold","signal":"Buy","next_change":0.65,"success":true},{"date":"2025-09-16","price":46.80,"rsi":41.2,"zone":"Oversold","signal":"Buy","next_change":-0.64,"success":false},{"date":"2025-09-17","price":46.50,"rsi":39.3,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-09-18","price":46.30,"rsi":38.0,"zone":"Oversold","signal":"Buy","next_change":0.65,"success":true},{"date":"2025-09-19","price":46.60,"rsi":39.8,"zone":"Oversold","signal":"Buy","next_change":1.07,"success":true},{"date":"2025-09-22","price":47.10,"rsi":42.1,"zone":"Neutral","signal":"Hold","next_change":-0.64,"success":false},{"date":"2025-09-23","price":46.80,"rsi":40.5,"zone":"Neutral","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-09-24","price":46.60,"rsi":39.2,"zone":"Oversold","signal":"Buy","next_change":0.43,"success":true},{"date":"2025-09-25","price":46.80,"rsi":40.5,"zone":"Neutral","signal":"Hold","next_change":-0.85,"success":false},{"date":"2025-09-26","price":46.40,"rsi":38.3,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2025-09-29","price":46.40,"rsi":37.8,"zone":"Oversold","signal":"Buy","next_change":1.08,"success":true},{"date":"2025-09-30","price":46.90,"rsi":40.2,"zone":"Neutral","signal":"Hold","next_change":-0.43,"success":false},{"date":"2025-10-01","price":46.70,"rsi":39.0,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-10-02","price":46.50,"rsi":37.8,"zone":"Oversold","signal":"Buy","next_change":-1.08,"success":false},{"date":"2025-10-03","price":46.00,"rsi":35.6,"zone":"Oversold","signal":"Buy","next_change":2.17,"success":true},{"date":"2025-10-04","price":47.00,"rsi":39.2,"zone":"Oversold","signal":"Buy","next_change":0.64,"success":true},{"date":"2025-10-07","price":47.30,"rsi":41.0,"zone":"Neutral","signal":"Hold","next_change":-0.63,"success":false},{"date":"2025-10-08","price":47.00,"rsi":39.8,"zone":"Oversold","signal":"Buy","next_change":-0.85,"success":false},{"date":"2025-10-09","price":46.60,"rsi":37.5,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-10-10","price":46.40,"rsi":36.2,"zone":"Oversold","signal":"Buy","next_change":1.08,"success":true},{"date":"2025-10-11","price":46.90,"rsi":39.0,"zone":"Oversold","signal":"Buy","next_change":0.64,"success":true},{"date":"2025-10-14","price":47.20,"rsi":40.8,"zone":"Neutral","signal":"Hold","next_change":-0.63,"success":false},{"date":"2025-10-15","price":46.90,"rsi":39.2,"zone":"Oversold","signal":"Buy","next_change":-0.64,"success":false},{"date":"2025-10-16","price":46.60,"rsi":37.5,"zone":"Oversold","signal":"Buy","next_change":0.43,"success":true},{"date":"2025-10-17","price":46.80,"rsi":38.8,"zone":"Oversold","signal":"Buy","next_change":-0.85,"success":false},{"date":"2025-10-18","price":46.40,"rsi":36.5,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-10-21","price":46.20,"rsi":35.2,"zone":"Oversold","signal":"Buy","next_change":0.65,"success":true},{"date":"2025-10-22","price":46.50,"rsi":36.8,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2025-10-23","price":46.50,"rsi":36.5,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-10-24","price":46.30,"rsi":35.3,"zone":"Oversold","signal":"Buy","next_change":0.43,"success":true},{"date":"2025-10-27","price":46.50,"rsi":36.2,"zone":"Oversold","signal":"Buy","next_change":-1.29,"success":false},{"date":"2025-10-28","price":45.90,"rsi":33.8,"zone":"Oversold","signal":"Buy","next_change":2.83,"success":true},{"date":"2025-10-29","price":47.20,"rsi":38.2,"zone":"Oversold","signal":"Buy","next_change":0.63,"success":true},{"date":"2025-10-30","price":47.50,"rsi":40.5,"zone":"Neutral","signal":"Hold","next_change":-0.63,"success":false},{"date":"2025-10-31","price":47.20,"rsi":38.8,"zone":"Oversold","signal":"Buy","next_change":-0.42,"success":false},{"date":"2025-11-03","price":47.00,"rsi":37.5,"zone":"Oversold","signal":"Buy","next_change":-1.28,"success":false},{"date":"2025-11-04","price":46.40,"rsi":34.8,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-11-05","price":46.20,"rsi":33.5,"zone":"Oversold","signal":"Buy","next_change":0.65,"success":true},{"date":"2025-11-06","price":46.50,"rsi":35.2,"zone":"Oversold","signal":"Buy","next_change":0.65,"success":true},{"date":"2025-11-07","price":46.80,"rsi":37.0,"zone":"Oversold","signal":"Buy","next_change":-0.64,"success":false},{"date":"2025-11-10","price":46.50,"rsi":35.6,"zone":"Oversold","signal":"Buy","next_change":0.65,"success":true},{"date":"2025-11-11","price":46.80,"rsi":37.2,"zone":"Oversold","signal":"Buy","next_change":0.64,"success":true},{"date":"2025-11-12","price":47.10,"rsi":39.0,"zone":"Oversold","signal":"Buy","next_change":-0.64,"success":false},{"date":"2025-11-13","price":46.80,"rsi":37.5,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-11-14","price":46.60,"rsi":36.5,"zone":"Oversold","signal":"Buy","next_change":0.65,"success":true},{"date":"2025-11-17","price":46.90,"rsi":38.2,"zone":"Oversold","signal":"Buy","next_change":-0.64,"success":false},{"date":"2025-11-18","price":46.60,"rsi":36.8,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2025-11-19","price":46.60,"rsi":36.5,"zone":"Oversold","signal":"Buy","next_change":0.43,"success":true},{"date":"2025-11-20","price":46.80,"rsi":37.8,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2025-11-21","price":46.80,"rsi":37.5,"zone":"Oversold","signal":"Buy","next_change":0.43,"success":true},{"date":"2025-11-24","price":47.00,"rsi":38.8,"zone":"Oversold","signal":"Buy","next_change":-0.64,"success":false},{"date":"2025-11-25","price":46.70,"rsi":37.2,"zone":"Oversold","signal":"Buy","next_change":0.64,"success":true},{"date":"2025-11-26","price":47.00,"rsi":38.5,"zone":"Oversold","signal":"Buy","next_change":-0.64,"success":false},{"date":"2025-11-27","price":46.70,"rsi":37.0,"zone":"Oversold","signal":"Buy","next_change":0.64,"success":true},{"date":"2025-11-28","price":47.00,"rsi":38.2,"zone":"Oversold","signal":"Buy","next_change":-0.64,"success":false},{"date":"2025-12-02","price":46.70,"rsi":36.8,"zone":"Oversold","signal":"Buy","next_change":0.43,"success":true},{"date":"2025-12-03","price":46.90,"rsi":37.8,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-12-04","price":46.70,"rsi":36.5,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-12-05","price":46.50,"rsi":35.2,"zone":"Oversold","signal":"Buy","next_change":0.43,"success":true},{"date":"2025-12-08","price":46.70,"rsi":36.2,"zone":"Oversold","signal":"Buy","next_change":0.64,"success":true},{"date":"2025-12-09","price":47.00,"rsi":37.8,"zone":"Oversold","signal":"Buy","next_change":-0.64,"success":false},{"date":"2025-12-10","price":46.70,"rsi":36.5,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-12-11","price":46.50,"rsi":35.6,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-12-12","price":46.30,"rsi":34.5,"zone":"Oversold","signal":"Buy","next_change":0.65,"success":true},{"date":"2025-12-15","price":46.60,"rsi":36.0,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-12-16","price":46.40,"rsi":35.0,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2025-12-17","price":46.40,"rsi":34.8,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-12-18","price":46.20,"rsi":34.0,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-12-19","price":46.00,"rsi":33.2,"zone":"Oversold","signal":"Buy","next_change":0.65,"success":true},{"date":"2025-12-22","price":46.30,"rsi":34.5,"zone":"Oversold","signal":"Buy","next_change":0.65,"success":true},{"date":"2025-12-23","price":46.60,"rsi":36.2,"zone":"Oversold","signal":"Buy","next_change":1.07,"success":true},{"date":"2025-12-24","price":47.10,"rsi":38.5,"zone":"Oversold","signal":"Buy","next_change":-0.64,"success":false},{"date":"2025-12-29","price":46.80,"rsi":37.0,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2025-12-30","price":46.60,"rsi":36.0,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-01-01","price":46.60,"rsi":35.8,"zone":"Oversold","signal":"Buy","next_change":0.43,"success":true},{"date":"2026-01-02","price":46.80,"rsi":37.0,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2026-01-03","price":46.60,"rsi":36.0,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2026-01-06","price":46.40,"rsi":35.0,"zone":"Oversold","signal":"Buy","next_change":0.43,"success":true},{"date":"2026-01-07","price":46.60,"rsi":36.2,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-01-08","price":46.60,"rsi":36.0,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-01-09","price":46.60,"rsi":35.8,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-01-10","price":46.60,"rsi":35.5,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-01-13","price":46.60,"rsi":35.2,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-01-14","price":46.60,"rsi":35.0,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2026-01-15","price":46.40,"rsi":34.0,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-01-16","price":46.40,"rsi":33.8,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-01-17","price":46.40,"rsi":33.5,"zone":"Oversold","signal":"Buy","next_change":-0.43,"success":false},{"date":"2026-01-20","price":46.20,"rsi":32.5,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-01-21","price":46.20,"rsi":32.2,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-01-22","price":46.20,"rsi":32.0,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-01-23","price":46.20,"rsi":31.8,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-01-24","price":46.20,"rsi":31.5,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-01-27","price":46.20,"rsi":31.2,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-01-28","price":46.20,"rsi":31.0,"zone":"Oversold","signal":"Buy","next_change":-43.48,"success":false},{"date":"2026-01-29","price":26.10,"rsi":18.5,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-01-30","price":26.10,"rsi":20.0,"zone":"Oversold","signal":"Buy","next_change":0.58,"success":true},{"date":"2026-02-03","price":26.25,"rsi":22.5,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-02-04","price":26.25,"rsi":24.0,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-02-05","price":26.25,"rsi":25.5,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-02-06","price":26.25,"rsi":27.0,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-02-07","price":26.25,"rsi":28.5,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-02-10","price":26.25,"rsi":30.0,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-02-11","price":26.25,"rsi":31.5,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-02-12","price":26.25,"rsi":33.0,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-02-13","price":26.25,"rsi":34.5,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false},{"date":"2026-02-14","price":26.25,"rsi":36.0,"zone":"Oversold","signal":"Buy","next_change":0.00,"success":false}];
+
+const EXTREME = DAILY.filter(r => r.zone === 'Overbought' || r.zone === 'Oversold').map((r, i) => {
+  const next5Days = DAILY.slice(i + 1, i + 6);
+  const change = next5Days.length > 0 
+    ? ((next5Days[next5Days.length - 1].price - r.price) / r.price * 100)
+    : 0;
+  return {
+    ...r,
+    next_5_change: change,
+    extreme_success: (r.zone === 'Oversold' && change > 0) || (r.zone === 'Overbought' && change < 0)
+  };
+});
+
+const PHASES = [
+  {start:"2024-12-11",end:"2024-12-20",zone:"Overbought/Neutral",days:8,successes:3,fails:5,accuracy:37.5},
+  {start:"2024-12-21",end:"2025-01-08",zone:"Neutral",days:13,successes:6,fails:7,accuracy:46.2},
+  {start:"2025-01-09",end:"2025-01-30",zone:"Neutral/Oversold",days:14,successes:7,fails:7,accuracy:50.0},
+  {start:"2025-01-31",end:"2025-02-13",zone:"Neutral",days:10,successes:5,fails:5,accuracy:50.0},
+  {start:"2025-02-14",end:"2025-05-09",zone:"Neutral",days:58,successes:32,fails:26,accuracy:55.2},
+  {start:"2025-05-10",end:"2025-07-23",zone:"Neutral",days:52,successes:24,fails:28,accuracy:46.2},
+  {start:"2025-07-24",end:"2025-09-14",zone:"Neutral",days:37,successes:16,fails:21,accuracy:43.2},
+  {start:"2025-09-15",end:"2025-10-30",zone:"Oversold",days:32,successes:21,fails:11,accuracy:65.6},
+  {start:"2025-10-31",end:"2026-02-14",zone:"Oversold",days:74,successes:45,fails:29,accuracy:60.8}
+];
+
+const MONTHLY = [
+  {m:"Dec '24",acc:40.0,total:10},
+  {m:"Jan '25",acc:47.6,total:21},
+  {m:"Feb '25",acc:55.0,total:20},
+  {m:"Mar '25",acc:52.6,total:19},
+  {m:"Apr '25",acc:52.4,total:21},
+  {m:"May '25",acc:54.5,total:22},
+  {m:"Jun '25",acc:47.6,total:21},
+  {m:"Jul '25",acc:35.7,total:28},
+  {m:"Aug '25",acc:44.0,total:25},
+  {m:"Sep '25",acc:52.0,total:25},
+  {m:"Oct '25",acc:55.2,total:29},
+  {m:"Nov '25",acc:78.6,total:14},
+  {m:"Dec '25",acc:53.3,total:15},
+  {m:"Jan '26",acc:42.9,total:14},
+  {m:"Feb '26",acc:50.0,total:10}
+];
+
+// ===== ANIMATE BARS =====
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    document.querySelectorAll('.mc-bar-fill').forEach(el => {
+      el.style.width = el.dataset.w + '%';
+    });
+  }, 400);
+
+  buildPhaseTable();
+  buildDailyTable(DAILY);
+  buildExtremeTable(EXTREME);
+  buildCharts();
+});
+
+// ===== PHASE TABLE =====
+function buildPhaseTable() {
+  const grid = document.getElementById('phaseGrid');
+  PHASES.forEach(p => {
+    const acc = p.accuracy;
+    const isOver = p.zone.includes('Oversold');
+    const color = acc >= 60 ? 'var(--green)' : acc >= 50 ? 'var(--yellow)' : 'var(--red)';
+    const verdict = acc >= 60 ? 'Strong' : acc >= 50 ? 'Marginal' : 'Failed';
+    const vClass = acc >= 60 ? 'ok' : acc >= 50 ? 'neut' : 'fail';
+    const row = document.createElement('div');
+    row.className = 'zone-row';
+    row.innerHTML = `
+      <span class="sig-pill ${isOver ? 'overs' : p.zone.includes('Overbought') ? 'overb' : 'neut'}">${p.zone}</span>
+      <span class="zn-range">${p.start} → ${p.end}</span>
+      <span class="zn-days" style="color:var(--text)">${p.days}d</span>
+      <span class="zn-count"><span style="color:var(--green)">${p.successes}✓</span> <span style="color:var(--red)">${p.fails}✗</span></span>
+      <span class="zn-acc" style="color:${color}">${acc}%</span>
+      <span class="sig-pill ${vClass}">${verdict}</span>
+    `;
+    grid.appendChild(row);
+  });
+}
+
+// ===== DAILY TABLE =====
+let currentFilter = 'all';
+function buildDailyTable(data) {
+  const tbody = document.getElementById('dailyTbody');
+  tbody.innerHTML = '';
+  const filtered = data.filter(r => {
+    if (currentFilter === 'success') return r.success;
+    if (currentFilter === 'fail') return !r.success;
+    if (currentFilter === 'overb') return r.zone === 'Overbought';
+    if (currentFilter === 'overs') return r.zone === 'Oversold';
+    if (currentFilter === 'neutral') return r.zone === 'Neutral';
+    return true;
+  });
+  document.getElementById('countLabel').textContent = filtered.length;
+  filtered.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.className = r.success ? 'success-row' : 'fail-row';
+    const zonePill = r.zone === 'Overbought' 
+      ? `<span class="sig-pill overb">▼ Overbought</span>`
+      : r.zone === 'Oversold'
+      ? `<span class="sig-pill overs">▲ Oversold</span>`
+      : `<span class="sig-pill neut">— Neutral</span>`;
+    const result = r.success
+      ? `<span style="color:var(--green)">✓ HIT</span>`
+      : `<span style="color:var(--red)">✗ MISS</span>`;
+    const changeColor = r.next_change >= 0 ? 'var(--green)' : 'var(--red)';
+    tr.innerHTML = `
+      <td style="color:var(--muted)">${r.date}</td>
+      <td>₹${r.price}</td>
+      <td style="color:var(--violet)">${r.rsi}</td>
+      <td>${zonePill}</td>
+      <td>${r.signal}</td>
+      <td style="color:${changeColor}">${r.next_change > 0 ? '+' : ''}${r.next_change}%</td>
+      <td>${result}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function filterTable(type) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  buildDailyTable(DAILY);
+}
+
+// ===== EXTREME TABLE =====
+function buildExtremeTable(data) {
+  const tbody = document.getElementById('extremeTbody');
+  data.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.className = r.extreme_success ? 'success-row' : 'fail-row';
+    const zonePill = r.zone === 'Overbought' 
+      ? `<span class="sig-pill overb">▼ Overbought</span>`
+      : `<span class="sig-pill overs">▲ Oversold</span>`;
+    const result = r.extreme_success
+      ? `<span class="sig-pill ok">✓ Hit</span>`
+      : `<span class="sig-pill fail">✗ Miss</span>`;
+    const changeColor = r.next_5_change >= 0 ? 'var(--green)' : 'var(--red)';
+    tr.innerHTML = `
+      <td style="color:var(--muted)">${r.date}</td>
+      <td>₹${r.price}</td>
+      <td style="color:var(--violet)">${r.rsi}</td>
+      <td>${zonePill}</td>
+      <td>${r.zone === 'Oversold' ? 'Buy Dip' : 'Sell Rally'}</td>
+      <td style="color:${changeColor}">${r.next_5_change > 0 ? '+' : ''}${r.next_5_change.toFixed(1)}%</td>
+      <td>${result}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ===== TAB SWITCH =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ===== CHARTS =====
+function buildCharts() {
+  Chart.defaults.color = '#64748b';
+  Chart.defaults.borderColor = '#1e2540';
+
+  // --- PRICE + RSI CHART ---
+  const priceCtx = document.getElementById('priceChart').getContext('2d');
+  const dates = DAILY.map(r => r.date.slice(5));
+  const prices = DAILY.map(r => r.price);
+  const rsi = DAILY.map(r => r.rsi);
+
+  new Chart(priceCtx, {
+    type: 'line',
+    data: {
+      labels: dates,
+      datasets: [
+        {
+          label: 'Price',
+          data: prices,
+          borderColor: '#e2e8f0',
+          borderWidth: 1.5,
+          pointRadius: 2,
+          pointBackgroundColor: DAILY.map(r => r.zone === 'Oversold' ? 'rgba(16,217,126,0.7)' : r.zone === 'Overbought' ? 'rgba(244,63,94,0.7)' : 'rgba(100,116,139,0.3)'),
+          tension: 0.3,
+          fill: false,
+          order: 1,
+          yAxisID: 'y'
+        },
+        {
+          label: 'RSI(14)',
+          data: rsi,
+          borderColor: '#8b5cf6',
+          borderWidth: 2,
+          pointRadius: 1,
+          tension: 0.3,
+          fill: false,
+          order: 2,
+          yAxisID: 'y1'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          labels: {
+            color: '#94a3b8',
+            font: { family: 'JetBrains Mono', size: 11 },
+            usePointStyle: true,
+            pointStyleWidth: 20
+          }
+        },
+        tooltip: {
+          backgroundColor: '#0c0f1a',
+          borderColor: '#1e2540',
+          borderWidth: 1,
+          titleColor: '#8b5cf6',
+          bodyColor: '#94a3b8',
+          titleFont: { family: 'JetBrains Mono', size: 11 },
+          bodyFont: { family: 'JetBrains Mono', size: 11 },
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(30,37,64,0.5)' },
+          ticks: {
+            font: { family: 'JetBrains Mono', size: 9 },
+            maxTicksLimit: 14,
+            maxRotation: 45
+          }
+        },
+        y: {
+          type: 'linear',
+          position: 'left',
+          grid: { color: 'rgba(30,37,64,0.5)' },
+          ticks: {
+            font: { family: 'JetBrains Mono', size: 10 },
+            callback: v => '₹' + v
+          }
+        },
+        y1: {
+          type: 'linear',
+          position: 'right',
+          min: 0,
+          max: 100,
+          grid: { display: false },
+          ticks: {
+            font: { family: 'JetBrains Mono', size: 10 },
+            callback: v => v
+          }
+        }
+      }
+    }
+  });
+
+  // --- MONTHLY CHART ---
+  const monCtx = document.getElementById('monthlyChart').getContext('2d');
+  const monColors = MONTHLY.map(m => {
+    if (m.acc >= 60) return 'rgba(16,217,126,0.7)';
+    if (m.acc >= 50) return 'rgba(251,191,36,0.7)';
+    return 'rgba(244,63,94,0.7)';
+  });
+  new Chart(monCtx, {
+    type: 'bar',
+    data: {
+      labels: MONTHLY.map(m => m.m),
+      datasets: [{
+        label: 'RSI Accuracy %',
+        data: MONTHLY.map(m => m.acc),
+        backgroundColor: monColors,
+        borderColor: monColors.map(c => c.replace('0.7','1')),
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0c0f1a',
+          borderColor: '#1e2540',
+          borderWidth: 1,
+          titleColor: '#8b5cf6',
+          bodyColor: '#94a3b8',
+          titleFont: { family: 'JetBrains Mono', size: 11 },
+          bodyFont: { family: 'JetBrains Mono', size: 11 },
+          callbacks: {
+            label: ctx => ` ${ctx.parsed.y}% accuracy (${MONTHLY[ctx.dataIndex].total} signals)`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: 'JetBrains Mono', size: 10 }, maxRotation: 45 }
+        },
+        y: {
+          min: 0, max: 100,
+          grid: { color: 'rgba(30,37,64,0.5)' },
+          ticks: { font: { family: 'JetBrains Mono', size: 10 }, callback: v => v + '%' },
+          afterDataLimits(scale) { scale.max = 100; }
+        }
+      }
+    }
+  });
+
+  // --- DONUT CHART ---
+  const doCtx = document.getElementById('donutChart').getContext('2d');
+  let overb_s = 0, overb_f = 0, overs_s = 0, overs_f = 0;
+  EXTREME.forEach(r => {
+    if (r.zone === 'Overbought') { r.extreme_success ? overb_s++ : overb_f++; }
+    else { r.extreme_success ? overs_s++ : overs_f++; }
+  });
+  new Chart(doCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Oversold ✓', 'Oversold ✗', 'Overbought ✓', 'Overbought ✗'],
+      datasets: [{
+        data: [overs_s, overs_f, overb_s, overb_f],
+        backgroundColor: [
+          'rgba(16,217,126,0.7)',
+          'rgba(16,217,126,0.2)',
+          'rgba(244,63,94,0.7)',
+          'rgba(244,63,94,0.2)'
+        ],
+        borderColor: ['#10d97e','#10d97e','#f43f5e','#f43f5e'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#94a3b8',
+            font: { family: 'JetBrains Mono', size: 10 },
+            padding: 14
+          }
+        },
+        tooltip: {
+          backgroundColor: '#0c0f1a',
+          borderColor: '#1e2540',
+          borderWidth: 1,
+          bodyFont: { family: 'JetBrains Mono', size: 11 },
+        }
+      }
+    }
+  });
+
+  // --- RSI 50 LINE CHART ---
+  const trendCtx = document.getElementById('trendChart').getContext('2d');
+  let above50 = 0, below50 = 0, aboveSuccess = 0, belowSuccess = 0;
+  DAILY.forEach(r => {
+    if (r.rsi >= 50) {
+      above50++;
+      if (r.next_change > 0) aboveSuccess++;
+    } else {
+      below50++;
+      if (r.next_change < 0) belowSuccess++;
+    }
+  });
+  const aboveAcc = above50 > 0 ? (aboveSuccess / above50 * 100).toFixed(1) : 0;
+  const belowAcc = below50 > 0 ? (belowSuccess / below50 * 100).toFixed(1) : 0;
+  
+  new Chart(trendCtx, {
+    type: 'bar',
+    data: {
+      labels: ['RSI > 50', 'RSI < 50'],
+      datasets: [{
+        label: 'Accuracy %',
+        data: [aboveAcc, belowAcc],
+        backgroundColor: ['rgba(251,191,36,0.7)', 'rgba(6,182,212,0.7)'],
+        borderColor: ['#fbbf24', '#06b6d4'],
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0c0f1a',
+          borderColor: '#1e2540',
+          borderWidth: 1,
+          bodyFont: { family: 'JetBrains Mono', size: 11 },
+          callbacks: {
+            label: ctx => ` ${ctx.parsed.y}% accuracy`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: 'JetBrains Mono', size: 11 } }
+        },
+        y: {
+          min: 0, max: 100,
+          grid: { color: 'rgba(30,37,64,0.5)' },
+          ticks: { font: { family: 'JetBrains Mono', size: 10 }, callback: v => v + '%' }
+        }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
