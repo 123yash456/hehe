@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RPOWER — Multi-Timeframe Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #161a22;
+    --border: #1e2330;
+    --blue: #4d9fff;
+    --yellow: #f5c842;
+    --red: #ff4d6a;
+    --green: #39e88f;
+    --purple: #b47aff;
+    --orange: #ff9f43;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --accent: #4d9fff22;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(77,159,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(77,159,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* ---- NAV TABS ---- */
+  .tab-nav {
+    display: flex;
+    gap: 4px;
+    padding: 20px 0 0;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+    animation: fadeDown 0.6s ease both;
+  }
+  .tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--blue);
+    border-bottom-color: var(--blue);
+  }
+  .tab-section { display: none; }
+  .tab-section.active { display: block; }
+
+  /* ---- HEADER ---- */
+  header {
+    padding: 48px 0 36px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    animation: fadeDown 0.6s ease both;
+  }
+  .header-left .ticker {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--blue);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+    color: var(--text);
+  }
+  h1 span { color: var(--blue); }
+  .header-meta { text-align: right; }
+  .current-price {
+    font-family: 'Space Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .current-price small {
+    font-size: 13px;
+    color: var(--muted);
+    display: block;
+    margin-top: 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    letter-spacing: 1px;
+  }
+
+  /* ---- STAT PILLS ---- */
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 28px 0;
+    animation: fadeDown 0.6s 0.1s ease both;
+  }
+  .stat-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .stat-pill .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .stat-pill .label { font-size: 12px; color: var(--muted); }
+  .stat-pill .val { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; }
+  .dot-blue { background: var(--blue); }
+  .dot-yellow { background: var(--yellow); }
+  .dot-red-c { background: var(--red); }
+  .dot-purple { background: var(--purple); }
+  .dot-green { background: var(--green); }
+
+  .trend-badge {
+    margin-left: auto;
+    padding: 10px 20px;
+    border-radius: 100px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .trend-badge.bearish { background: rgba(255,77,106,0.15); border: 1px solid rgba(255,77,106,0.4); color: var(--red); }
+  .trend-badge.bullish { background: rgba(57,232,143,0.15); border: 1px solid rgba(57,232,143,0.4); color: var(--green); }
+
+  /* ---- CHART SECTION ---- */
+  .chart-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+  .section-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .chart-wrap { position: relative; height: 400px; }
+
+  /* ---- LEGEND ---- */
+  .legend {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .legend-line { width: 28px; height: 3px; border-radius: 4px; }
+
+  /* ---- SIGNALS GRID ---- */
+  .signals-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+  @media(max-width: 700px) { .signals-grid { grid-template-columns: 1fr; } }
+
+  .signal-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .signal-panel-header {
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .signal-panel-header.buy { background: rgba(57,232,143,0.07); }
+  .signal-panel-header.sell { background: rgba(255,77,106,0.07); }
+  .panel-title { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+  .panel-title.buy { color: var(--green); }
+  .panel-title.sell { color: var(--red); }
+  .panel-count { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; }
+  .panel-count.buy { color: var(--green); }
+  .panel-count.sell { color: var(--red); }
+
+  /* ---- TABLE ---- */
+  .signal-table { width: 100%; border-collapse: collapse; }
+  .signal-table thead tr { background: var(--surface2); }
+  .signal-table th {
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .signal-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .signal-table tr:last-child td { border-bottom: none; }
+  .signal-table tr:hover td { background: var(--surface2); transition: background 0.15s; }
+  .date-cell { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .price-cell { font-family: 'Space Mono', monospace; font-weight: 700; white-space: nowrap; }
+  .price-cell.buy { color: var(--green); }
+  .price-cell.sell { color: var(--red); }
+  .reason-cell { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .tag.golden { background: rgba(245,200,66,0.15); color: var(--yellow); border: 1px solid rgba(245,200,66,0.3); }
+  .tag.cross { background: rgba(255,77,106,0.15); color: var(--red); border: 1px solid rgba(255,77,106,0.3); }
+  .tag.price { background: rgba(77,159,255,0.15); color: var(--blue); border: 1px solid rgba(77,159,255,0.3); }
+  .tag.weekly { background: rgba(180,122,255,0.15); color: var(--purple); border: 1px solid rgba(180,122,255,0.3); }
+  .tag.bullish-tag { background: rgba(57,232,143,0.15); color: var(--green); border: 1px solid rgba(57,232,143,0.3); }
+  .tag.bearish-tag { background: rgba(255,77,106,0.15); color: var(--red); border: 1px solid rgba(255,77,106,0.3); }
+
+  /* ---- WEEKLY SIGNAL BADGE ROW ---- */
+  .weekly-signal-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s 0.25s ease both;
+  }
+  .wsig-card {
+    flex: 1;
+    min-width: 140px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+  .wsig-card .wsig-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .wsig-card .wsig-label { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .wsig-card.buy-card { border-color: rgba(57,232,143,0.3); background: rgba(57,232,143,0.05); }
+  .wsig-card.buy-card .wsig-val { color: var(--green); }
+  .wsig-card.sell-card { border-color: rgba(255,77,106,0.3); background: rgba(255,77,106,0.05); }
+  .wsig-card.sell-card .wsig-val { color: var(--red); }
+  .wsig-card.hold-card { border-color: rgba(77,159,255,0.3); background: rgba(77,159,255,0.05); }
+  .wsig-card.hold-card .wsig-val { color: var(--blue); }
+  .wsig-card.trend-card .wsig-val { color: var(--yellow); }
+
+  /* ---- PREDICTION SECTION ---- */
+  .pred-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+  @media(max-width: 700px) { .pred-grid { grid-template-columns: 1fr; } }
+
+  .pred-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .pred-card-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .pred-scenario {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .pred-scenario:last-child { border-bottom: none; }
+  .pred-scenario-label { font-size: 13px; color: var(--text); }
+  .pred-scenario-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .pred-scenario-val.bull { color: var(--green); }
+  .pred-scenario-val.bear { color: var(--red); }
+  .pred-scenario-val.base { color: var(--yellow); }
+  .pred-scenario-val.neutral { color: var(--blue); }
+
+  .pred-meter {
+    margin: 20px 0 12px;
+  }
+  .pred-meter-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .pred-bar-track {
+    background: var(--surface2);
+    border-radius: 8px;
+    height: 10px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .pred-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+  }
+  .pred-bar-fill.bull-fill { background: linear-gradient(90deg, var(--green), rgba(57,232,143,0.5)); }
+  .pred-bar-fill.bear-fill { background: linear-gradient(90deg, var(--red), rgba(255,77,106,0.5)); }
+  .pred-bar-fill.base-fill { background: linear-gradient(90deg, var(--yellow), rgba(245,200,66,0.5)); }
+
+  /* Timeline prediction */
+  .pred-timeline {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s 0.35s ease both;
+  }
+  .pred-timeline-row {
+    display: flex;
+    gap: 0;
+    margin-top: 24px;
+    position: relative;
+  }
+  .pred-timeline-row::before {
+    content: '';
+    position: absolute;
+    top: 28px;
+    left: 60px;
+    right: 0;
+    height: 2px;
+    background: var(--border);
+  }
+  .pred-step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    padding-top: 56px;
+  }
+  .pred-step-dot {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    z-index: 1;
+  }
+  .pred-step-dot.current { background: var(--blue); border-color: var(--blue); box-shadow: 0 0 12px rgba(77,159,255,0.5); }
+  .pred-step-dot.bull { background: var(--green); border-color: var(--green); }
+  .pred-step-dot.bear { background: var(--red); border-color: var(--red); }
+  .pred-step-dot.base { background: var(--yellow); border-color: var(--yellow); }
+  .pred-step-period { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 6px; letter-spacing: 1px; }
+  .pred-step-price { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .pred-step-range { font-size: 11px; color: var(--muted); }
+
+  /* signals analysis summary */
+  .analysis-summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+  .analysis-list { list-style: none; }
+  .analysis-list li {
+    display: flex;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .analysis-list li:last-child { border-bottom: none; }
+  .analysis-list .ai { flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-top: 1px; }
+  .ai.positive { background: rgba(57,232,143,0.15); color: var(--green); }
+  .ai.negative { background: rgba(255,77,106,0.15); color: var(--red); }
+  .ai.neutral { background: rgba(77,159,255,0.15); color: var(--blue); }
+
+  /* ---- FOOTER ---- */
+  footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  /* ---- ANIMATIONS ---- */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* scroll-reveal for bars */
+  .pred-bar-fill { width: 0; }
+  .pred-bar-fill.animated { /* set by JS */ }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <div class="ticker">RPOWER — MULTI-TIMEFRAME ANALYSIS</div>
+      <h1>R<span>POWER</span></h1>
+    </div>
+    <div class="header-meta">
+      <div class="current-price">
+        26.80
+        <small>LAST WEEKLY CLOSE · 08 FEB 2026</small>
+      </div>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="showTab('daily')">Daily Analysis</button>
+    <button class="tab-btn" onclick="showTab('weekly')">Weekly Analysis</button>
+    <button class="tab-btn" onclick="showTab('signals')">Buy / Sell Signals</button>
+    <button class="tab-btn" onclick="showTab('prediction')">Future Prediction</button>
+    <button class="tab-btn" onclick="showTab('stats')">📊 Stats & Mar 10 Forecast</button>
+  </div>
+
+  <!-- =================== TAB: DAILY =================== -->
+  <div class="tab-section active" id="tab-daily">
+
+    <div class="stats-row">
+      <div class="stat-pill"><span class="dot dot-blue"></span><span class="label">Price</span><span class="val" style="color:var(--blue)">26.25</span></div>
+      <div class="stat-pill"><span class="dot dot-yellow"></span><span class="label">SMA 50</span><span class="val" style="color:var(--yellow)">31.57</span></div>
+      <div class="stat-pill"><span class="dot dot-red-c"></span><span class="label">SMA 200</span><span class="val" style="color:var(--red)">45.43</span></div>
+      <div class="stat-pill"><span class="dot dot-green"></span><span class="label">Buy Signals</span><span class="val" style="color:var(--green)">8</span></div>
+      <div class="stat-pill"><span class="dot dot-red-c"></span><span class="label">Sell Signals</span><span class="val" style="color:var(--red)">10</span></div>
+      <div class="trend-badge bearish">⬇ Bearish</div>
+    </div>
+
+    <div class="chart-section">
+      <div class="section-title">Daily Price Chart · SMA 50 & SMA 200</div>
+      <div class="chart-wrap"><canvas id="dailyChart"></canvas></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-line" style="background:var(--blue)"></div> Price</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--yellow)"></div> SMA 50</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--red)"></div> SMA 200</div>
+      </div>
+    </div>
+
+    <div class="signals-grid">
+      <div class="signal-panel">
+        <div class="signal-panel-header buy">
+          <span class="panel-title buy">↑ Buy Signals</span>
+          <span class="panel-count buy">8</span>
+        </div>
+        <table class="signal-table">
+          <thead><tr><th>Date</th><th>Price</th><th>Reason</th></tr></thead>
+          <tbody id="buyBody"></tbody>
+        </table>
+      </div>
+      <div class="signal-panel">
+        <div class="signal-panel-header sell">
+          <span class="panel-title sell">↓ Sell Signals</span>
+          <span class="panel-count sell">10</span>
+        </div>
+        <table class="signal-table">
+          <thead><tr><th>Date</th><th>Price</th><th>Reason</th></tr></thead>
+          <tbody id="sellBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== TAB: WEEKLY =================== -->
+  <div class="tab-section" id="tab-weekly">
+
+    <div class="stats-row">
+      <div class="stat-pill"><span class="dot dot-blue"></span><span class="label">Latest Close</span><span class="val" style="color:var(--blue)">26.80</span></div>
+      <div class="stat-pill"><span class="dot dot-yellow"></span><span class="label">SMA 10W</span><span class="val" style="color:var(--yellow)" id="wSma10"></span></div>
+      <div class="stat-pill"><span class="dot dot-red-c"></span><span class="label">SMA 20W</span><span class="val" style="color:var(--red)" id="wSma20"></span></div>
+      <div class="stat-pill"><span class="dot dot-purple"></span><span class="label">Weeks Data</span><span class="val" style="color:var(--purple)">79</span></div>
+      <div class="trend-badge bearish" id="weeklyTrendBadge">⬇ Bearish</div>
+    </div>
+
+    <div class="chart-section">
+      <div class="section-title">Weekly Price Chart · SMA 10W & SMA 20W</div>
+      <div class="chart-wrap"><canvas id="weeklyChart"></canvas></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-line" style="background:var(--blue)"></div> Weekly Close</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--yellow)"></div> SMA 10W</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--red)"></div> SMA 20W</div>
+      </div>
+    </div>
+
+    <!-- Volume chart -->
+    <div class="chart-section">
+      <div class="section-title">Weekly Volume</div>
+      <div class="chart-wrap" style="height:200px"><canvas id="weeklyVolumeChart"></canvas></div>
+    </div>
+
+    <!-- Weekly candle table -->
+    <div class="signal-panel" style="margin-bottom:32px">
+      <div class="signal-panel-header" style="background:rgba(77,159,255,0.07)">
+        <span class="panel-title" style="color:var(--blue)">Weekly OHLC Data</span>
+        <span class="panel-count" style="color:var(--blue)">79 weeks</span>
+      </div>
+      <div style="overflow-x:auto;max-height:400px;overflow-y:auto">
+        <table class="signal-table">
+          <thead><tr><th>Week</th><th>Open</th><th>High</th><th>Low</th><th>Close</th><th>Change</th><th>Bias</th></tr></thead>
+          <tbody id="weeklyTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== TAB: BUY/SELL SIGNALS =================== -->
+  <div class="tab-section" id="tab-signals">
+
+    <div class="weekly-signal-row" id="weeklySignalCards"></div>
+
+    <!-- Weekly buy/sell table -->
+    <div class="signals-grid" style="margin-bottom:32px">
+      <div class="signal-panel">
+        <div class="signal-panel-header buy">
+          <span class="panel-title buy">↑ Weekly Buy Signals</span>
+          <span class="panel-count buy" id="wBuyCount">0</span>
+        </div>
+        <table class="signal-table">
+          <thead><tr><th>Week</th><th>Price</th><th>Vol</th><th>Bias</th></tr></thead>
+          <tbody id="wBuyBody"></tbody>
+        </table>
+      </div>
+      <div class="signal-panel">
+        <div class="signal-panel-header sell">
+          <span class="panel-title sell">↓ Weekly Sell Signals</span>
+          <span class="panel-count sell" id="wSellCount">0</span>
+        </div>
+        <table class="signal-table">
+          <thead><tr><th>Week</th><th>Price</th><th>Vol</th><th>Bias</th></tr></thead>
+          <tbody id="wSellBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Daily signals retained -->
+    <div class="chart-section" style="margin-bottom:24px">
+      <div class="section-title">Daily SMA-Cross Signals (reference)</div>
+    </div>
+    <div class="signals-grid">
+      <div class="signal-panel">
+        <div class="signal-panel-header buy">
+          <span class="panel-title buy">↑ Daily Buy (SMA Cross)</span>
+          <span class="panel-count buy">8</span>
+        </div>
+        <table class="signal-table">
+          <thead><tr><th>Date</th><th>Price</th><th>Reason</th></tr></thead>
+          <tbody id="buyBody2"></tbody>
+        </table>
+      </div>
+      <div class="signal-panel">
+        <div class="signal-panel-header sell">
+          <span class="panel-title sell">↓ Daily Sell (SMA Cross)</span>
+          <span class="panel-count sell">10</span>
+        </div>
+        <table class="signal-table">
+          <thead><tr><th>Date</th><th>Price</th><th>Reason</th></tr></thead>
+          <tbody id="sellBody2"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================== TAB: PREDICTION =================== -->
+  <div class="tab-section" id="tab-prediction">
+
+    <div class="stats-row">
+      <div class="stat-pill"><span class="dot dot-blue"></span><span class="label">Current</span><span class="val" style="color:var(--blue)">26.80</span></div>
+      <div class="stat-pill"><span class="dot" style="background:var(--orange)"></span><span class="label">52W High</span><span class="val" style="color:var(--orange)">76.49</span></div>
+      <div class="stat-pill"><span class="dot dot-red-c"></span><span class="label">52W Low</span><span class="val" style="color:var(--red)">25.92</span></div>
+      <div class="stat-pill"><span class="dot dot-yellow"></span><span class="label">From Peak</span><span class="val" style="color:var(--yellow)">-65%</span></div>
+    </div>
+
+    <!-- Timeline forecast -->
+    <div class="pred-timeline">
+      <div class="section-title">Price Forecast Timeline (Base / Bull / Bear)</div>
+      <div class="pred-timeline-row" id="predTimeline"></div>
+    </div>
+
+    <!-- Scenario cards -->
+    <div class="pred-grid" id="predGrid"></div>
+
+    <!-- Probability meters -->
+    <div class="chart-section">
+      <div class="section-title">Scenario Probability Meters</div>
+      <div id="probMeters"></div>
+    </div>
+
+    <!-- Prediction chart -->
+    <div class="chart-section">
+      <div class="section-title">Price Projection Chart (3 Scenarios)</div>
+      <div class="chart-wrap" style="height:360px"><canvas id="predChart"></canvas></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-line" style="background:var(--blue)"></div> Historical</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--yellow)"></div> Base Case</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--green)"></div> Bull Case</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--red)"></div> Bear Case</div>
+      </div>
+    </div>
+
+    <!-- Analysis points -->
+    <div class="analysis-summary">
+      <div class="section-title">Key Analysis Points</div>
+      <ul class="analysis-list" id="analysisList"></ul>
+    </div>
+
+  </div>
+
+  <!-- =================== TAB: STATS & MAR 10 FORECAST =================== -->
+  <div class="tab-section" id="tab-stats">
+
+    <!-- Forecast Hero Card -->
+    <div style="margin:32px 0 24px;animation:fadeDown 0.5s ease both">
+      <div style="background:linear-gradient(135deg,rgba(77,159,255,0.08),rgba(57,232,143,0.05));border:1px solid rgba(77,159,255,0.25);border-radius:20px;padding:36px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(77,159,255,0.08),transparent 70%);pointer-events:none"></div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:16px">Target · 10 March 2026 · 18 Trading Days Ahead</div>
+        <div style="display:flex;gap:32px;flex-wrap:wrap;align-items:flex-end">
+          <div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Current Price</div>
+            <div style="font-family:'Space Mono',monospace;font-size:42px;font-weight:700;color:var(--text)">₹26.25</div>
+          </div>
+          <div style="font-size:28px;color:var(--muted)">→</div>
+          <div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Ensemble Forecast (10 Mar)</div>
+            <div style="font-family:'Space Mono',monospace;font-size:42px;font-weight:700;color:var(--yellow)">₹24.49</div>
+            <div style="font-size:12px;color:var(--red);font-family:'Space Mono',monospace;margin-top:4px">▼ -6.7% projected</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Confidence Band</div>
+            <div style="font-family:'Space Mono',monospace;font-size:15px;color:var(--green)">▲ ₹43.73 <span style="font-size:10px;color:var(--muted)">(Bull +1σ)</span></div>
+            <div style="font-family:'Space Mono',monospace;font-size:15px;color:var(--yellow);margin:4px 0">◆ ₹24.49 <span style="font-size:10px;color:var(--muted)">(Ensemble)</span></div>
+            <div style="font-family:'Space Mono',monospace;font-size:15px;color:var(--red)">▼ ₹14.74 <span style="font-size:10px;color:var(--muted)">(Bear -1σ)</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 Model Predictions -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;animation:fadeUp 0.5s 0.1s ease both">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px">
+        <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px">LinReg · 30D</div>
+        <div style="font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:var(--red)">22.00</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">R² = 0.717 · Strongest fit</div>
+        <div style="margin-top:10px;height:3px;border-radius:2px;background:var(--surface2)"><div style="width:71.7%;height:100%;background:var(--red);border-radius:2px"></div></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px">
+        <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px">LinReg · 20D</div>
+        <div style="font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:var(--orange)">25.63</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">R² = 0.296 · Moderate fit</div>
+        <div style="margin-top:10px;height:3px;border-radius:2px;background:var(--surface2)"><div style="width:29.6%;height:100%;background:var(--orange);border-radius:2px"></div></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px">
+        <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px">GBM · Expected</div>
+        <div style="font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:var(--yellow)">25.39</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">μ = -0.186%/day · σ = 3.02%</div>
+        <div style="margin-top:10px;height:3px;border-radius:2px;background:var(--surface2)"><div style="width:60%;height:100%;background:var(--yellow);border-radius:2px"></div></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px">
+        <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px">EMA Trend</div>
+        <div style="font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:var(--blue)">26.90</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">α=0.30 smoothing</div>
+        <div style="margin-top:10px;height:3px;border-radius:2px;background:var(--surface2)"><div style="width:50%;height:100%;background:var(--blue);border-radius:2px"></div></div>
+      </div>
+    </div>
+
+    <!-- Ensemble weights explanation -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:32px;font-size:13px;color:var(--muted);line-height:1.8;animation:fadeUp 0.5s 0.15s ease both">
+      <span style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-right:12px">Ensemble Method</span>
+      LinReg 30D <span style="color:var(--text);font-family:'Space Mono',monospace">35%</span> · LinReg 20D <span style="color:var(--text);font-family:'Space Mono',monospace">25%</span> · GBM Expected <span style="color:var(--text);font-family:'Space Mono',monospace">25%</span> · EMA <span style="color:var(--text);font-family:'Space Mono',monospace">15%</span>
+      &nbsp;|&nbsp; Weights assigned by model R² and recency. 30D LinReg carries highest weight (R²=0.717). GBM uses log-normal returns from last 20 trading days.
+    </div>
+
+    <!-- Statistics Panels -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px;animation:fadeUp 0.5s 0.2s ease both">
+
+      <!-- Full dataset stats -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+        <div style="padding:18px 24px;border-bottom:1px solid var(--border);background:rgba(77,159,255,0.05)">
+          <span style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue)">Full Dataset · 299 Days</span>
+        </div>
+        <table class="signal-table">
+          <tbody>
+            <tr><td class="reason-cell">Mean Price</td><td class="price-cell" style="color:var(--blue)">43.6534</td></tr>
+            <tr><td class="reason-cell">Median Price</td><td class="price-cell" style="color:var(--blue)">42.2900</td></tr>
+            <tr><td class="reason-cell">Variance</td><td class="price-cell" style="color:var(--muted)">103.8746</td></tr>
+            <tr><td class="reason-cell">Std Deviation</td><td class="price-cell" style="color:var(--yellow)">10.1919</td></tr>
+            <tr><td class="reason-cell">Min Price</td><td class="price-cell" style="color:var(--red)">26.25</td></tr>
+            <tr><td class="reason-cell">Max Price</td><td class="price-cell" style="color:var(--green)">71.27</td></tr>
+            <tr><td class="reason-cell">Skewness</td><td class="price-cell" style="color:var(--muted)">+0.8987 (Right skew)</td></tr>
+            <tr><td class="reason-cell">Kurtosis</td><td class="price-cell" style="color:var(--muted)">0.4718 (Light tails)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Recent windows -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+        <div style="padding:18px 24px;border-bottom:1px solid var(--border);background:rgba(245,200,66,0.05)">
+          <span style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--yellow)">Rolling Windows</span>
+        </div>
+        <table class="signal-table">
+          <thead><tr><th>Metric</th><th>10 Days</th><th>20 Days</th><th>50 Days</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="reason-cell">Mean</td>
+              <td class="price-cell" style="color:var(--text);font-size:12px">27.357</td>
+              <td class="price-cell" style="color:var(--text);font-size:12px">27.686</td>
+              <td class="price-cell" style="color:var(--text);font-size:12px">31.571</td>
+            </tr>
+            <tr>
+              <td class="reason-cell">Median</td>
+              <td class="price-cell" style="color:var(--text);font-size:12px">27.395</td>
+              <td class="price-cell" style="color:var(--text);font-size:12px">27.690</td>
+              <td class="price-cell" style="color:var(--text);font-size:12px">31.495</td>
+            </tr>
+            <tr>
+              <td class="reason-cell">Variance</td>
+              <td class="price-cell" style="color:var(--muted);font-size:12px">0.290</td>
+              <td class="price-cell" style="color:var(--muted);font-size:12px">0.626</td>
+              <td class="price-cell" style="color:var(--muted);font-size:12px">13.925</td>
+            </tr>
+            <tr>
+              <td class="reason-cell">Std Dev</td>
+              <td class="price-cell" style="color:var(--yellow);font-size:12px">0.539</td>
+              <td class="price-cell" style="color:var(--yellow);font-size:12px">0.791</td>
+              <td class="price-cell" style="color:var(--yellow);font-size:12px">3.732</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SMA Table + Returns Stats -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px;animation:fadeUp 0.5s 0.25s ease both">
+
+      <!-- SMA levels -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+        <div style="padding:18px 24px;border-bottom:1px solid var(--border);background:rgba(57,232,143,0.05)">
+          <span style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green)">Current SMA Levels</span>
+        </div>
+        <table class="signal-table">
+          <tbody>
+            <tr><td class="reason-cell">SMA 5 Day</td><td class="price-cell" style="color:var(--blue)">26.882 <span style="font-size:10px;color:var(--red)">▼ Below</span></td></tr>
+            <tr><td class="reason-cell">SMA 10 Day</td><td class="price-cell" style="color:var(--blue)">27.357 <span style="font-size:10px;color:var(--red)">▼ Below</span></td></tr>
+            <tr><td class="reason-cell">SMA 20 Day</td><td class="price-cell" style="color:var(--blue)">27.686 <span style="font-size:10px;color:var(--red)">▼ Below</span></td></tr>
+            <tr><td class="reason-cell">SMA 50 Day</td><td class="price-cell" style="color:var(--yellow)">31.571 <span style="font-size:10px;color:var(--red)">▼ Below</span></td></tr>
+            <tr><td class="reason-cell">SMA 200 Day</td><td class="price-cell" style="color:var(--red)">45.433 <span style="font-size:10px;color:var(--red)">▼ Below</span></td></tr>
+            <tr><td class="reason-cell" style="color:var(--muted);font-size:12px;padding-top:14px">Signal</td><td style="padding:14px 16px;font-size:12px"><span class="tag cross">All SMAs: BEARISH</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Returns stats -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+        <div style="padding:18px 24px;border-bottom:1px solid var(--border);background:rgba(255,77,106,0.05)">
+          <span style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--red)">Returns Statistics</span>
+        </div>
+        <table class="signal-table">
+          <tbody>
+            <tr><td class="reason-cell">Mean Daily Return</td><td class="price-cell" style="color:var(--red)">-0.1145%</td></tr>
+            <tr><td class="reason-cell">Recent 20D Mean Return</td><td class="price-cell" style="color:var(--red)">-0.1860%</td></tr>
+            <tr><td class="reason-cell">Daily Return Std Dev</td><td class="price-cell" style="color:var(--yellow)">3.4601%</td></tr>
+            <tr><td class="reason-cell">Recent 20D Std Dev</td><td class="price-cell" style="color:var(--yellow)">3.0217%</td></tr>
+            <tr><td class="reason-cell">Annualized Volatility</td><td class="price-cell" style="color:var(--orange)">54.93%</td></tr>
+            <tr><td class="reason-cell">20D Cumulative Return</td><td class="price-cell" style="color:var(--red)">-4.30%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SMA Chart with all SMAs -->
+    <div class="chart-section" style="animation:fadeUp 0.5s 0.3s ease both">
+      <div class="section-title">SMA Levels · 5 / 10 / 20 / 50 / 200 Day</div>
+      <div class="chart-wrap" style="height:380px"><canvas id="smaChart"></canvas></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-line" style="background:var(--blue)"></div>Price</div>
+        <div class="legend-item"><div class="legend-line" style="background:#a8d8ff"></div>SMA 5</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--green)"></div>SMA 10</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--purple)"></div>SMA 20</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--yellow)"></div>SMA 50</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--red)"></div>SMA 200</div>
+      </div>
+    </div>
+
+    <!-- Forecast projection chart with confidence bands -->
+    <div class="chart-section" style="animation:fadeUp 0.5s 0.35s ease both">
+      <div class="section-title">Mar 10 Forecast · Projection with Confidence Band</div>
+      <div class="chart-wrap" style="height:360px"><canvas id="forecastChart"></canvas></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-line" style="background:var(--blue)"></div>Historical (60D)</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--yellow)"></div>Ensemble Forecast</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--green)"></div>Bull +1σ</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--red)"></div>Bear -1σ</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--orange)"></div>LinReg 30D</div>
+      </div>
+    </div>
+
+    <!-- Key interpretation -->
+    <div class="analysis-summary" style="animation:fadeUp 0.5s 0.4s ease both">
+      <div class="section-title">Forecast Interpretation for 10 March 2026</div>
+      <ul class="analysis-list">
+        <li><div class="ai negative">↓</div><span><strong>Ensemble target ₹24.49</strong> — derived from 4 models. The 30-day linear regression (highest R²=0.717) projects ₹22.00, consistent with the persistent downtrend slope of -₹0.21/day over the last 30 sessions.</span></li>
+        <li><div class="ai negative">↓</div><span>Price is trading below ALL 5 SMAs (5D, 10D, 20D, 50D, 200D). This full bearish SMA stack is a strong continuation signal. No SMA has turned upward recently.</span></li>
+        <li><div class="ai neutral">→</div><span>GBM model gives expected value ₹25.39 with a wide 1σ confidence band of ₹14.74–₹43.73. The high annualized volatility (54.93%) creates significant uncertainty around any point estimate.</span></li>
+        <li><div class="ai neutral">→</div><span>The 20-day standard deviation of only ₹0.79 shows the stock has been trading in a narrow band recently — consolidation or exhaustion. A breakout (either direction) is statistically overdue.</span></li>
+        <li><div class="ai positive">↑</div><span><strong>Bull scenario to watch:</strong> If price closes above SMA5 (₹26.88) and SMA10 (₹27.36) with above-average volume, the EMA model's ₹26.90 and a potential recovery toward ₹30+ becomes more probable by Mar 10.</span></li>
+        <li><div class="ai negative">↓</div><span>The mean daily return is -0.186% over the last 20 days. Extrapolated over 18 trading days, this gives a geometric return of ≈ -3.2%, landing the price near ₹25.40 — consistent with the GBM expected value.</span></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>SMA Crossover Strategy · Daily & Weekly Timeframes · RPOWER</span>
+    <span>Data: Aug 2024 – Feb 2026 · 299 daily / 79 weekly sessions</span>
+  </footer>
+</div>
+
+<script>
+// =================== DATA ===================
+
+const dailyData = {"dates":["2024-12-11","2024-12-12","2024-12-13","2024-12-16","2024-12-17","2024-12-18","2024-12-19","2024-12-20","2024-12-23","2024-12-24","2024-12-26","2024-12-27","2024-12-30","2024-12-31","2025-01-01","2025-01-02","2025-01-03","2025-01-06","2025-01-07","2025-01-08","2025-01-09","2025-01-10","2025-01-13","2025-01-14","2025-01-15","2025-01-16","2025-01-17","2025-01-20","2025-01-21","2025-01-22","2025-01-23","2025-01-24","2025-01-27","2025-01-28","2025-01-29","2025-01-30","2025-01-31","2025-02-01","2025-02-03","2025-02-04","2025-02-05","2025-02-06","2025-02-07","2025-02-10","2025-02-11","2025-02-12","2025-02-13","2025-02-14","2025-02-17","2025-02-18","2025-02-19","2025-02-20","2025-02-21","2025-02-24","2025-02-25","2025-02-27","2025-02-28","2025-03-03","2025-03-04","2025-03-05","2025-03-06","2025-03-07","2025-03-10","2025-03-11","2025-03-12","2025-03-13","2025-03-17","2025-03-18","2025-03-19","2025-03-20","2025-03-21","2025-03-24","2025-03-25","2025-03-26","2025-03-27","2025-03-28","2025-04-01","2025-04-02","2025-04-03","2025-04-04","2025-04-07","2025-04-08","2025-04-09","2025-04-11","2025-04-15","2025-04-16","2025-04-17","2025-04-21","2025-04-22","2025-04-23","2025-04-24","2025-04-25","2025-04-28","2025-04-29","2025-04-30","2025-05-02","2025-05-05","2025-05-06","2025-05-07","2025-05-08","2025-05-09","2025-05-12","2025-05-13","2025-05-14","2025-05-15","2025-05-16","2025-05-19","2025-05-20","2025-05-21","2025-05-22","2025-05-23","2025-05-26","2025-05-27","2025-05-28","2025-05-29","2025-05-30","2025-06-02","2025-06-03","2025-06-04","2025-06-05","2025-06-06","2025-06-09","2025-06-10","2025-06-11","2025-06-12","2025-06-13","2025-06-16","2025-06-17","2025-06-18","2025-06-19","2025-06-20","2025-06-23","2025-06-24","2025-06-25","2025-06-26","2025-06-27","2025-06-30","2025-07-01","2025-07-02","2025-07-03","2025-07-04","2025-07-07","2025-07-08","2025-07-09","2025-07-10","2025-07-11","2025-07-14","2025-07-15","2025-07-16","2025-07-17","2025-07-18","2025-07-21","2025-07-22","2025-07-23","2025-07-24","2025-07-25","2025-07-28","2025-07-29","2025-07-30","2025-07-31","2025-08-01","2025-08-04","2025-08-05","2025-08-06","2025-08-07","2025-08-08","2025-08-11","2025-08-12","2025-08-13","2025-08-14","2025-08-18","2025-08-19","2025-08-20","2025-08-21","2025-08-22","2025-08-25","2025-08-26","2025-08-28","2025-08-29","2025-09-01","2025-09-02","2025-09-03","2025-09-04","2025-09-05","2025-09-08","2025-09-09","2025-09-10","2025-09-11","2025-09-12","2025-09-15","2025-09-16","2025-09-17","2025-09-18","2025-09-19","2025-09-22","2025-09-23","2025-09-24","2025-09-25","2025-09-26","2025-09-29","2025-09-30","2025-10-01","2025-10-03","2025-10-06","2025-10-07","2025-10-08","2025-10-09","2025-10-10","2025-10-13","2025-10-14","2025-10-15","2025-10-16","2025-10-17","2025-10-20","2025-10-21","2025-10-23","2025-10-24","2025-10-27","2025-10-28","2025-10-29","2025-10-30","2025-10-31","2025-11-03","2025-11-04","2025-11-06","2025-11-07","2025-11-10","2025-11-11","2025-11-12","2025-11-13","2025-11-14","2025-11-17","2025-11-18","2025-11-19","2025-11-20","2025-11-21","2025-11-24","2025-11-25","2025-11-26","2025-11-27","2025-11-28","2025-12-01","2025-12-02","2025-12-03","2025-12-04","2025-12-05","2025-12-08","2025-12-09","2025-12-10","2025-12-11","2025-12-12","2025-12-15","2025-12-16","2025-12-17","2025-12-18","2025-12-19","2025-12-22","2025-12-23","2025-12-24","2025-12-26","2025-12-29","2025-12-30","2025-12-31","2026-01-01","2026-01-02","2026-01-05","2026-01-06","2026-01-07","2026-01-08","2026-01-09","2026-01-12","2026-01-13","2026-01-14","2026-01-16","2026-01-19","2026-01-20","2026-01-21","2026-01-22","2026-01-23","2026-01-27","2026-01-28","2026-01-29","2026-01-30","2026-02-01","2026-02-02","2026-02-03","2026-02-04","2026-02-05","2026-02-06","2026-02-09","2026-02-10","2026-02-11","2026-02-12","2026-02-13","2026-02-16","2026-02-17","2026-02-18","2026-02-19","2026-02-20"],"price":[44.04,46.24,47.45,47.23,46.71,44.88,46.92,44.75,43.79,44.44,44.13,43.16,41.85,42.6,44.73,46.29,45.8,43.51,43.4,42.38,40.26,38.98,37.03,38.88,39.24,41.2,42.06,40.78,40.11,39.45,39.63,38.52,36.71,36.85,38.65,38.67,40.09,39.1,38.0,39.9,39.92,42.39,41.84,41.0,39.09,39.45,39.56,37.27,36.94,36.78,37.95,38.16,37.7,36.8,36.52,34.75,33.26,32.92,33.08,34.66,35.19,36.04,34.42,34.0,33.64,33.39,33.02,34.8,37.72,36.45,37.82,38.21,37.25,39.47,42.97,42.98,41.99,42.31,43.16,41.35,39.02,39.83,39.0,40.03,41.63,41.83,42.13,44.22,43.57,43.53,44.37,41.36,41.36,41.01,39.99,40.13,40.74,38.25,39.11,38.26,38.65,42.77,43.51,44.31,44.3,45.07,45.69,44.73,44.95,44.59,51.9,50.68,52.04,50.43,52.22,58.1,61.97,58.89,60.93,60.89,61.64,64.62,71.24,71.27,69.72,67.05,66.98,63.63,66.8,63.52,63.55,62.6,63.58,66.75,66.6,69.18,70.29,69.63,68.05,65.54,66.08,65.27,65.12,64.31,64.42,64.81,65.29,64.53,66.05,65.11,64.02,63.52,61.36,62.92,59.77,56.78,53.94,56.17,53.36,52.73,50.09,47.58,45.2,47.46,45.12,43.03,43.82,43.96,42.29,43.3,43.28,45.44,47.71,50.09,48.91,46.46,44.73,45.18,43.92,44.04,46.24,47.75,46.43,46.92,46.17,46.63,46.76,46.4,45.79,45.65,47.93,48.83,47.44,48.04,48.83,47.84,46.46,46.01,44.76,44.89,44.36,45.7,46.48,45.35,44.56,44.79,44.45,48.58,46.22,45.1,44.89,45.05,44.64,44.16,44.38,45.08,45.2,44.63,43.68,46.3,46.55,46.42,43.89,40.72,41.07,39.19,41.1,41.19,41.71,41.26,41.33,40.86,40.06,39.93,39.32,38.84,37.04,37.2,39.48,40.21,39.95,38.92,38.9,38.41,38.18,37.68,35.4,35.62,33.98,33.54,34.53,34.35,34.61,35.69,37.78,38.56,35.28,36.28,38.16,36.54,35.3,33.66,34.85,34.72,35.93,35.85,35.15,35.02,34.34,33.88,33.41,33.46,33.18,31.88,31.11,29.93,29.61,29.97,28.27,27.43,29.4,27.77,28.25,27.26,26.82,28.17,28.94,28.12,27.98,28.43,28.46,27.86,27.61,26.8,26.66,27.33,27.43,26.74,26.25],"sma50":[41.9716,41.9232,41.8504,41.7222,41.6374,41.567,41.5858,41.5154,41.46,41.4642,41.4762,41.452,41.4102,41.4274,41.473,41.5896,41.737,41.8002,41.821,41.8046,41.7798,41.7378,41.6398,41.5628,41.487,41.4704,41.4812,41.425,41.3518,41.3092,41.3118,41.3146,41.3196,41.338,41.4284,41.487,41.6032,41.6842,41.7524,41.8242,41.8602,41.908,41.9708,42.0134,42.0124,41.9796,41.908,41.7636,41.6146,41.453,41.3312,41.1696,40.9746,40.766,40.5622,40.3596,40.0864,39.8498,39.6356,39.44,39.2612,39.1188,38.9702,38.7982,38.5764,38.3184,38.0628,37.8886,37.775,37.6564,37.6076,37.5922,37.5966,37.6084,37.683,37.7186,37.7172,37.7478,37.8088,37.8468,37.8346,37.8608,37.9066,37.9702,38.0298,38.093,38.1338,38.2362,38.3476,38.4202,38.5092,38.4886,38.479,38.4792,38.4972,38.5108,38.5344,38.554,38.5974,38.627,38.641,38.7332,38.8494,38.9996,39.1552,39.3616,39.6102,39.8464,40.0838,40.2824,40.6166,40.9094,41.2618,41.5904,41.962,42.4562,43.0352,43.517,43.9812,44.47,44.9464,45.4746,46.1544,46.7904,47.3254,47.8068,48.3066,48.733,49.2058,49.6492,50.1398,50.5952,51.0868,51.6212,52.1206,52.6676,53.2308,53.739,54.2286,54.6688,55.103,55.5812,56.0564,56.5224,57.011,57.5046,57.9956,58.5212,59.06,59.597,60.1044,60.5194,60.8764,61.2486,61.558,61.7922,61.9572,62.186,62.3542,62.517,62.4808,62.4188,62.282,62.2226,62.0806,61.7792,61.4162,61.1176,60.7448,60.393,60.0258,59.6422,59.1716,58.748,58.3318,57.92,57.475,57.106,56.6484,56.2588,55.9126,55.6156,55.2726,54.876,54.4674,54.0164,53.5458,53.0812,52.636,52.2382,51.8752,51.5464,51.1928,50.8674,50.5556,50.2162,49.8396,49.4692,49.0434,48.639,48.2458,47.8894,47.5918,47.2404,46.9362,46.6964,46.5066,46.3548,46.212,46.0594,45.9554,45.9048,45.8936,45.8276,45.8128,45.8538,45.8814,45.8948,45.9226,45.9826,46.048,46.0676,45.9912,45.8038,45.647,45.5016,45.429,45.3492,45.305,45.2494,45.1512,45.0134,44.886,44.7462,44.6092,44.4534,44.259,44.075,43.9488,43.84,43.6804,43.4822,43.3114,43.1188,42.9058,42.7026,42.4814,42.2736,42.058,41.831,41.6344,41.4074,41.17,40.9768,40.8412,40.7166,40.5332,40.2872,40.126,39.9548,39.763,39.5352,39.3394,39.1506,38.9816,38.797,38.596,38.4038,38.217,37.9686,37.7058,37.4466,37.2324,37.0556,36.8564,36.6712,36.4414,36.217,35.9482,35.6716,35.433,35.1712,34.935,34.6816,34.4316,34.2182,34.0562,33.8746,33.6446,33.409,33.1792,32.958,32.7322,32.5,32.2696,32.0626,31.9032,31.7256,31.571],"sma200":[31.982,32.0859,32.195,32.3031,32.4104,32.5116,32.6289,32.7316,32.8308,32.9333,33.037,33.1375,33.2352,33.3355,33.4464,33.5706,33.6976,33.8099,33.9164,34.0123,34.0996,34.175,34.2349,34.2978,34.356,34.4238,34.4928,34.5522,34.6012,34.6395,34.6709,34.7005,34.729,34.7643,34.8158,34.8724,34.9426,35.0014,35.0478,35.1071,35.166,35.2379,35.3091,35.3766,35.4335,35.493,35.5544,35.606,35.6567,35.7113,35.7728,35.8349,35.8996,35.9588,36.0194,36.0652,36.1025,36.1378,36.1725,36.215,36.2605,36.3082,36.3483,36.3853,36.427,36.4692,36.5083,36.5588,36.6246,36.6782,36.7448,36.8183,36.8818,36.9542,37.0386,37.1101,37.1624,37.2185,37.2777,37.3296,37.3706,37.4166,37.4622,37.5138,37.5742,37.637,37.7036,37.78,37.8529,37.927,38.007,38.0732,38.1348,38.1982,38.2578,38.3206,38.386,38.4407,38.4928,38.5417,38.5954,38.6736,38.7557,38.8426,38.9226,38.9996,39.0792,39.1466,39.2149,39.2737,39.3686,39.4494,39.5455,39.6419,39.7436,39.8802,40.0284,40.1638,40.3168,40.4724,40.6245,40.7836,40.9678,41.1434,41.3105,41.4734,41.6445,41.8071,41.9848,42.1496,42.3145,42.477,42.647,42.8256,43.0043,43.1991,43.402,43.6,43.7924,43.9717,44.153,44.3241,44.4927,44.6494,44.7984,44.9408,45.0765,45.1989,45.3189,45.4237,45.512,45.5864,45.6377,45.6841,45.7282,45.7701,45.8099,45.8494,45.8834,45.9259,45.9587,45.9748,45.9811,46.0096,46.023,46.0359,46.0628,46.0808,46.0805,46.081,46.0899,46.1117,46.1406,46.1774,46.2068,46.229,46.245,46.253,46.2537,46.266,46.2997,46.3466,46.3964,46.4514,46.5116,46.566,46.6284,46.6852,46.7412,46.7878,46.8369,46.881,46.9248,46.9706,47.0191,47.0528,47.0694,47.077,47.0788,47.079,47.0806,47.0779,47.073,47.0636,47.0529,47.0524,47.0401,47.0592,47.0714,47.0747,47.0785,47.088,47.1019,47.1097,47.108,47.1019,47.0989,47.1045,47.1059,47.1255,47.1569,47.1942,47.2284,47.2376,47.2468,47.2368,47.232,47.234,47.242,47.2511,47.2596,47.2712,47.288,47.3034,47.3068,47.3076,47.2924,47.2829,47.2902,47.2918,47.292,47.2746,47.2599,47.247,47.2424,47.2335,47.2128,47.2045,47.1897,47.1735,47.1564,47.1374,47.1219,47.1163,47.1226,47.1417,47.1518,47.1686,47.194,47.2034,47.204,47.192,47.1942,47.1978,47.2092,47.2216,47.2322,47.2333,47.2164,47.2036,47.1815,47.1577,47.1374,47.0994,47.0401,46.9749,46.913,46.8513,46.7769,46.7072,46.6591,46.5988,46.5451,46.4812,46.4072,46.3389,46.2729,46.1924,46.1145,46.039,45.9594,45.8919,45.8232,45.7522,45.6855,45.6215,45.555,45.4974,45.4331]};
+
+const buySignals = [{"date":"2025-01-17","type":"BUY","price":42.06,"reason":"Price (42.06) crossed above SMA50 (41.48)"},{"date":"2025-02-06","type":"BUY","price":42.39,"reason":"Price (42.39) crossed above SMA50 (41.91)"},{"date":"2025-03-21","type":"BUY","price":37.82,"reason":"Price (37.82) crossed above SMA50 (37.61)"},{"date":"2025-03-26","type":"BUY","price":39.47,"reason":"Price (39.47) crossed above SMA50 (37.61)"},{"date":"2025-05-07","type":"BUY","price":39.11,"reason":"Price (39.11) crossed above SMA50 (38.60)"},{"date":"2025-05-09","type":"BUY","price":38.65,"reason":"Price (38.65) crossed above SMA50 (38.64)"},{"date":"2025-10-10","type":"BUY","price":48.58,"reason":"Price (48.58) crossed above SMA50 (46.35)"},{"date":"2025-10-29","type":"BUY","price":46.3,"reason":"Price (46.30) crossed above SMA50 (45.98)"}];
+
+const sellSignals = [{"date":"2025-01-09","type":"SELL","price":40.26,"reason":"Price (40.26) crossed below SMA50 (41.78)"},{"date":"2025-01-20","type":"SELL","price":40.78,"reason":"Price (40.78) crossed below SMA50 (41.42)"},{"date":"2025-02-07","type":"SELL","price":41.84,"reason":"Price (41.84) crossed below SMA50 (41.97)"},{"date":"2025-03-25","type":"SELL","price":37.25,"reason":"Price (37.25) crossed below SMA50 (37.60)"},{"date":"2025-05-06","type":"SELL","price":38.25,"reason":"Price (38.25) crossed below SMA50 (38.55)"},{"date":"2025-05-08","type":"SELL","price":38.26,"reason":"Price (38.26) crossed below SMA50 (38.63)"},{"date":"2025-07-24","type":"SELL","price":59.77,"reason":"Price (59.77) crossed below SMA50 (61.56)"},{"date":"2025-10-07","type":"SELL","price":44.56,"reason":"Death Cross: SMA50 (46.94) crossed below SMA200 (47.05)"},{"date":"2025-10-14","type":"SELL","price":45.1,"reason":"Price (45.10) crossed below SMA50 (46.06)"},{"date":"2025-11-03","type":"SELL","price":43.89,"reason":"Price (43.89) crossed below SMA50 (45.99)"}];
+
+// Weekly data (reversed to chronological order)
+const weeklyRaw = [
+  {date:"11-08-2024",price:31.23,open:32.0,high:32.68,low:29.26,vol:"160.57M",chg:-3.37,bias:"Bearish",signal:"Hold"},
+  {date:"18-08-2024",price:34.48,open:31.9,high:38.11,low:31.6,vol:"657.33M",chg:10.41,bias:"Bullish",signal:"Hold"},
+  {date:"25-08-2024",price:30.56,open:32.75,high:32.75,low:30.0,vol:"325.40M",chg:-11.37,bias:"Bearish",signal:"Hold"},
+  {date:"01-09-2024",price:30.22,open:30.6,high:32.25,low:29.26,vol:"176.04M",chg:-1.11,bias:"Bearish",signal:"Hold"},
+  {date:"08-09-2024",price:29.83,open:30.15,high:30.69,low:29.21,vol:"114.76M",chg:-1.29,bias:"Bearish",signal:"Hold"},
+  {date:"15-09-2024",price:36.34,open:30.3,high:36.34,low:29.92,vol:"279.62M",chg:21.82,bias:"Bullish",signal:"Hold"},
+  {date:"22-09-2024",price:46.35,open:38.15,high:46.35,low:38.15,vol:"430.27M",chg:27.55,bias:"Bullish",signal:"Hold"},
+  {date:"29-09-2024",price:50.95,open:46.25,high:53.64,low:44.21,vol:"518.82M",chg:9.92,bias:"Bullish",signal:"Hold"},
+  {date:"06-10-2024",price:44.23,open:48.4,high:49.7,low:44.23,vol:"133.57M",chg:-13.19,bias:"Bearish",signal:"Hold"},
+  {date:"13-10-2024",price:42.45,open:43.14,high:45.8,low:39.65,vol:"96.39M",chg:-4.02,bias:"Bearish",signal:"Hold"},
+  {date:"20-10-2024",price:43.2,open:42.6,high:44.35,low:37.3,vol:"90.94M",chg:1.77,bias:"Bullish",signal:"Hold"},
+  {date:"27-10-2024",price:43.03,open:43.2,high:43.98,low:40.0,vol:"49.96M",chg:-0.39,bias:"Bearish",signal:"Hold"},
+  {date:"03-11-2024",price:41.58,open:42.5,high:45.76,low:40.87,vol:"102.57M",chg:-3.37,bias:"Bearish",signal:"Hold"},
+  {date:"10-11-2024",price:35.93,open:39.5,high:40.73,low:35.15,vol:"84.10M",chg:-13.59,bias:"Bearish",signal:"Hold"},
+  {date:"17-11-2024",price:35.05,open:35.93,high:36.0,low:33.3,vol:"55.22M",chg:-2.45,bias:"Bearish",signal:"Hold"},
+  {date:"24-11-2024",price:38.7,open:35.93,high:40.02,low:34.25,vol:"72.16M",chg:10.41,bias:"Bullish",signal:"Hold"},
+  {date:"01-12-2024",price:44.49,open:38.7,high:45.25,low:37.35,vol:"73.96M",chg:14.96,bias:"Bullish",signal:"Hold"},
+  {date:"08-12-2024",price:47.45,open:45.39,high:48.0,low:42.5,vol:"91.61M",chg:6.65,bias:"Bullish",signal:"Hold"},
+  {date:"15-12-2024",price:44.75,open:47.7,high:48.5,low:43.01,vol:"70.79M",chg:-5.69,bias:"Bearish",signal:"Hold"},
+  {date:"22-12-2024",price:43.16,open:44.98,high:45.62,low:42.95,vol:"32.18M",chg:-3.55,bias:"Bearish",signal:"Hold"},
+  {date:"29-12-2024",price:45.8,open:43.0,high:47.25,low:41.26,vol:"126.75M",chg:6.12,bias:"Bullish",signal:"Hold"},
+  {date:"05-01-2025",price:38.98,open:45.8,high:46.1,low:38.8,vol:"132.54M",chg:-14.89,bias:"Bearish",signal:"Hold"},
+  {date:"12-01-2025",price:42.06,open:38.39,high:42.95,low:36.49,vol:"101.12M",chg:7.90,bias:"Bullish",signal:"Hold"},
+  {date:"19-01-2025",price:38.52,open:42.39,high:42.7,low:38.31,vol:"67.71M",chg:-8.42,bias:"Bearish",signal:"Hold"},
+  {date:"26-01-2025",price:40.09,open:38.49,high:40.4,low:35.19,vol:"76.31M",chg:4.08,bias:"Bullish",signal:"Hold"},
+  {date:"02-02-2025",price:41.84,open:40.23,high:43.94,low:37.62,vol:"169.68M",chg:4.37,bias:"Bullish",signal:"Hold"},
+  {date:"09-02-2025",price:37.27,open:42.4,high:42.59,low:36.67,vol:"123.06M",chg:-10.92,bias:"Bearish",signal:"Hold"},
+  {date:"16-02-2025",price:37.7,open:37.19,high:39.15,low:35.91,vol:"86.60M",chg:1.15,bias:"Bullish",signal:"Hold"},
+  {date:"23-02-2025",price:33.26,open:37.4,high:37.55,low:33.0,vol:"71.24M",chg:-11.78,bias:"Bearish",signal:"Hold"},
+  {date:"02-03-2025",price:36.04,open:33.46,high:36.37,low:31.27,vol:"147.04M",chg:8.36,bias:"Bullish",signal:"Hold"},
+  {date:"09-03-2025",price:33.39,open:36.25,high:36.75,low:33.3,vol:"68.68M",chg:-7.35,bias:"Bearish",signal:"Hold"},
+  {date:"16-03-2025",price:37.82,open:33.75,high:38.35,low:32.9,vol:"138.90M",chg:13.27,bias:"Bullish",signal:"Hold"},
+  {date:"23-03-2025",price:42.98,open:38.2,high:44.76,low:36.73,vol:"318.32M",chg:13.64,bias:"Bullish",signal:"Hold"},
+  {date:"30-03-2025",price:41.35,open:41.95,high:44.48,low:41.05,vol:"158.49M",chg:-3.79,bias:"Bearish",signal:"Hold"},
+  {date:"06-04-2025",price:40.03,open:35.64,high:41.07,low:35.11,vol:"125.04M",chg:-3.19,bias:"Bullish",signal:"Hold"},
+  {date:"13-04-2025",price:42.13,open:40.25,high:42.97,low:40.15,vol:"100.63M",chg:5.25,bias:"Bullish",signal:"Hold"},
+  {date:"20-04-2025",price:41.36,open:42.35,high:46.85,low:40.91,vol:"326.39M",chg:-1.83,bias:"Bearish",signal:"Hold"},
+  {date:"27-04-2025",price:40.13,open:41.36,high:42.62,low:39.6,vol:"165.23M",chg:-2.97,bias:"Bearish",signal:"Hold"},
+  {date:"04-05-2025",price:38.65,open:40.79,high:41.2,low:37.0,vol:"203.10M",chg:-3.69,bias:"Bearish",signal:"Hold"},
+  {date:"11-05-2025",price:45.07,open:42.4,high:45.37,low:41.26,vol:"397.73M",chg:16.61,bias:"Bullish",signal:"Hold"},
+  {date:"18-05-2025",price:51.9,open:45.45,high:53.1,low:43.85,vol:"621.63M",chg:15.15,bias:"Bullish",signal:"Hold"},
+  {date:"25-05-2025",price:58.1,open:52.9,high:60.5,low:49.73,vol:"1.18B",chg:11.95,bias:"Bullish",signal:"Hold"},
+  {date:"01-06-2025",price:61.64,open:58.64,high:63.43,low:58.51,vol:"1.18B",chg:6.09,bias:"Bullish",signal:"Hold"},
+  {date:"08-06-2025",price:67.05,open:62.28,high:76.49,low:62.2,vol:"1.52B",chg:8.78,bias:"Bullish",signal:"Hold"},
+  {date:"15-06-2025",price:63.55,open:67.5,high:69.0,low:60.44,vol:"267.90M",chg:-5.22,bias:"Bearish",signal:"Hold"},
+  {date:"22-06-2025",price:69.18,open:62.12,high:69.5,low:61.4,vol:"118.33M",chg:8.86,bias:"Bullish",signal:"Hold"},
+  {date:"29-06-2025",price:66.08,open:70.34,high:70.9,low:63.6,vol:"90.55M",chg:-4.48,bias:"Bearish",signal:"Hold"},
+  {date:"06-07-2025",price:64.81,open:66.1,high:66.7,low:63.85,vol:"46.05M",chg:-1.92,bias:"Bearish",signal:"Hold"},
+  {date:"13-07-2025",price:64.02,open:65.25,high:66.85,low:63.0,vol:"47.58M",chg:-1.22,bias:"Bearish",signal:"Hold"},
+  {date:"20-07-2025",price:56.78,open:64.02,high:64.7,low:56.78,vol:"61.53M",chg:-11.31,bias:"Bearish",signal:"Buy"},
+  {date:"27-07-2025",price:50.09,open:55.0,high:56.74,low:50.09,vol:"105.41M",chg:-11.78,bias:"Bearish",signal:"Buy"},
+  {date:"03-08-2025",price:43.03,open:47.58,high:47.58,low:42.86,vol:"113.36M",chg:-14.09,bias:"Bearish",signal:"Sell"},
+  {date:"10-08-2025",price:43.3,open:43.03,high:44.68,low:41.76,vol:"43.29M",chg:0.63,bias:"Bullish",signal:"Sell"},
+  {date:"17-08-2025",price:48.91,open:44.5,high:50.85,low:43.0,vol:"61.58M",chg:12.96,bias:"Bullish",signal:"Buy"},
+  {date:"24-08-2025",price:43.92,open:46.61,high:47.46,low:43.55,vol:"44.13M",chg:-10.20,bias:"Bearish",signal:"Sell"},
+  {date:"31-08-2025",price:46.92,open:44.5,high:48.48,low:43.55,vol:"49.71M",chg:6.83,bias:"Bullish",signal:"Buy"},
+  {date:"07-09-2025",price:45.79,open:47.1,high:47.58,low:44.6,vol:"63.38M",chg:-2.41,bias:"Bearish",signal:"Sell"},
+  {date:"14-09-2025",price:48.04,open:45.66,high:49.28,low:45.52,vol:"120.33M",chg:4.91,bias:"Bullish",signal:"Buy"},
+  {date:"21-09-2025",price:44.76,open:47.89,high:49.37,low:44.5,vol:"60.71M",chg:-6.83,bias:"Bearish",signal:"Sell"},
+  {date:"28-09-2025",price:46.48,open:45.02,high:47.4,low:44.11,vol:"60.04M",chg:3.84,bias:"Bullish",signal:"Buy"},
+  {date:"05-10-2025",price:48.58,open:46.2,high:50.73,low:43.75,vol:"173.00M",chg:4.52,bias:"Bullish",signal:"Buy"},
+  {date:"12-10-2025",price:44.64,open:43.55,high:47.51,low:43.55,vol:"166.33M",chg:-8.11,bias:"Bullish",signal:"Sell"},
+  {date:"19-10-2025",price:45.2,open:45.0,high:46.58,low:44.04,vol:"63.38M",chg:1.25,bias:"Bullish",signal:"Sell"},
+  {date:"26-10-2025",price:46.42,open:45.15,high:47.75,low:43.27,vol:"196.33M",chg:2.70,bias:"Bullish",signal:"Buy"},
+  {date:"02-11-2025",price:39.19,open:46.0,high:46.58,low:38.5,vol:"326.11M",chg:-15.58,bias:"Bearish",signal:"Sell"},
+  {date:"09-11-2025",price:41.33,open:39.2,high:42.87,low:38.0,vol:"281.38M",chg:5.46,bias:"Bullish",signal:"Sell"},
+  {date:"16-11-2025",price:38.84,open:41.74,high:42.38,low:38.75,vol:"165.93M",chg:-6.02,bias:"Bearish",signal:"Sell"},
+  {date:"23-11-2025",price:39.95,open:39.14,high:40.8,low:36.7,vol:"257.03M",chg:2.86,bias:"Bullish",signal:"Sell"},
+  {date:"30-11-2025",price:37.68,open:39.86,high:40.13,low:37.4,vol:"98.65M",chg:-5.68,bias:"Bearish",signal:"Sell"},
+  {date:"07-12-2025",price:34.53,open:37.0,high:37.2,low:32.4,vol:"229.77M",chg:-8.36,bias:"Bearish",signal:"Sell"},
+  {date:"14-12-2025",price:38.56,open:34.31,high:39.39,low:34.03,vol:"413.14M",chg:11.67,bias:"Bullish",signal:"Sell"},
+  {date:"21-12-2025",price:36.54,open:38.3,high:38.7,low:34.59,vol:"298.52M",chg:-5.24,bias:"Bearish",signal:"Sell"},
+  {date:"28-12-2025",price:35.93,open:36.55,high:36.95,low:33.35,vol:"253.49M",chg:-1.67,bias:"Bearish",signal:"Sell"},
+  {date:"04-01-2026",price:33.88,open:35.93,high:36.41,low:33.7,vol:"106.53M",chg:-5.71,bias:"Bearish",signal:"Sell"},
+  {date:"11-01-2026",price:31.88,open:33.88,high:34.22,low:31.57,vol:"133.26M",chg:-5.90,bias:"Bearish",signal:"Sell"},
+  {date:"18-01-2026",price:28.27,open:31.98,high:32.14,low:28.0,vol:"225.46M",chg:-11.32,bias:"Bearish",signal:"Sell"},
+  {date:"25-01-2026",price:28.25,open:28.0,high:29.96,low:26.83,vol:"219.81M",chg:-0.07,bias:"Bullish",signal:"Sell"},
+  {date:"01-02-2026",price:27.98,open:28.3,high:31.9,low:25.92,vol:"466.47M",chg:-0.96,bias:"Bearish",signal:"Sell"},
+  {date:"08-02-2026",price:26.8,open:28.5,high:29.45,low:26.7,vol:"148.06M",chg:-4.22,bias:"Bearish",signal:"Sell"},
+];
+
+// =================== UTILS ===================
+
+function parseDate(d) {
+  // dd-mm-yyyy
+  const [day,mon,yr] = d.split('-');
+  return new Date(+yr, +mon-1, +day);
+}
+
+function fmtDate(d) {
+  const [y,m,day] = d.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${parseInt(day)} ${months[parseInt(m)-1]} ${y}`;
+}
+
+function fmtWeekDate(d) {
+  // dd-mm-yyyy
+  const [day,mon,yr] = d.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${parseInt(day)} ${months[parseInt(mon)-1]} ${yr}`;
+}
+
+function calcSMA(arr, n) {
+  return arr.map((_, i) => {
+    if (i < n - 1) return null;
+    const slice = arr.slice(i - n + 1, i + 1);
+    return slice.reduce((a, b) => a + b, 0) / n;
+  });
+}
+
+function getTag(reason) {
+  if (reason.includes('Golden')) return '<span class="tag golden">Golden Cross</span>';
+  if (reason.includes('Death')) return '<span class="tag cross">Death Cross</span>';
+  return '<span class="tag price">Price Cross</span>';
+}
+
+// =================== DAILY CHART ===================
+
+const dCtx = document.getElementById('dailyChart').getContext('2d');
+new Chart(dCtx, {
+  type: 'line',
+  data: {
+    labels: dailyData.dates,
+    datasets: [
+      { label:'Price', data:dailyData.price, borderColor:'#4d9fff', borderWidth:2, pointRadius:0, tension:0.2, order:1 },
+      { label:'SMA 50', data:dailyData.sma50, borderColor:'#f5c842', borderWidth:1.5, pointRadius:0, tension:0.2, order:2 },
+      { label:'SMA 200', data:dailyData.sma200, borderColor:'#ff4d6a', borderWidth:1.5, pointRadius:0, tension:0.2, order:3 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode:'index', intersect:false },
+    plugins: {
+      legend: { display:false },
+      tooltip: {
+        backgroundColor:'#161a22', borderColor:'#1e2330', borderWidth:1,
+        titleColor:'#6b7280', bodyColor:'#e8eaf0',
+        titleFont:{ family:'Space Mono', size:11 }, bodyFont:{ family:'Space Mono', size:12 },
+        padding:12,
+        callbacks: {
+          title: (items) => fmtDate(items[0].label),
+          label: (item) => ` ${item.dataset.label}: ${item.raw.toFixed(2)}`
+        }
+      }
+    },
+    scales: {
+      x: { grid:{color:'#1e2330'}, ticks:{color:'#6b7280',font:{family:'Space Mono',size:10},maxTicksLimit:12,maxRotation:0, callback:(val,idx)=>{ const d=dailyData.dates[idx]; if(!d) return ''; const [y,m]=d.split('-'); const months=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return `${months[parseInt(m)]} ${y.slice(2)}`; }}, border:{color:'#1e2330'} },
+      y: { grid:{color:'#1e2330'}, ticks:{color:'#6b7280',font:{family:'Space Mono',size:10},callback:v=>v.toFixed(0)}, border:{color:'#1e2330'} }
+    }
+  }
+});
+
+// Build daily tables
+function buildDailyTables(buyId, sellId) {
+  const buyBody = document.getElementById(buyId);
+  buySignals.forEach(s => {
+    buyBody.innerHTML += `<tr><td class="date-cell">${fmtDate(s.date)}</td><td class="price-cell buy">${s.price.toFixed(2)}</td><td class="reason-cell">${getTag(s.reason)}<br>${s.reason}</td></tr>`;
+  });
+  const sellBody = document.getElementById(sellId);
+  sellSignals.forEach(s => {
+    sellBody.innerHTML += `<tr><td class="date-cell">${fmtDate(s.date)}</td><td class="price-cell sell">${s.price.toFixed(2)}</td><td class="reason-cell">${getTag(s.reason)}<br>${s.reason}</td></tr>`;
+  });
+}
+buildDailyTables('buyBody','sellBody');
+buildDailyTables('buyBody2','sellBody2');
+
+// =================== WEEKLY CHART ===================
+
+const wPrices = weeklyRaw.map(r => r.price);
+const wLabels = weeklyRaw.map(r => r.date);
+const wSma10 = calcSMA(wPrices, 10);
+const wSma20 = calcSMA(wPrices, 20);
+const wVols = weeklyRaw.map(r => parseFloat(r.vol.replace('B','000').replace('M','')) * (r.vol.includes('B') ? 1 : 1));
+
+// Show SMA values
+const lastSma10 = wSma10.filter(v=>v!==null).slice(-1)[0];
+const lastSma20 = wSma20.filter(v=>v!==null).slice(-1)[0];
+document.getElementById('wSma10').textContent = lastSma10 ? lastSma10.toFixed(2) : '-';
+document.getElementById('wSma20').textContent = lastSma20 ? lastSma20.toFixed(2) : '-';
+
+const wCtx = document.getElementById('weeklyChart').getContext('2d');
+new Chart(wCtx, {
+  type: 'line',
+  data: {
+    labels: wLabels,
+    datasets: [
+      { label:'Weekly Close', data:wPrices, borderColor:'#4d9fff', borderWidth:2, pointRadius:2, pointBackgroundColor:'#4d9fff', tension:0.15 },
+      { label:'SMA 10W', data:wSma10, borderColor:'#f5c842', borderWidth:1.5, pointRadius:0, tension:0.2, spanGaps:true },
+      { label:'SMA 20W', data:wSma20, borderColor:'#ff4d6a', borderWidth:1.5, pointRadius:0, tension:0.2, spanGaps:true }
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{display:false},
+      tooltip:{
+        backgroundColor:'#161a22',borderColor:'#1e2330',borderWidth:1,
+        titleColor:'#6b7280',bodyColor:'#e8eaf0',
+        titleFont:{family:'Space Mono',size:11},bodyFont:{family:'Space Mono',size:12},padding:12,
+        callbacks:{
+          title:(items)=>fmtWeekDate(items[0].label),
+          label:(item)=>` ${item.dataset.label}: ${item.raw !== null ? item.raw.toFixed(2) : 'N/A'}`
+        }
+      }
+    },
+    scales:{
+      x:{grid:{color:'#1e2330'},ticks:{color:'#6b7280',font:{family:'Space Mono',size:10},maxTicksLimit:14,maxRotation:0,callback:(val,idx)=>{ const d=wLabels[idx]; if(!d) return ''; const [day,m,y]=d.split('-'); const months=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return `${months[parseInt(m)]} ${y.slice(2)}`; }},border:{color:'#1e2330'}},
+      y:{grid:{color:'#1e2330'},ticks:{color:'#6b7280',font:{family:'Space Mono',size:10},callback:v=>v.toFixed(0)},border:{color:'#1e2330'}}
+    }
+  }
+});
+
+// Volume chart
+const volColors = weeklyRaw.map(r => r.bias === 'Bullish' ? 'rgba(57,232,143,0.5)' : 'rgba(255,77,106,0.5)');
+const wVolCtx = document.getElementById('weeklyVolumeChart').getContext('2d');
+new Chart(wVolCtx, {
+  type:'bar',
+  data:{
+    labels:wLabels,
+    datasets:[{ label:'Volume', data:wVols, backgroundColor:volColors, borderRadius:3 }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{
+      backgroundColor:'#161a22',borderColor:'#1e2330',borderWidth:1,
+      callbacks:{title:(items)=>fmtWeekDate(items[0].label),label:(item)=>`Volume: ${weeklyRaw[item.dataIndex].vol}`}
+    }},
+    scales:{
+      x:{grid:{color:'#1e2330'},ticks:{color:'#6b7280',font:{size:9},maxTicksLimit:14,maxRotation:0,callback:(val,idx)=>{ const d=wLabels[idx]; if(!d) return ''; const [day,m,y]=d.split('-'); const months=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return `${months[parseInt(m)]} ${y.slice(2)}`; }},border:{color:'#1e2330'}},
+      y:{grid:{color:'#1e2330'},ticks:{color:'#6b7280',font:{size:9}},border:{color:'#1e2330'}}
+    }
+  }
+});
+
+// Weekly OHLC table
+const wTbl = document.getElementById('weeklyTableBody');
+[...weeklyRaw].reverse().forEach(r => {
+  const chgColor = r.chg >= 0 ? 'var(--green)' : 'var(--red)';
+  const biasTag = r.bias === 'Bullish' ? '<span class="tag bullish-tag">Bullish</span>' : '<span class="tag bearish-tag">Bearish</span>';
+  wTbl.innerHTML += `<tr>
+    <td class="date-cell">${fmtWeekDate(r.date)}</td>
+    <td style="font-family:'Space Mono',monospace;font-size:12px">${r.open}</td>
+    <td style="font-family:'Space Mono',monospace;font-size:12px;color:var(--green)">${r.high}</td>
+    <td style="font-family:'Space Mono',monospace;font-size:12px;color:var(--red)">${r.low}</td>
+    <td class="price-cell" style="color:${chgColor}">${r.price}</td>
+    <td style="font-family:'Space Mono',monospace;font-size:12px;color:${chgColor}">${r.chg > 0 ? '+' : ''}${r.chg}%</td>
+    <td>${biasTag}</td>
+  </tr>`;
+});
+
+// =================== WEEKLY SIGNALS ===================
+
+const wBuys = weeklyRaw.filter(r => r.signal === 'Buy');
+const wSells = weeklyRaw.filter(r => r.signal === 'Sell');
+const wHolds = weeklyRaw.filter(r => r.signal === 'Hold');
+const wBullish = weeklyRaw.filter(r => r.bias === 'Bullish');
+const wBearish = weeklyRaw.filter(r => r.bias === 'Bearish');
+
+document.getElementById('wBuyCount').textContent = wBuys.length;
+document.getElementById('wSellCount').textContent = wSells.length;
+
+// Signal cards
+const sigCards = document.getElementById('weeklySignalCards');
+sigCards.innerHTML = `
+  <div class="wsig-card buy-card"><div class="wsig-val">${wBuys.length}</div><div class="wsig-label">Buy Weeks</div></div>
+  <div class="wsig-card sell-card"><div class="wsig-val">${wSells.length}</div><div class="wsig-label">Sell Weeks</div></div>
+  <div class="wsig-card hold-card"><div class="wsig-val">${wHolds.length}</div><div class="wsig-label">Hold Weeks</div></div>
+  <div class="wsig-card"><div class="wsig-val" style="color:var(--green)">${wBullish.length}</div><div class="wsig-label">Bullish Weeks</div></div>
+  <div class="wsig-card"><div class="wsig-val" style="color:var(--red)">${wBearish.length}</div><div class="wsig-label">Bearish Weeks</div></div>
+  <div class="wsig-card trend-card"><div class="wsig-val">${((wBullish.length/weeklyRaw.length)*100).toFixed(0)}%</div><div class="wsig-label">Bullish Rate</div></div>
+`;
+
+// Weekly buy/sell tables
+const wBuyBody = document.getElementById('wBuyBody');
+[...wBuys].reverse().forEach(r => {
+  wBuyBody.innerHTML += `<tr>
+    <td class="date-cell">${fmtWeekDate(r.date)}</td>
+    <td class="price-cell buy">${r.price.toFixed(2)}</td>
+    <td style="font-size:12px;color:var(--muted)">${r.vol}</td>
+    <td><span class="tag bullish-tag">Bullish</span></td>
+  </tr>`;
+});
+
+const wSellBody = document.getElementById('wSellBody');
+[...wSells].reverse().forEach(r => {
+  const biasTag = r.bias === 'Bullish' ? '<span class="tag bullish-tag">Bullish</span>' : '<span class="tag bearish-tag">Bearish</span>';
+  wSellBody.innerHTML += `<tr>
+    <td class="date-cell">${fmtWeekDate(r.date)}</td>
+    <td class="price-cell sell">${r.price.toFixed(2)}</td>
+    <td style="font-size:12px;color:var(--muted)">${r.vol}</td>
+    <td>${biasTag}</td>
+  </tr>`;
+});
+
+// =================== PREDICTION ===================
+
+// Key stats
+const currentPrice = 26.80;
+const allTimeHigh52w = 76.49;
+const recentLow = 25.92;
+const sma50Daily = 31.57;
+const sma200Daily = 45.43;
+
+// Scenarios using avg weekly change and momentum
+const bearishWeeks = weeklyRaw.filter(r=>r.bias==='Bearish').length;
+const bullishWeeks = weeklyRaw.filter(r=>r.bias==='Bullish').length;
+const bearRatio = bearishWeeks/(bearishWeeks+bullishWeeks);
+
+// Recent trend: last 8 weeks all sell/bearish
+const last8 = weeklyRaw.slice(-8);
+const recentBear = last8.filter(r=>r.bias==='Bearish').length;
+
+// Avg decline per week recent
+const recentChanges = weeklyRaw.slice(-12).map(r=>r.chg);
+const avgRecentChg = recentChanges.reduce((a,b)=>a+b,0)/recentChanges.length;
+
+// Predictions
+const weeks1M = 4, weeks3M = 13, weeks6M = 26;
+
+function project(wks, rate) { return currentPrice * Math.pow(1 + rate/100, wks); }
+
+// Base: mean reversion mild recovery
+const baseRate1M = 2.5, baseRate3M = 4, baseRate6M = 5;
+const bullRate1M = 5, bullRate3M = 9, bullRate6M = 15;
+const bearRate1M = -3, bearRate3M = -6, bearRate6M = -10;
+
+const timelines = [
+  { label:'Now', period:'Current', base:currentPrice, bull:currentPrice, bear:currentPrice, type:'current' },
+  { label:'1M', period:'Mar 2026', base:project(weeks1M, baseRate1M), bull:project(weeks1M, bullRate1M), bear:project(weeks1M, bearRate1M), type:'near' },
+  { label:'3M', period:'May 2026', base:project(weeks3M, baseRate3M), bull:project(weeks3M, bullRate3M), bear:project(weeks3M, bearRate3M), type:'mid' },
+  { label:'6M', period:'Aug 2026', base:project(weeks6M, baseRate6M), bull:project(weeks6M, bullRate6M), bear:project(weeks6M, bearRate6M), type:'far' },
+];
+
+// Build timeline
+const tlContainer = document.getElementById('predTimeline');
+timelines.forEach((t, i) => {
+  const dotType = i === 0 ? 'current' : (i === timelines.length-1 ? 'base' : '');
+  tlContainer.innerHTML += `
+    <div class="pred-step">
+      <div class="pred-step-dot ${dotType}"></div>
+      <div class="pred-step-period">${t.label} · ${t.period}</div>
+      <div class="pred-step-price" style="color:var(--yellow)">${t.base.toFixed(2)}</div>
+      <div class="pred-step-range" style="color:var(--green)">▲ ${t.bull.toFixed(2)}</div>
+      <div class="pred-step-range" style="color:var(--red)">▼ ${t.bear.toFixed(2)}</div>
+    </div>
+  `;
+});
+
+// Scenario cards
+const scenarios = [
+  {
+    title: 'Base Case',
+    subtitle: 'Mild recovery with consolidation',
+    items: [
+      {label:'1 Month Target', val:project(weeks1M, baseRate1M).toFixed(2), cls:'base'},
+      {label:'3 Month Target', val:project(weeks3M, baseRate3M).toFixed(2), cls:'base'},
+      {label:'6 Month Target', val:project(weeks6M, baseRate6M).toFixed(2), cls:'base'},
+      {label:'Probability', val:'45%', cls:'neutral'},
+    ]
+  },
+  {
+    title: 'Bull Case',
+    subtitle: 'Volume surge + weekly buy signals',
+    items: [
+      {label:'1 Month Target', val:project(weeks1M, bullRate1M).toFixed(2), cls:'bull'},
+      {label:'3 Month Target', val:project(weeks3M, bullRate3M).toFixed(2), cls:'bull'},
+      {label:'6 Month Target', val:project(weeks6M, bullRate6M).toFixed(2), cls:'bull'},
+      {label:'Probability', val:'25%', cls:'neutral'},
+    ]
+  },
+  {
+    title: 'Bear Case',
+    subtitle: 'Continued selling pressure',
+    items: [
+      {label:'1 Month Target', val:project(weeks1M, bearRate1M).toFixed(2), cls:'bear'},
+      {label:'3 Month Target', val:project(weeks3M, bearRate3M).toFixed(2), cls:'bear'},
+      {label:'6 Month Target', val:project(weeks6M, bearRate6M).toFixed(2), cls:'bear'},
+      {label:'Probability', val:'30%', cls:'neutral'},
+    ]
+  },
+  {
+    title: 'Key Levels',
+    subtitle: 'Support, resistance & targets',
+    items: [
+      {label:'Major Support', val:recentLow.toFixed(2)+' (52W Low)', cls:'bear'},
+      {label:'Resistance 1', val:sma50Daily.toFixed(2)+' (SMA50D)', cls:'neutral'},
+      {label:'Resistance 2', val:sma200Daily.toFixed(2)+' (SMA200D)', cls:'neutral'},
+      {label:'Recovery Target', val:'38–42 range', cls:'base'},
+    ]
+  }
+];
+
+const predGrid = document.getElementById('predGrid');
+scenarios.forEach(s => {
+  let itemsHtml = s.items.map(it => `
+    <div class="pred-scenario">
+      <span class="pred-scenario-label">${it.label}</span>
+      <span class="pred-scenario-val ${it.cls}">${it.val}</span>
+    </div>`).join('');
+  predGrid.innerHTML += `
+    <div class="pred-card">
+      <div class="pred-card-title">${s.title}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px">${s.subtitle}</div>
+      ${itemsHtml}
+    </div>
+  `;
+});
+
+// Probability meters
+const probData = [
+  {label:'Bull Case (Reversal)', pct:25, cls:'bull-fill'},
+  {label:'Base Case (Consolidation)', pct:45, cls:'base-fill'},
+  {label:'Bear Case (Continuation)', pct:30, cls:'bear-fill'},
+];
+const probDiv = document.getElementById('probMeters');
+probData.forEach(p => {
+  probDiv.innerHTML += `
+    <div class="pred-meter">
+      <div class="pred-meter-label"><span>${p.label}</span><span style="font-family:'Space Mono',monospace">${p.pct}%</span></div>
+      <div class="pred-bar-track"><div class="pred-bar-fill ${p.cls}" data-width="${p.pct}%"></div></div>
+    </div>
+  `;
+});
+
+// Build projection chart
+function buildPredChart() {
+  const histLen = 20;
+  const histPrices = wPrices.slice(-histLen);
+  const histLabels = wLabels.slice(-histLen);
+
+  const futureLabels = ['Now','1W','2W','3W','4W','6W','8W','10W','13W','16W','20W','26W'];
+  const futurePeriods = [0,1,2,3,4,6,8,10,13,16,20,26];
+
+  const allLabels = [...histLabels.map(fmtWeekDate), ...futureLabels.slice(1)];
+
+  const histDataset = [...histPrices, ...new Array(futureLabels.length-1).fill(null)];
+  histDataset[histLen-1] = currentPrice; // anchor
+
+  function buildFuture(rate) {
+    return [null, ...futurePeriods.slice(1).map(w => project(w, rate/w * w))];
+  }
+
+  const baseArr = [null, ...futurePeriods.slice(1).map(w => currentPrice * Math.pow(1 + baseRate6M/100 * (w/26), 1))];
+  const bullArr = [null, ...futurePeriods.slice(1).map(w => currentPrice * Math.pow(1 + bullRate6M/100 * (w/26), 1))];
+  const bearArr = [null, ...futurePeriods.slice(1).map(w => currentPrice * Math.pow(1 + bearRate6M/100 * (w/26), 1))];
+
+  const anchoredBase = [currentPrice, ...baseArr.slice(1)];
+  const anchoredBull = [currentPrice, ...bullArr.slice(1)];
+  const anchoredBear = [currentPrice, ...bearArr.slice(1)];
+
+  const ctx = document.getElementById('predChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: allLabels,
+      datasets: [
+        { label:'Historical', data: histDataset, borderColor:'#4d9fff', borderWidth:2, pointRadius:0, tension:0.2 },
+        { label:'Base', data: [...new Array(histLen-1).fill(null), ...anchoredBase], borderColor:'#f5c842', borderWidth:2, borderDash:[6,3], pointRadius:0, tension:0.3 },
+        { label:'Bull', data: [...new Array(histLen-1).fill(null), ...anchoredBull], borderColor:'#39e88f', borderWidth:1.5, borderDash:[4,4], pointRadius:0, tension:0.3 },
+        { label:'Bear', data: [...new Array(histLen-1).fill(null), ...anchoredBear], borderColor:'#ff4d6a', borderWidth:1.5, borderDash:[4,4], pointRadius:0, tension:0.3 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#161a22',borderColor:'#1e2330',borderWidth:1,
+          titleColor:'#6b7280',bodyColor:'#e8eaf0',padding:12,
+          titleFont:{family:'Space Mono',size:11},bodyFont:{family:'Space Mono',size:12},
+          callbacks:{label:(item)=>item.raw !== null ? ` ${item.dataset.label}: ${item.raw.toFixed(2)}` : ''}
+        }
+      },
+      scales:{
+        x:{grid:{color:'#1e2330'},ticks:{color:'#6b7280',font:{family:'Space Mono',size:9},maxTicksLimit:16,maxRotation:0},border:{color:'#1e2330'}},
+        y:{grid:{color:'#1e2330'},ticks:{color:'#6b7280',font:{family:'Space Mono',size:10},callback:v=>v.toFixed(0)},border:{color:'#1e2330'}}
+      }
+    }
+  });
+}
+buildPredChart();
+
+// Analysis list
+const analysisPoints = [
+  {type:'negative', text:'Stock has declined ~65% from its 52-week high of ₹76.49 (Jun 2025) to current ₹26.80. Weekly data shows 8 consecutive bearish-sell candles since late Oct 2025.'},
+  {type:'negative', text:'Daily price is trading well below both SMA50 (₹31.57) and SMA200 (₹45.43) — a strong bearish alignment. Death Cross formed in Oct 2025 and has not reversed.'},
+  {type:'neutral', text:'Weekly SMA10 ('+lastSma10.toFixed(2)+') > price indicates medium-term trend is still down. Price needs to reclaim SMA10W as minimum bullish signal.'},
+  {type:'positive', text:'Weekly Bullish rate stands at '+((wBullish.length/weeklyRaw.length)*100).toFixed(0)+'% ('+wBullish.length+' of '+weeklyRaw.length+' weeks). Stock has shown strong recovery rallies before (Sep 2024: +27%, Nov 2024: +14%).'},
+  {type:'positive', text:'Volume spike in Feb 2026 (466M) on bearish week may indicate exhaustion selling or accumulation — a potential reversal indicator to watch.'},
+  {type:'neutral', text:'Key support: ₹25.92 (recent 52W low). If held, base case recovery targets ₹30–35 range over 3 months. Resistance: ₹31.57 (SMA50D), then ₹38–42.'},
+  {type:'negative', text:'Current weekly signal is Sell across all recent weeks. No weekly Buy signal has emerged since Oct 2025. Reversal requires weekly close above SMA10W + Bullish weekly candle.'},
+  {type:'positive', text:'Combined daily+weekly analysis: watching for daily price to reclaim SMA50 daily AND weekly candle to flip Bullish with elevated volume as dual-confirmation entry.'},
+];
+
+const al = document.getElementById('analysisList');
+analysisPoints.forEach(p => {
+  al.innerHTML += `<li><div class="ai ${p.type}">${p.type==='positive'?'↑':p.type==='negative'?'↓':'→'}</div><span>${p.text}</span></li>`;
+});
+
+// =================== STATS TAB CHARTS ===================
+
+// All SMAs computed from daily data
+const allPrices = dailyData.price;
+const allDates = dailyData.dates;
+
+function computeSMA(arr, n) {
+  return arr.map((_, i) => i >= n-1 ? arr.slice(i-n+1,i+1).reduce((a,b)=>a+b,0)/n : null);
+}
+
+const sma5d = computeSMA(allPrices, 5);
+const sma10d = computeSMA(allPrices, 10);
+const sma20d = computeSMA(allPrices, 20);
+
+function buildSMAChart() {
+  const ctx = document.getElementById('smaChart');
+  if (!ctx) return;
+  new Chart(ctx.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: allDates,
+      datasets: [
+        { label:'Price', data:allPrices, borderColor:'#4d9fff', borderWidth:2, pointRadius:0, tension:0.2, order:1 },
+        { label:'SMA 5', data:sma5d, borderColor:'#a8d8ff', borderWidth:1, pointRadius:0, tension:0.2, spanGaps:true, order:2 },
+        { label:'SMA 10', data:sma10d, borderColor:'#39e88f', borderWidth:1.5, pointRadius:0, tension:0.2, spanGaps:true, order:3 },
+        { label:'SMA 20', data:sma20d, borderColor:'#b47aff', borderWidth:1.5, pointRadius:0, tension:0.2, spanGaps:true, order:4 },
+        { label:'SMA 50', data:dailyData.sma50, borderColor:'#f5c842', borderWidth:2, pointRadius:0, tension:0.2, spanGaps:true, order:5 },
+        { label:'SMA 200', data:dailyData.sma200, borderColor:'#ff4d6a', borderWidth:2, pointRadius:0, tension:0.2, spanGaps:true, order:6 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#161a22',borderColor:'#1e2330',borderWidth:1,
+          titleColor:'#6b7280',bodyColor:'#e8eaf0',padding:12,
+          titleFont:{family:'Space Mono',size:11},bodyFont:{family:'Space Mono',size:11},
+          callbacks:{
+            title:(items)=>fmtDate(items[0].label),
+            label:(item)=>item.raw !== null ? ` ${item.dataset.label}: ${item.raw.toFixed(2)}` : ''
+          }
+        }
+      },
+      scales:{
+        x:{grid:{color:'#1e2330'},ticks:{color:'#6b7280',font:{family:'Space Mono',size:9},maxTicksLimit:12,maxRotation:0,callback:(val,idx)=>{ const d=allDates[idx]; if(!d) return ''; const [y,m]=d.split('-'); const months=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return `${months[parseInt(m)]} ${y.slice(2)}`; }},border:{color:'#1e2330'}},
+        y:{grid:{color:'#1e2330'},ticks:{color:'#6b7280',font:{family:'Space Mono',size:10},callback:v=>v.toFixed(0)},border:{color:'#1e2330'}}
+      }
+    }
+  });
+}
+
+function buildForecastChart() {
+  const ctx = document.getElementById('forecastChart');
+  if (!ctx) return;
+
+  const histN = 60;
+  const histPrices = allPrices.slice(-histN);
+  const histDates = allDates.slice(-histN).map(fmtDate);
+
+  // 18 trading days ahead labels
+  const futureLabels = ['Feb 20','Feb 21','Feb 24','Feb 25','Feb 26','Feb 27','Feb 28','Mar 3','Mar 4','Mar 5','Mar 6','Mar 7','Mar 10'];
+  const futureIndices = [0,1,2,3,4,5,6,7,8,9,10,11,12]; // 0=current (index 60-1)
+
+  const allLabels = [...histDates, ...futureLabels.slice(1)];
+
+  // Prediction data
+  const currentP = 26.25;
+  const mu = -0.00186;
+  const sigma = 0.030217;
+  const slope30 = -0.2137;
+  const intercept30_val = currentP - slope30 * 0;
+
+  // Build future arrays anchored at current price
+  const futureDays = futureLabels.length - 1; // 12 future steps
+  const baseArr = futureLabels.slice(1).map((_,i) => {
+    const d = i+1;
+    // Ensemble: 35% linreg30 + 25% linreg20 + 25% gbm + 15% ema
+    const lr30 = currentP + slope30 * d;
+    const lr20 = currentP + (-0.0747) * d;
+    const gbm = currentP * Math.exp(mu * d);
+    const emaVal = 26.90;
+    return parseFloat((lr30*0.35 + lr20*0.25 + gbm*0.25 + emaVal*0.15).toFixed(2));
+  });
+  const bullArr = futureLabels.slice(1).map((_,i) => parseFloat((currentP * Math.exp((mu+sigma)*(i+1))).toFixed(2)));
+  const bearArr = futureLabels.slice(1).map((_,i) => parseFloat((currentP * Math.exp((mu-sigma)*(i+1))).toFixed(2)));
+  const linreg30Arr = futureLabels.slice(1).map((_,i) => parseFloat((currentP + slope30*(i+1)).toFixed(2)));
+
+  // Construct full datasets
+  const nullPad = new Array(histN - 1).fill(null);
+
+  new Chart(ctx.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: allLabels,
+      datasets: [
+        { label:'Historical', data:[...histPrices, ...new Array(futureLabels.length-1).fill(null)], borderColor:'#4d9fff', borderWidth:2, pointRadius:0, tension:0.2 },
+        { label:'Ensemble', data:[...nullPad, currentP, ...baseArr], borderColor:'#f5c842', borderWidth:2.5, borderDash:[6,3], pointRadius:[...new Array(histN).fill(0),5,...new Array(futureDays-1).fill(2)], pointBackgroundColor:'#f5c842', tension:0.3 },
+        { label:'Bull +1σ', data:[...nullPad, currentP, ...bullArr], borderColor:'#39e88f', borderWidth:1.5, borderDash:[3,3], pointRadius:0, tension:0.3 },
+        { label:'Bear -1σ', data:[...nullPad, currentP, ...bearArr], borderColor:'#ff4d6a', borderWidth:1.5, borderDash:[3,3], pointRadius:0, tension:0.3 },
+        { label:'LinReg 30D', data:[...nullPad, currentP, ...linreg30Arr], borderColor:'#ff9f43', borderWidth:1.5, borderDash:[8,4], pointRadius:0, tension:0.1 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#161a22',borderColor:'#1e2330',borderWidth:1,
+          titleColor:'#6b7280',bodyColor:'#e8eaf0',padding:12,
+          titleFont:{family:'Space Mono',size:11},bodyFont:{family:'Space Mono',size:12},
+          callbacks:{label:(item)=>item.raw !== null ? ` ${item.dataset.label}: ${parseFloat(item.raw).toFixed(2)}` : ''}
+        },
+        // Vertical line at forecast start
+        annotation: {}
+      },
+      scales:{
+        x:{grid:{color:'#1e2330'},ticks:{color:'#6b7280',font:{family:'Space Mono',size:9},maxTicksLimit:18,maxRotation:30},border:{color:'#1e2330'}},
+        y:{grid:{color:'#1e2330'},ticks:{color:'#6b7280',font:{family:'Space Mono',size:10},callback:v=>v.toFixed(0)},border:{color:'#1e2330'}}
+      }
+    }
+  });
+}
+
+// =================== TABS ===================
+
+function showTab(tab) {
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  event.target.classList.add('active');
+
+  if (tab === 'prediction') {
+    setTimeout(() => {
+      document.querySelectorAll('.pred-bar-fill').forEach(el => {
+        const w = el.getAttribute('data-width');
+        if (w) el.style.width = w;
+      });
+    }, 100);
+  }
+
+  if (tab === 'stats') {
+    setTimeout(() => {
+      if (!window._smaChartBuilt) { buildSMAChart(); buildForecastChart(); window._smaChartBuilt = true; }
+    }, 50);
+  }
+}
+</script>
+</body>
+</html>

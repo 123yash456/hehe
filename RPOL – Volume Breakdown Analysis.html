@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<!-- saved from url=(0082)file:///C:/Users/yashvardhan%20walse/Downloads/RPOL_Volume_Breakdown_Analysis.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>RPOL – Volume Breakdown Analysis</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f1117; color: #e0e0e0; padding: 30px; }
+  h1 { text-align: center; color: #fff; font-size: 22px; margin-bottom: 6px; letter-spacing: 1px; }
+  .subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 28px; }
+  .legend { display: flex; gap: 30px; justify-content: center; margin-bottom: 20px; font-size: 13px; }
+  .legend span { display: flex; align-items: center; gap: 8px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .green-dot { background: #00e676; }
+  .red-dot { background: #ff5252; }
+
+  .container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 1300px; margin: 0 auto; }
+  .panel { background: #1a1d27; border-radius: 12px; overflow: hidden; }
+  .panel-header { padding: 14px 20px; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+  .buy-header { background: #003d20; color: #00e676; border-bottom: 2px solid #00e676; }
+  .sell-header { background: #3d0000; color: #ff5252; border-bottom: 2px solid #ff5252; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th { background: #12151e; color: #aaa; padding: 8px 12px; text-align: left; font-weight: 600; position: sticky; top: 0; }
+  tbody tr { border-bottom: 1px solid #22253a; transition: background 0.15s; }
+  tbody tr:hover { background: #22253a; }
+  tbody td { padding: 7px 12px; }
+
+  .price-cell { font-weight: 600; color: #fff; }
+  .vol-cell { color: #90caf9; }
+
+  .signal-strong { background: rgba(0,230,118,0.08); }
+  .signal-strong td.price-cell { color: #00e676; }
+  .signal-dist { background: rgba(255,82,82,0.08); }
+  .signal-dist td.price-cell { color: #ff5252; }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  .badge-acc { background: #00e67622; color: #00e676; border: 1px solid #00e676; }
+  .badge-buy { background: #29b6f622; color: #29b6f6; border: 1px solid #29b6f6; }
+  .badge-dist { background: #ff525222; color: #ff5252; border: 1px solid #ff5252; }
+  .badge-sell { background: #ff980022; color: #ff9800; border: 1px solid #ff9800; }
+
+  .scroll-box { max-height: 680px; overflow-y: auto; }
+  .scroll-box::-webkit-scrollbar { width: 5px; }
+  .scroll-box::-webkit-scrollbar-track { background: #1a1d27; }
+  .scroll-box::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+
+  .note { text-align: center; margin-top: 22px; color: #555; font-size: 11.5px; max-width: 900px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+  .criteria { background: #1a1d27; border-radius: 10px; padding: 16px 22px; max-width: 900px; margin: 0 auto 28px auto; font-size: 12.5px; color: #aaa; }
+  .criteria h3 { color: #fff; font-size: 13px; margin-bottom: 8px; }
+  .criteria-row { display: flex; gap: 40px; }
+  .criteria-col { flex: 1; }
+  .criteria-col ul { list-style: none; }
+  .criteria-col ul li { padding: 3px 0; }
+  .criteria-col ul li::before { content: "→ "; color: inherit; }
+  .green { color: #00e676; }
+  .red { color: #ff5252; }
+</style>
+</head>
+<body>
+
+<h1>📊 Reliance Power (RPOL) — Volume Breakdown Analysis</h1>
+<p class="subtitle">Data range: Feb 2024 – Feb 2026 &nbsp;|&nbsp; 497 trading sessions analysed</p>
+
+<div class="criteria">
+  <h3>How the Volume Breakdown Indicator Works here</h3>
+  <div class="criteria-row">
+    <div class="criteria-col" style="color: #00e676;">
+      <strong>🟢 BUY Signals triggered when:</strong>
+      <ul>
+        <li>Buying Volume &gt; 60% of session volume</li>
+        <li>Volume &gt; 1.5× 20-day average (unusual surge)</li>
+        <li>Close &gt; Open (bullish candle)</li>
+        <li>Price above 20-day MA <em>or</em> Accumulation Day (&gt;+2% on heavy vol)</li>
+      </ul>
+    </div>
+    <div class="criteria-col" style="color: #ff5252;">
+      <strong>🔴 SELL Signals triggered when:</strong>
+      <ul>
+        <li>Selling Volume &gt; 60% of session volume</li>
+        <li>Volume &gt; 1.5× 20-day average (unusual surge)</li>
+        <li>Close &lt; Open (bearish candle)</li>
+        <li>Price below 20-day MA <em>or</em> Distribution Day (&lt;−2% on heavy vol)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- BUY COLUMN -->
+  <div class="panel">
+    <div class="panel-header buy-header">🟢 WHEN TO BUY &nbsp;(85 signals)</div>
+    <div class="scroll-box">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Price (₹)</th>
+          <th>Volume (M)</th>
+          <th>Buy Vol%</th>
+          <th>Change</th>
+          <th>Signal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="signal-strong"><td>20-Mar-2024</td><td class="price-cell">23.90</td><td class="vol-cell">17.50</td><td>100%</td><td class="green">+4.82%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr class="signal-strong"><td>26-Mar-2024</td><td class="price-cell">27.60</td><td class="vol-cell">35.49</td><td>100%</td><td class="green">+4.94%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr class="signal-strong"><td>02-Apr-2024</td><td class="price-cell">30.30</td><td class="vol-cell">24.91</td><td>100%</td><td class="green">+4.84%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr class="signal-strong"><td>03-Apr-2024</td><td class="price-cell">31.80</td><td class="vol-cell">28.54</td><td>100%</td><td class="green">+4.95%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr class="signal-strong"><td>04-Apr-2024</td><td class="price-cell">33.35</td><td class="vol-cell">22.45</td><td>100%</td><td class="green">+4.87%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>03-Jun-2024</td><td class="price-cell">25.75</td><td class="vol-cell">26.92</td><td>100%</td><td class="green">+4.89%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>06-Jun-2024</td><td class="price-cell">24.55</td><td class="vol-cell">30.50</td><td>88%</td><td class="green">+4.47%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>10-Jun-2024</td><td class="price-cell">26.08</td><td class="vol-cell">37.09</td><td>55%</td><td class="green">+4.32%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr class="signal-strong"><td>11-Jun-2024</td><td class="price-cell">28.68</td><td class="vol-cell">140.17</td><td>100%</td><td class="green">+9.97%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>12-Jun-2024</td><td class="price-cell">31.54</td><td class="vol-cell">150.56</td><td>100%</td><td class="green">+9.97%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr><td>15-Jul-2024</td><td class="price-cell">28.68</td><td class="vol-cell">27.51</td><td>100%</td><td class="green">+4.98%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>24-Jul-2024</td><td class="price-cell">28.28</td><td class="vol-cell">12.93</td><td>100%</td><td class="green">+4.97%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>25-Jul-2024</td><td class="price-cell">29.69</td><td class="vol-cell">46.15</td><td>100%</td><td class="green">+4.99%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr class="signal-strong"><td>29-Jul-2024</td><td class="price-cell">31.25</td><td class="vol-cell">71.91</td><td>100%</td><td class="green">+4.97%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>31-Jul-2024</td><td class="price-cell">32.84</td><td class="vol-cell">79.35</td><td>100%</td><td class="green">+4.99%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>02-Aug-2024</td><td class="price-cell">34.54</td><td class="vol-cell">99.41</td><td>100%</td><td class="green">+4.98%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr><td>07-Aug-2024</td><td class="price-cell">31.86</td><td class="vol-cell">109.77</td><td>87%</td><td class="green">+2.25%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>09-Aug-2024</td><td class="price-cell">32.32</td><td class="vol-cell">64.45</td><td>99%</td><td class="green">+4.94%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>16-Sep-2024</td><td class="price-cell">31.05</td><td class="vol-cell">44.10</td><td>81%</td><td class="green">+4.09%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr class="signal-strong"><td>19-Sep-2024</td><td class="price-cell">34.61</td><td class="vol-cell">130.36</td><td>100%</td><td class="green">+4.97%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>20-Sep-2024</td><td class="price-cell">36.34</td><td class="vol-cell">51.43</td><td>100%</td><td class="green">+5.00%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>25-Sep-2024</td><td class="price-cell">42.05</td><td class="vol-cell">233.07</td><td>100%</td><td class="green">+4.99%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>26-Sep-2024</td><td class="price-cell">44.15</td><td class="vol-cell">158.32</td><td>100%</td><td class="green">+4.99%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>30-Sep-2024</td><td class="price-cell">48.66</td><td class="vol-cell">209.33</td><td>100%</td><td class="green">+4.98%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>01-Oct-2024</td><td class="price-cell">51.09</td><td class="vol-cell">163.08</td><td>100%</td><td class="green">+4.99%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr><td>06-Nov-2024</td><td class="price-cell">43.59</td><td class="vol-cell">13.14</td><td>100%</td><td class="green">+4.99%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>19-Nov-2024</td><td class="price-cell">35.74</td><td class="vol-cell">12.86</td><td>96%</td><td class="green">+4.72%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>26-Nov-2024</td><td class="price-cell">36.31</td><td class="vol-cell">9.18</td><td>100%</td><td class="green">+4.97%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>27-Nov-2024</td><td class="price-cell">38.12</td><td class="vol-cell">13.57</td><td>100%</td><td class="green">+4.98%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>28-Nov-2024</td><td class="price-cell">40.00</td><td class="vol-cell">21.16</td><td>99%</td><td class="green">+4.93%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>05-Dec-2024</td><td class="price-cell">43.14</td><td class="vol-cell">27.78</td><td>100%</td><td class="green">+4.99%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>06-Dec-2024</td><td class="price-cell">44.49</td><td class="vol-cell">22.58</td><td>63%</td><td class="green">+3.13%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>12-Dec-2024</td><td class="price-cell">46.24</td><td class="vol-cell">24.74</td><td>100%</td><td class="green">+5.00%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>13-Dec-2024</td><td class="price-cell">47.45</td><td class="vol-cell">21.12</td><td>84%</td><td class="green">+2.62%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>19-Dec-2024</td><td class="price-cell">46.92</td><td class="vol-cell">17.00</td><td>95%</td><td class="green">+4.55%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>01-Jan-2025</td><td class="price-cell">44.73</td><td class="vol-cell">33.01</td><td>100%</td><td class="green">+5.00%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>02-Jan-2025</td><td class="price-cell">46.29</td><td class="vol-cell">38.97</td><td>84%</td><td class="green">+3.49%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>14-Jan-2025</td><td class="price-cell">38.88</td><td class="vol-cell">22.42</td><td>100%</td><td class="green">+5.00%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>16-Jan-2025</td><td class="price-cell">41.20</td><td class="vol-cell">17.56</td><td>100%</td><td class="green">+4.99%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>31-Jan-2025</td><td class="price-cell">40.09</td><td class="vol-cell">12.69</td><td>83%</td><td class="green">+3.67%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>04-Feb-2025</td><td class="price-cell">39.90</td><td class="vol-cell">22.12</td><td>100%</td><td class="green">+5.00%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr class="signal-strong"><td>06-Feb-2025</td><td class="price-cell">42.39</td><td class="vol-cell">72.71</td><td>48%</td><td class="green">+6.19%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr><td>19-Feb-2025</td><td class="price-cell">37.95</td><td class="vol-cell">19.02</td><td>81%</td><td class="green">+3.18%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>05-Mar-2025</td><td class="price-cell">34.66</td><td class="vol-cell">22.57</td><td>90%</td><td class="green">+4.78%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>07-Mar-2025</td><td class="price-cell">36.04</td><td class="vol-cell">29.89</td><td>77%</td><td class="green">+2.42%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>18-Mar-2025</td><td class="price-cell">34.80</td><td class="vol-cell">23.35</td><td>88%</td><td class="green">+5.39%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr class="signal-strong"><td>19-Mar-2025</td><td class="price-cell">37.72</td><td class="vol-cell">43.89</td><td>81%</td><td class="green">+8.39%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr><td>21-Mar-2025</td><td class="price-cell">37.82</td><td class="vol-cell">29.35</td><td>83%</td><td class="green">+3.76%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr class="signal-strong"><td>26-Mar-2025</td><td class="price-cell">39.47</td><td class="vol-cell">101.79</td><td>57%</td><td class="green">+5.96%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>27-Mar-2025</td><td class="price-cell">42.97</td><td class="vol-cell">84.10</td><td>87%</td><td class="green">+8.87%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr><td>21-Apr-2025</td><td class="price-cell">44.22</td><td class="vol-cell">65.65</td><td>83%</td><td class="green">+4.96%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>07-May-2025</td><td class="price-cell">39.11</td><td class="vol-cell">42.65</td><td>76%</td><td class="green">+2.25%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr class="signal-strong"><td>12-May-2025</td><td class="price-cell">42.77</td><td class="vol-cell">164.81</td><td>57%</td><td class="green">+10.66%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>23-May-2025</td><td class="price-cell">51.90</td><td class="vol-cell">429.24</td><td>86%</td><td class="green">+16.39%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>27-May-2025</td><td class="price-cell">52.04</td><td class="vol-cell">159.94</td><td>87%</td><td class="green">+2.68%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr class="signal-strong"><td>29-May-2025</td><td class="price-cell">52.22</td><td class="vol-cell">149.48</td><td>62%</td><td class="green">+3.55%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr class="signal-strong"><td>30-May-2025</td><td class="price-cell">58.10</td><td class="vol-cell">533.95</td><td>71%</td><td class="green">+11.26%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>02-Jun-2025</td><td class="price-cell">61.97</td><td class="vol-cell">464.24</td><td>80%</td><td class="green">+6.66%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>04-Jun-2025</td><td class="price-cell">60.93</td><td class="vol-cell">244.78</td><td>67%</td><td class="green">+3.46%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr class="signal-strong"><td>09-Jun-2025</td><td class="price-cell">64.62</td><td class="vol-cell">188.00</td><td>88%</td><td class="green">+4.83%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>10-Jun-2025</td><td class="price-cell">71.24</td><td class="vol-cell">496.22</td><td>86%</td><td class="green">+10.24%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr><td>23-Jul-2025</td><td class="price-cell">62.92</td><td class="vol-cell">17.45</td><td>83%</td><td class="green">+2.54%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>29-Jul-2025</td><td class="price-cell">56.17</td><td class="vol-cell">25.47</td><td>93%</td><td class="green">+4.13%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>06-Aug-2025</td><td class="price-cell">47.46</td><td class="vol-cell">62.42</td><td>100%</td><td class="green">+5.00%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>19-Aug-2025</td><td class="price-cell">45.44</td><td class="vol-cell">11.44</td><td>100%</td><td class="green">+4.99%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>21-Aug-2025</td><td class="price-cell">50.09</td><td class="vol-cell">16.83</td><td>100%</td><td class="green">+4.99%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>16-Sep-2025</td><td class="price-cell">47.93</td><td class="vol-cell">47.95</td><td>100%</td><td class="green">+4.99%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>17-Sep-2025</td><td class="price-cell">48.83</td><td class="vol-cell">25.88</td><td>73%</td><td class="green">+1.88%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>22-Sep-2025</td><td class="price-cell">48.83</td><td class="vol-cell">23.19</td><td>68%</td><td class="green">+1.64%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>01-Oct-2025</td><td class="price-cell">45.70</td><td class="vol-cell">16.46</td><td>90%</td><td class="green">+3.02%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr class="signal-strong"><td>10-Oct-2025</td><td class="price-cell">48.58</td><td class="vol-cell">119.82</td><td>68%</td><td class="green">+9.29%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>29-Oct-2025</td><td class="price-cell">46.30</td><td class="vol-cell">86.78</td><td>70%</td><td class="green">+6.00%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>10-Nov-2025</td><td class="price-cell">41.10</td><td class="vol-cell">107.66</td><td>72%</td><td class="green">+4.87%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr class="signal-strong"><td>26-Nov-2025</td><td class="price-cell">39.48</td><td class="vol-cell">87.19</td><td>88%</td><td class="green">+6.13%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr><td>12-Dec-2025</td><td class="price-cell">34.53</td><td class="vol-cell">36.92</td><td>84%</td><td class="green">+2.95%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>17-Dec-2025</td><td class="price-cell">35.69</td><td class="vol-cell">137.65</td><td>41%</td><td class="green">+3.12%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>18-Dec-2025</td><td class="price-cell">37.78</td><td class="vol-cell">150.05</td><td>56%</td><td class="green">+5.86%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr><td>19-Dec-2025</td><td class="price-cell">38.56</td><td class="vol-cell">52.17</td><td>75%</td><td class="green">+2.06%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>23-Dec-2025</td><td class="price-cell">36.28</td><td class="vol-cell">81.29</td><td>73%</td><td class="green">+2.83%</td><td><span class="badge badge-buy">BUY VOL</span></td></tr>
+        <tr><td>24-Dec-2025</td><td class="price-cell">38.16</td><td class="vol-cell">79.20</td><td>79%</td><td class="green">+5.18%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr class="signal-strong"><td>28-Jan-2026</td><td class="price-cell">29.40</td><td class="vol-cell">63.74</td><td>87%</td><td class="green">+7.18%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+        <tr><td>03-Feb-2026</td><td class="price-cell">28.17</td><td class="vol-cell">46.51</td><td>82%</td><td class="green">+5.03%</td><td><span class="badge badge-acc">ACCUM</span></td></tr>
+        <tr class="signal-strong"><td>04-Feb-2026</td><td class="price-cell">28.94</td><td class="vol-cell">254.95</td><td>30%</td><td class="green">+2.73%</td><td><span class="badge badge-acc">ACCUM ⭐</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- SELL COLUMN -->
+  <div class="panel">
+    <div class="panel-header sell-header">🔴 WHEN TO SELL &nbsp;(65 signals)</div>
+    <div class="scroll-box">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Price (₹)</th>
+          <th>Volume (M)</th>
+          <th>Sell Vol%</th>
+          <th>Change</th>
+          <th>Signal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>19-Mar-2024</td><td class="price-cell">22.80</td><td class="vol-cell">16.13</td><td>74%</td><td class="red">−1.72%</td><td><span class="badge badge-sell">SELL VOL</span></td></tr>
+        <tr class="signal-dist"><td>05-Apr-2024</td><td class="price-cell">32.60</td><td class="vol-cell">60.53</td><td>67%</td><td class="red">−2.25%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>08-Apr-2024</td><td class="price-cell">31.00</td><td class="vol-cell">24.94</td><td>100%</td><td class="red">−4.91%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>09-Apr-2024</td><td class="price-cell">29.80</td><td class="vol-cell">38.59</td><td>77%</td><td class="red">−3.87%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>10-Apr-2024</td><td class="price-cell">28.35</td><td class="vol-cell">27.61</td><td>100%</td><td class="red">−4.87%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>12-Apr-2024</td><td class="price-cell">27.35</td><td class="vol-cell">57.18</td><td>71%</td><td class="red">−3.53%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>15-Apr-2024</td><td class="price-cell">26.05</td><td class="vol-cell">30.71</td><td>94%</td><td class="red">−4.75%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr><td>27-May-2024</td><td class="price-cell">25.30</td><td class="vol-cell">43.93</td><td>100%</td><td class="red">−4.89%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>04-Jun-2024</td><td class="price-cell">24.50</td><td class="vol-cell">19.13</td><td>100%</td><td class="red">−4.85%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>05-Jun-2024</td><td class="price-cell">23.50</td><td class="vol-cell">42.86</td><td>69%</td><td class="red">−4.08%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr class="signal-dist"><td>05-Aug-2024</td><td class="price-cell">32.81</td><td class="vol-cell">118.75</td><td>100%</td><td class="red">−5.01%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>06-Aug-2024</td><td class="price-cell">31.16</td><td class="vol-cell">71.38</td><td>100%</td><td class="red">−5.03%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>08-Aug-2024</td><td class="price-cell">30.80</td><td class="vol-cell">43.65</td><td>92%</td><td class="red">−3.33%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>13-Aug-2024</td><td class="price-cell">30.34</td><td class="vol-cell">56.32</td><td>95%</td><td class="red">−4.62%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>23-Aug-2024</td><td class="price-cell">34.48</td><td class="vol-cell">340.38</td><td>100%</td><td class="red">−5.01%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>04-Oct-2024</td><td class="price-cell">50.95</td><td class="vol-cell">92.74</td><td>100%</td><td class="red">−5.01%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>10-Oct-2024</td><td class="price-cell">46.56</td><td class="vol-cell">52.20</td><td>82%</td><td class="red">−3.54%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>11-Oct-2024</td><td class="price-cell">44.23</td><td class="vol-cell">26.35</td><td>100%</td><td class="red">−5.00%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr><td>17-Oct-2024</td><td class="price-cell">41.74</td><td class="vol-cell">15.54</td><td>100%</td><td class="red">−5.01%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>22-Oct-2024</td><td class="price-cell">38.43</td><td class="vol-cell">18.47</td><td>100%</td><td class="red">−5.02%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>12-Nov-2024</td><td class="price-cell">38.38</td><td class="vol-cell">43.58</td><td>73%</td><td class="red">−2.84%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>13-Nov-2024</td><td class="price-cell">36.46</td><td class="vol-cell">21.18</td><td>100%</td><td class="red">−5.00%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>18-Nov-2024</td><td class="price-cell">34.13</td><td class="vol-cell">18.81</td><td>100%</td><td class="red">−5.01%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>18-Dec-2024</td><td class="price-cell">44.88</td><td class="vol-cell">10.10</td><td>97%</td><td class="red">−3.92%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>20-Dec-2024</td><td class="price-cell">44.75</td><td class="vol-cell">15.89</td><td>95%</td><td class="red">−4.62%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>23-Dec-2024</td><td class="price-cell">43.79</td><td class="vol-cell">9.91</td><td>90%</td><td class="red">−2.15%</td><td><span class="badge badge-sell">SELL VOL</span></td></tr>
+        <tr><td>30-Dec-2024</td><td class="price-cell">41.85</td><td class="vol-cell">12.74</td><td>77%</td><td class="red">−3.04%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>06-Jan-2025</td><td class="price-cell">43.51</td><td class="vol-cell">36.74</td><td>100%</td><td class="red">−5.00%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>09-Jan-2025</td><td class="price-cell">40.26</td><td class="vol-cell">15.80</td><td>100%</td><td class="red">−5.00%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>10-Jan-2025</td><td class="price-cell">38.98</td><td class="vol-cell">37.69</td><td>92%</td><td class="red">−3.18%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>13-Jan-2025</td><td class="price-cell">37.03</td><td class="vol-cell">21.07</td><td>100%</td><td class="red">−5.00%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>20-Jan-2025</td><td class="price-cell">40.78</td><td class="vol-cell">24.42</td><td>85%</td><td class="red">−3.04%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>11-Feb-2025</td><td class="price-cell">39.09</td><td class="vol-cell">21.42</td><td>80%</td><td class="red">−4.66%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr class="signal-dist"><td>14-Feb-2025</td><td class="price-cell">37.27</td><td class="vol-cell">29.11</td><td>81%</td><td class="red">−5.79%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>28-Feb-2025</td><td class="price-cell">33.26</td><td class="vol-cell">27.89</td><td>85%</td><td class="red">−4.29%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr><td>20-Mar-2025</td><td class="price-cell">36.45</td><td class="vol-cell">25.55</td><td>92%</td><td class="red">−3.37%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>01-Apr-2025</td><td class="price-cell">41.99</td><td class="vol-cell">34.63</td><td>78%</td><td class="red">−2.30%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>04-Apr-2025</td><td class="price-cell">41.35</td><td class="vol-cell">35.28</td><td>88%</td><td class="red">−4.19%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr class="signal-dist"><td>25-Apr-2025</td><td class="price-cell">41.36</td><td class="vol-cell">76.76</td><td>89%</td><td class="red">−6.78%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>06-May-2025</td><td class="price-cell">38.25</td><td class="vol-cell">43.93</td><td>96%</td><td class="red">−6.11%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr><td>20-May-2025</td><td class="price-cell">44.73</td><td class="vol-cell">59.56</td><td>91%</td><td class="red">−2.10%</td><td><span class="badge badge-sell">SELL VOL</span></td></tr>
+        <tr class="signal-dist"><td>26-May-2025</td><td class="price-cell">50.68</td><td class="vol-cell">237.11</td><td>88%</td><td class="red">−2.35%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>28-May-2025</td><td class="price-cell">50.43</td><td class="vol-cell">95.40</td><td>91%</td><td class="red">−3.09%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>03-Jun-2025</td><td class="price-cell">58.89</td><td class="vol-cell">168.54</td><td>90%</td><td class="red">−4.97%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr><td>22-Jul-2025</td><td class="price-cell">61.36</td><td class="vol-cell">13.27</td><td>96%</td><td class="red">−3.40%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>24-Jul-2025</td><td class="price-cell">59.77</td><td class="vol-cell">13.85</td><td>100%</td><td class="red">−5.01%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr class="signal-dist"><td>28-Jul-2025</td><td class="price-cell">53.94</td><td class="vol-cell">39.58</td><td>100%</td><td class="red">−5.00%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr><td>01-Aug-2025</td><td class="price-cell">50.09</td><td class="vol-cell">18.17</td><td>100%</td><td class="red">−5.01%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>07-Aug-2025</td><td class="price-cell">45.12</td><td class="vol-cell">24.25</td><td>97%</td><td class="red">−4.93%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>08-Aug-2025</td><td class="price-cell">43.03</td><td class="vol-cell">17.57</td><td>94%</td><td class="red">−4.63%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>26-Aug-2025</td><td class="price-cell">44.73</td><td class="vol-cell">19.50</td><td>82%</td><td class="red">−3.72%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr><td>18-Sep-2025</td><td class="price-cell">47.44</td><td class="vol-cell">15.74</td><td>92%</td><td class="red">−2.85%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr class="signal-dist"><td>13-Oct-2025</td><td class="price-cell">46.22</td><td class="vol-cell">82.07</td><td>33%</td><td class="red">−4.86%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr><td>14-Oct-2025</td><td class="price-cell">45.10</td><td class="vol-cell">25.30</td><td>81%</td><td class="red">−2.42%</td><td><span class="badge badge-sell">SELL VOL</span></td></tr>
+        <tr class="signal-dist"><td>03-Nov-2025</td><td class="price-cell">43.89</td><td class="vol-cell">71.98</td><td>76%</td><td class="red">−5.45%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>04-Nov-2025</td><td class="price-cell">40.72</td><td class="vol-cell">89.47</td><td>89%</td><td class="red">−7.22%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>07-Nov-2025</td><td class="price-cell">39.19</td><td class="vol-cell">47.89</td><td>92%</td><td class="red">−4.58%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>08-Dec-2025</td><td class="price-cell">35.40</td><td class="vol-cell">47.51</td><td>86%</td><td class="red">−6.05%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>10-Dec-2025</td><td class="price-cell">33.98</td><td class="vol-cell">47.37</td><td>90%</td><td class="red">−4.60%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr class="signal-dist"><td>22-Dec-2025</td><td class="price-cell">35.28</td><td class="vol-cell">87.98</td><td>92%</td><td class="red">−8.51%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr><td>26-Dec-2025</td><td class="price-cell">36.54</td><td class="vol-cell">50.05</td><td>88%</td><td class="red">−4.25%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr class="signal-dist"><td>30-Dec-2025</td><td class="price-cell">33.66</td><td class="vol-cell">99.22</td><td>87%</td><td class="red">−4.65%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr><td>20-Jan-2026</td><td class="price-cell">29.93</td><td class="vol-cell">49.69</td><td>89%</td><td class="red">−3.79%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr class="signal-dist"><td>23-Jan-2026</td><td class="price-cell">28.27</td><td class="vol-cell">54.02</td><td>89%</td><td class="red">−5.67%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+        <tr><td>27-Jan-2026</td><td class="price-cell">27.43</td><td class="vol-cell">59.31</td><td>64%</td><td class="red">−2.97%</td><td><span class="badge badge-dist">DISTRIB</span></td></tr>
+        <tr class="signal-dist"><td>29-Jan-2026</td><td class="price-cell">27.77</td><td class="vol-cell">46.97</td><td>93%</td><td class="red">−5.54%</td><td><span class="badge badge-dist">DISTRIB ⭐</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+</div>
+
+<p class="note">
+  ⚠️ <strong>Disclaimer:</strong> This analysis is purely educational and based on historical Volume Breakdown patterns. It is <strong>not financial advice</strong>. Past signals do not guarantee future performance. RPOL is a high-volatility, speculative stock — always do your own research and consult a SEBI-registered advisor before trading.
+</p>
+
+
+
+</body></html>

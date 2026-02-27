@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RPOL — SMA Backtest Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:       #060810;
+  --bg2:      #0c0f1a;
+  --surface:  #101422;
+  --surface2: #161c2e;
+  --border:   #1e2540;
+  --blue:     #3b82f6;
+  --cyan:     #06b6d4;
+  --green:    #10d97e;
+  --red:      #f43f5e;
+  --yellow:   #fbbf24;
+  --orange:   #f97316;
+  --violet:   #8b5cf6;
+  --text:     #e2e8f0;
+  --muted:    #64748b;
+  --dim:      #334155;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content:'';
+  position:fixed;top:0;left:0;right:0;height:700px;
+  background: radial-gradient(ellipse 80% 60% at 50% -20%, rgba(59,130,246,0.07) 0%, transparent 70%);
+  pointer-events:none;z-index:0;
+}
+body::after {
+  content:'';
+  position:fixed;inset:0;
+  background-image: radial-gradient(rgba(59,130,246,0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events:none;z-index:0;
+}
+
+.page { position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:0 28px 100px; }
+
+/* HEADER */
+.header {
+  padding: 52px 0 40px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 32px;
+  border-bottom: 1px solid var(--border);
+  animation: slideDown .7s cubic-bezier(.16,1,.3,1) both;
+}
+.header-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.header-title {
+  font-size: clamp(32px,5.5vw,60px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+.header-title .accent { color: var(--cyan); }
+.header-sub {
+  margin-top: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+.header-price-block { text-align: right; }
+.header-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 44px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -1px;
+}
+.header-price-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  margin-top: 4px;
+}
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: rgba(244,63,94,0.12);
+  color: var(--red);
+  border: 1px solid rgba(244,63,94,0.25);
+  margin-top: 10px;
+}
+.header-badge.bull {
+  background: rgba(16,217,126,0.12);
+  color: var(--green);
+  border-color: rgba(16,217,126,0.25);
+}
+
+/* SUMMARY CARDS */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  padding: 32px 0;
+  animation: slideDown .7s .1s cubic-bezier(.16,1,.3,1) both;
+}
+@media(max-width:900px){ .metrics-grid { grid-template-columns: repeat(3,1fr); } }
+@media(max-width:580px){ .metrics-grid { grid-template-columns: 1fr 1fr; } }
+
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 18px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s, transform .2s;
+}
+.metric-card:hover { border-color: var(--dim); transform: translateY(-2px); }
+.metric-card::before {
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:2px;
+  border-radius:14px 14px 0 0;
+}
+.metric-card.c1::before { background: var(--cyan); }
+.metric-card.c2::before { background: var(--green); }
+.metric-card.c3::before { background: var(--red); }
+.metric-card.c4::before { background: var(--yellow); }
+.metric-card.c5::before { background: var(--violet); }
+
+.mc-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.mc-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+}
+.mc-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.mc-bar {
+  margin-top: 12px;
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.mc-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1.5s cubic-bezier(.4,0,.2,1);
+  width: 0;
+}
+
+/* SECTION */
+.sec-wrap {
+  margin-top: 44px;
+  animation: fadeUp .7s .2s cubic-bezier(.16,1,.3,1) both;
+}
+.sec-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.sec-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.sec-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sec-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.sec-desc {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+/* CHART CONTAINER */
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.chart-card-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 4px;
+}
+.chart-card-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.chart-wrap { position: relative; height: 320px; }
+.chart-wrap.tall { height: 420px; }
+
+/* TWO COL */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+@media(max-width:768px){ .two-col { grid-template-columns: 1fr; } }
+
+/* PHASE TABLE */
+.phase-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.phase-row {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 120px 1fr 80px 80px 80px 110px;
+  gap: 12px;
+  align-items: center;
+  transition: border-color .2s;
+}
+.phase-row:hover { border-color: var(--dim); }
+@media(max-width:900px){ .phase-row { grid-template-columns: 1fr 1fr 1fr; grid-gap: 8px; } }
+.phase-row.head {
+  background: transparent;
+  border-color: transparent;
+  padding-bottom: 4px;
+}
+.ph-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.ph-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+.ph-range {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text);
+}
+.ph-days {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+}
+.ph-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+.ph-acc {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 700;
+}
+.sig-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.sig-pill.bull { background: rgba(16,217,126,0.12); color: var(--green); border: 1px solid rgba(16,217,126,0.25); }
+.sig-pill.bear { background: rgba(244,63,94,0.12);  color: var(--red);   border: 1px solid rgba(244,63,94,0.25); }
+.sig-pill.neut { background: rgba(251,191,36,0.12); color: var(--yellow);border: 1px solid rgba(251,191,36,0.25); }
+.sig-pill.ok   { background: rgba(16,217,126,0.1);  color: var(--green); border: 1px solid rgba(16,217,126,0.2); }
+.sig-pill.fail { background: rgba(244,63,94,0.1);   color: var(--red);   border: 1px solid rgba(244,63,94,0.2); }
+
+/* TRADE TABLE */
+.trade-table { width:100%; border-collapse: collapse; }
+.trade-table th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.trade-table td {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(30,37,64,0.5);
+  color: var(--text);
+}
+.trade-table tr:hover td { background: var(--surface2); }
+.trade-table .success-row td:first-child { border-left: 2px solid var(--green); }
+.trade-table .fail-row td:first-child { border-left: 2px solid var(--red); }
+
+/* INSIGHT BOX */
+.insight-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-top: 16px;
+}
+.insight-box .ins-head {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 16px;
+}
+.insight-list { list-style: none; }
+.insight-list li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  line-height: 1.6;
+}
+.insight-list li:last-child { border-bottom: none; }
+.ins-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* CROSSOVER BANNER */
+.crossover-banner {
+  background: linear-gradient(135deg, rgba(244,63,94,0.08), rgba(139,92,246,0.08));
+  border: 1px solid rgba(244,63,94,0.2);
+  border-radius: 14px;
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 16px;
+}
+.cb-icon { font-size: 36px; flex-shrink: 0; }
+.cb-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: -0.3px;
+}
+.cb-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.cb-desc {
+  font-size: 13px;
+  color: var(--text);
+  margin-top: 6px;
+  line-height: 1.6;
+}
+.cb-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--red);
+  margin-left: auto;
+  text-align: right;
+  flex-shrink: 0;
+}
+.cb-price-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* SEARCH / FILTER */
+.filter-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .2s;
+}
+.filter-btn:hover, .filter-btn.active {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(6,182,212,0.08);
+}
+
+/* TABS */
+.tabs-row {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 12px 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .2s;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.tab-btn.active {
+  color: var(--cyan);
+  border-bottom-color: var(--cyan);
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* WEEKLY TABLE WRAPPER */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.table-wrap table {
+  width: 100%;
+  min-width: 600px;
+}
+
+/* VERDICT CARD */
+.verdict-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+@media(max-width:640px){ .verdict-grid { grid-template-columns: 1fr; } }
+.verdict-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+}
+.vc-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.vc-body {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.vc-body strong { color: var(--text); }
+
+@keyframes slideDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeUp    { from{opacity:0;transform:translateY(20px)}  to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <div class="header-eyebrow">NSE · RPOL · Reliance Power Limited</div>
+      <div class="header-title">SMA <span class="accent">Backtest</span><br>Analysis</div>
+      <div class="header-sub">DEC 2024 → FEB 2026 · 299 DAILY · 79 WEEKLY BARS</div>
+    </div>
+    <div class="header-price-block">
+      <div class="header-price">₹26.25</div>
+      <div class="header-price-label">Last Close · 20 Feb 2026</div>
+      <div class="header-badge">● BEARISH REGIME</div>
+    </div>
+  </div>
+
+  <!-- SUMMARY METRICS -->
+  <div class="metrics-grid">
+    <div class="metric-card c1">
+      <div class="mc-label">Daily SMA50<br>Accuracy</div>
+      <div class="mc-val" style="color:var(--cyan)">52.7%</div>
+      <div class="mc-sub">157 ✓ / 141 ✗ (298 signals)</div>
+      <div class="mc-bar"><div class="mc-bar-fill" data-w="52.7" style="background:var(--cyan)"></div></div>
+    </div>
+    <div class="metric-card c2">
+      <div class="mc-label">Best Month<br>SMA50</div>
+      <div class="mc-val" style="color:var(--green)">75.0%</div>
+      <div class="mc-sub">Jan 2026 · 15/20 correct</div>
+      <div class="mc-bar"><div class="mc-bar-fill" data-w="75" style="background:var(--green)"></div></div>
+    </div>
+    <div class="metric-card c3">
+      <div class="mc-label">Daily SMA200<br>Accuracy</div>
+      <div class="mc-val" style="color:var(--yellow)">49.7%</div>
+      <div class="mc-sub">148 ✓ / 150 ✗ (298 signals)</div>
+      <div class="mc-bar"><div class="mc-bar-fill" data-w="49.7" style="background:var(--yellow)"></div></div>
+    </div>
+    <div class="metric-card c4">
+      <div class="mc-label">Weekly SMA50<br>Accuracy</div>
+      <div class="mc-val" style="color:var(--orange)">47.4%</div>
+      <div class="mc-sub">37 ✓ / 41 ✗ (78 signals)</div>
+      <div class="mc-bar"><div class="mc-bar-fill" data-w="47.4" style="background:var(--orange)"></div></div>
+    </div>
+    <div class="metric-card c5">
+      <div class="mc-label">Death Cross<br>Triggered</div>
+      <div class="mc-val" style="color:var(--red)">1</div>
+      <div class="mc-sub">07 Oct 2025 @ ₹44.56</div>
+      <div class="mc-bar"><div class="mc-bar-fill" data-w="100" style="background:var(--red)"></div></div>
+    </div>
+  </div>
+
+  <!-- PRICE + SMA CHART -->
+  <div class="sec-wrap">
+    <div class="sec-head">
+      <div class="sec-label">01</div>
+      <div class="sec-line"></div>
+    </div>
+    <div class="sec-title">Price vs SMA50 & SMA200</div>
+    <div class="sec-desc">Full daily view with both moving averages. Shaded zones show signal accuracy.</div>
+    <div class="chart-card">
+      <div class="chart-card-title">Daily Price Chart</div>
+      <div class="chart-card-sub">Dec 2024 — Feb 2026 | Highlights: Death Cross Oct 2025 @ ₹44.56</div>
+      <div class="chart-wrap tall">
+        <canvas id="priceChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEATH CROSS BANNER -->
+  <div class="crossover-banner">
+    <div class="cb-icon">💀</div>
+    <div>
+      <div class="cb-title">Death Cross Detected</div>
+      <div class="cb-date">07 OCTOBER 2025 · SMA50 CROSSED BELOW SMA200</div>
+      <div class="cb-desc">SMA50 fell below SMA200, signaling a major bearish regime change. Price at crossover was ₹44.56. Since then, RPOL declined to ₹26.25 — a <strong style="color:var(--red)">−41.1% drawdown</strong> over ~4.5 months, confirming the Death Cross as a strong bearish signal in this case.</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0;margin-left:auto">
+      <div class="cb-price">₹44.56</div>
+      <div class="cb-price-label">Crossover Price</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--red);margin-top:4px">−41.1% since</div>
+    </div>
+  </div>
+
+  <!-- ACCURACY BREAKDOWN -->
+  <div class="sec-wrap">
+    <div class="sec-head">
+      <div class="sec-label">02</div>
+      <div class="sec-line"></div>
+    </div>
+    <div class="sec-title">Monthly Accuracy Breakdown</div>
+    <div class="sec-desc">SMA50 next-day prediction accuracy per month. Below 50% = indicator failed that month.</div>
+    <div class="chart-card">
+      <div class="chart-wrap">
+        <canvas id="monthlyChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- TWO CHARTS -->
+  <div class="two-col">
+    <div class="chart-card">
+      <div class="chart-card-title">SMA Signal Distribution</div>
+      <div class="chart-card-sub">Success vs failure split by signal type (daily)</div>
+      <div class="chart-wrap">
+        <canvas id="donutChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-title">Weekly Signal Accuracy</div>
+      <div class="chart-card-sub">Weekly SMA50 Bullish/Bearish prediction track record</div>
+      <div class="chart-wrap">
+        <canvas id="weeklyChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE ANALYSIS -->
+  <div class="sec-wrap">
+    <div class="sec-head">
+      <div class="sec-label">03</div>
+      <div class="sec-line"></div>
+    </div>
+    <div class="sec-title">Signal Phase Analysis</div>
+    <div class="sec-desc">Consecutive periods of the same SMA50 signal. Longer phases tend to have better accuracy.</div>
+    <div class="phase-grid">
+      <div class="phase-row head">
+        <span class="ph-label">Period</span>
+        <span class="ph-label">Date Range</span>
+        <span class="ph-label">Days</span>
+        <span class="ph-label">✓ / ✗</span>
+        <span class="ph-label">Accuracy</span>
+        <span class="ph-label">Verdict</span>
+      </div>
+      <!-- Phase rows injected by JS -->
+    </div>
+  </div>
+
+  <!-- TRADE LOG TABS -->
+  <div class="sec-wrap">
+    <div class="sec-head">
+      <div class="sec-label">04</div>
+      <div class="sec-line"></div>
+    </div>
+    <div class="sec-title">Detailed Signal Log</div>
+    <div class="sec-desc">Every SMA50 crossover signal with next-day outcome. Filter by result.</div>
+
+    <div class="tabs-row">
+      <button class="tab-btn active" onclick="switchTab('daily')">Daily Signals</button>
+      <button class="tab-btn" onclick="switchTab('weekly')">Weekly Signals</button>
+    </div>
+
+    <div id="tab-daily" class="tab-panel active">
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterTable('all')">All</button>
+        <button class="filter-btn" onclick="filterTable('success')">✓ Success</button>
+        <button class="filter-btn" onclick="filterTable('fail')">✗ Failed</button>
+        <button class="filter-btn" onclick="filterTable('bull')">Bullish Signal</button>
+        <button class="filter-btn" onclick="filterTable('bear')">Bearish Signal</button>
+      </div>
+      <div class="table-wrap">
+        <table class="trade-table" id="dailyTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Price</th>
+              <th>SMA50</th>
+              <th>SMA200</th>
+              <th>Signal</th>
+              <th>Next Day %</th>
+              <th>SMA50 Result</th>
+              <th>SMA200 Result</th>
+            </tr>
+          </thead>
+          <tbody id="dailyTbody"></tbody>
+        </table>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:12px;text-align:right">
+        Showing <span id="countLabel">298</span> records
+      </div>
+    </div>
+
+    <div id="tab-weekly" class="tab-panel">
+      <div class="table-wrap">
+        <table class="trade-table" id="weeklyTable">
+          <thead>
+            <tr>
+              <th>Week</th>
+              <th>Price</th>
+              <th>SMA50 Signal</th>
+              <th>Buy/Sell</th>
+              <th>Next Wk %</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody id="weeklyTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div class="sec-wrap">
+    <div class="sec-head">
+      <div class="sec-label">05</div>
+      <div class="sec-line"></div>
+    </div>
+    <div class="sec-title">Backtest Verdict & Key Insights</div>
+    <div class="sec-desc">Summary findings from SMA50 & SMA200 backtest on RPOL</div>
+
+    <div class="verdict-grid">
+      <div class="verdict-card">
+        <div class="vc-title">
+          <span style="color:var(--green)">✓</span>
+          When SMA50 Worked
+        </div>
+        <div class="vc-body">
+          <strong>Best performance in trending markets.</strong> The SMA50 showed its highest accuracy (63.2%) during the extended Bearish phase from Nov 2025 to Feb 2026 (76 days). Similarly, in the Feb–Mar 2025 bearish phase (60.7% over 28 days), the signal correctly aligned with downward momentum. In Jan 2026, accuracy jumped to <strong>75%</strong> — the best single month.<br><br>
+          <strong>Death Cross confirmed.</strong> The Oct 7, 2025 Death Cross (SMA50 crossing below SMA200) was a highly successful macro signal — RPOL lost 41.1% over 4.5 months following it.
+        </div>
+      </div>
+      <div class="verdict-card">
+        <div class="vc-title">
+          <span style="color:var(--red)">✗</span>
+          When SMA50 Failed
+        </div>
+        <div class="vc-body">
+          <strong>Worst in choppy/reversal periods.</strong> Jan 2025 was the weakest month at 34.8% — price was oscillating around SMA50, generating false signals. Short-duration phases (1–3 days) consistently showed 0–33% accuracy as the price whipsawed the indicator.<br><br>
+          <strong>Weekly SMA under-performed.</strong> The weekly SMA50 accuracy (47.4%) was actually below random, suggesting at the weekly timeframe, the indicator lagged too much for RPOL's volatile swings. The Buy/Sell signals from weekly data were mostly stuck on <strong>Sell</strong> since mid-2024 — a case of hindsight bias in a declining stock.
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-box" style="margin-top:16px">
+      <div class="ins-head">Key Findings</div>
+      <ul class="insight-list">
+        <li><span class="ins-icon">📊</span><span>Daily SMA50 accuracy of 52.7% is slightly above random (50%), meaning it has marginal predictive value on a day-to-day basis. It works better as a trend filter than a short-term trade signal.</span></li>
+        <li><span class="ins-icon">💡</span><span>SMA200 accuracy at 49.7% is effectively random — it is too slow-moving for RPOL's daily volatility. However, the Death Cross (SMA50 × SMA200) crossover event was a powerful macro signal.</span></li>
+        <li><span class="ins-icon">📅</span><span>Accuracy improved significantly in trending bearish phases: Nov 2025–Feb 2026 (63.2%), Feb–Mar 2025 (60.7%), and Dec 2025 (59.1%). SMA50 works better confirming trends than predicting reversals.</span></li>
+        <li><span class="ins-icon">⚠️</span><span>In range-bound or transitional periods (Jan 2025, Oct 2025), accuracy dropped to 34–43%. During these chop zones, SMA50 generated numerous false signals as price oscillated around the moving average.</span></li>
+        <li><span class="ins-icon">📉</span><span>Weekly SMA50 (47.4%) underperformed daily. RPOL's intraweek volatility is high enough that weekly closes are misleading — a bearish weekly signal still saw +11.67% the following week (Dec 14, 2025).</span></li>
+        <li><span class="ins-icon">🎯</span><span>The single most reliable signal in the entire dataset was the Oct 7, 2025 Death Cross at ₹44.56. Using this as an exit/short signal would have captured the full 41.1% decline over 4.5 months.</span></li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===== DATA =====
+const DAILY = [{"date":"2024-12-11","price":44.04,"sma50":41.972,"sma200":31.982,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":5.0,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2024-12-12","price":46.24,"sma50":41.923,"sma200":32.086,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":2.62,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2024-12-13","price":47.45,"sma50":41.85,"sma200":32.195,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-0.46,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2024-12-16","price":47.23,"sma50":41.763,"sma200":32.307,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-1.78,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2024-12-17","price":46.39,"sma50":41.698,"sma200":32.416,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-1.49,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2024-12-18","price":45.69,"sma50":41.617,"sma200":32.523,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-3.23,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2024-12-19","price":44.21,"sma50":41.554,"sma200":32.619,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":0.54,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2024-12-20","price":44.45,"sma50":41.476,"sma200":32.714,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-4.9,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2024-12-23","price":42.27,"sma50":41.41,"sma200":32.8,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":4.2,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2024-12-24","price":44.04,"sma50":41.302,"sma200":32.893,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":1.86,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2024-12-26","price":44.86,"sma50":41.252,"sma200":32.986,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-3.82,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2024-12-27","price":43.14,"sma50":41.189,"sma200":33.073,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-2.06,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2024-12-30","price":42.25,"sma50":41.111,"sma200":33.155,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-4.14,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2024-12-31","price":40.5,"sma50":41.048,"sma200":33.225,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-3.41,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-01-01","price":39.12,"sma50":40.971,"sma200":33.289,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-1.41,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-01-02","price":38.57,"sma50":40.882,"sma200":33.35,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-3.66,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-01-03","price":37.16,"sma50":40.803,"sma200":33.398,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":0.78,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-01-06","price":37.45,"sma50":40.707,"sma200":33.45,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":3.18,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-01-07","price":38.64,"sma50":40.617,"sma200":33.508,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-1.68,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-01-08","price":38.0,"sma50":40.524,"sma200":33.554,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-2.97,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-01-09","price":36.87,"sma50":40.427,"sma200":33.595,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":0.51,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-01-10","price":37.06,"sma50":40.332,"sma200":33.636,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":2.97,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-01-13","price":38.16,"sma50":40.233,"sma200":33.686,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-6.79,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-01-14","price":35.57,"sma50":40.143,"sma200":33.714,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":0.22,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-01-15","price":35.65,"sma50":40.037,"sma200":33.744,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":1.74,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-01-16","price":36.27,"sma50":39.932,"sma200":33.773,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-0.83,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-01-17","price":35.97,"sma50":39.813,"sma200":33.8,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":2.28,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-01-20","price":36.79,"sma50":39.698,"sma200":33.833,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":2.72,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-01-21","price":37.79,"sma50":39.576,"sma200":33.872,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-2.04,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-01-22","price":37.02,"sma50":39.451,"sma200":33.901,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-0.24,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-01-23","price":36.93,"sma50":39.323,"sma200":33.929,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-0.57,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-01-24","price":36.72,"sma50":39.193,"sma200":33.955,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-2.69,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-01-27","price":35.73,"sma50":39.066,"sma200":33.974,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-2.38,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-01-28","price":34.88,"sma50":38.933,"sma200":33.985,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":1.15,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-01-29","price":35.28,"sma50":38.8,"sma200":33.998,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-1.19,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-01-30","price":34.86,"sma50":38.671,"sma200":34.004,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-2.01,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-01-31","price":34.16,"sma50":38.541,"sma200":34.007,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-3.63,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-02-03","price":32.92,"sma50":38.407,"sma200":34.002,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.0,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-02-04","price":32.59,"sma50":38.276,"sma200":33.995,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.37,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-02-05","price":32.71,"sma50":38.142,"sma200":33.99,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":3.24,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-02-06","price":33.77,"sma50":38.003,"sma200":33.99,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.65,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-02-07","price":33.99,"sma50":37.87,"sma200":33.994,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-2.15,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-02-10","price":33.26,"sma50":37.739,"sma200":33.988,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-3.03,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-02-11","price":32.25,"sma50":37.611,"sma200":33.977,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.62,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-02-12","price":32.05,"sma50":37.481,"sma200":33.963,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.59,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-02-13","price":31.54,"sma50":37.351,"sma200":33.944,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.92,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-02-14","price":31.83,"sma50":37.222,"sma200":33.928,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.41,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-02-17","price":31.7,"sma50":37.091,"sma200":33.913,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.04,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-02-18","price":31.37,"sma50":36.962,"sma200":33.897,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.5,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-02-19","price":31.84,"sma50":36.836,"sma200":33.884,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":2.23,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-02-20","price":32.55,"sma50":36.711,"sma200":33.876,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.02,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-02-21","price":32.88,"sma50":36.59,"sma200":33.871,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.85,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-02-24","price":32.6,"sma50":36.471,"sma200":33.862,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":3.34,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-02-25","price":33.69,"sma50":36.354,"sma200":33.859,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.84,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-02-26","price":33.07,"sma50":36.235,"sma200":33.852,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.93,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-02-27","price":33.71,"sma50":36.123,"sma200":33.851,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-4.27,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-02-28","price":32.27,"sma50":36.011,"sma200":33.839,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-3.87,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-03-03","price":31.02,"sma50":35.9,"sma200":33.822,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":2.87,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-03-04","price":31.91,"sma50":35.791,"sma200":33.81,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-2.35,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-03-05","price":31.16,"sma50":35.683,"sma200":33.793,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":3.21,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-03-06","price":32.16,"sma50":35.574,"sma200":33.782,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-2.79,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-03-07","price":31.26,"sma50":35.468,"sma200":33.765,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.32,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-03-10","price":31.36,"sma50":35.362,"sma200":33.748,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.35,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-03-11","price":31.47,"sma50":35.258,"sma200":33.732,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.68,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-03-12","price":30.94,"sma50":35.153,"sma200":33.712,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.13,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-03-13","price":30.59,"sma50":35.049,"sma200":33.689,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.88,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-03-14","price":30.32,"sma50":34.944,"sma200":33.664,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":5.78,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-03-17","price":32.07,"sma50":34.837,"sma200":33.648,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.96,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-03-18","price":32.38,"sma50":34.736,"sma200":33.635,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.9,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-03-19","price":32.09,"sma50":34.636,"sma200":33.62,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":4.83,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-03-20","price":33.64,"sma50":34.543,"sma200":33.614,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.21,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-03-21","price":33.71,"sma50":34.451,"sma200":33.609,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":3.38,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-03-24","price":34.85,"sma50":34.381,"sma200":33.617,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-4.47,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-03-25","price":33.29,"sma50":34.304,"sma200":33.609,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":2.5,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-03-26","price":34.12,"sma50":34.236,"sma200":33.609,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-3.73,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-03-27","price":32.85,"sma50":34.154,"sma200":33.596,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.95,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-03-28","price":33.49,"sma50":34.073,"sma200":33.592,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.81,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-03-31","price":33.76,"sma50":33.998,"sma200":33.589,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":2.13,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-04-01","price":34.48,"sma50":33.937,"sma200":33.594,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-3.16,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-04-02","price":33.39,"sma50":33.863,"sma200":33.588,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.18,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-04-03","price":33.45,"sma50":33.793,"sma200":33.582,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-3.53,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-04-04","price":32.27,"sma50":33.718,"sma200":33.569,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.59,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-04-07","price":32.08,"sma50":33.647,"sma200":33.556,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":2.74,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-04-08","price":32.96,"sma50":33.578,"sma200":33.547,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.94,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-04-09","price":32.65,"sma50":33.508,"sma200":33.537,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":2.27,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-04-10","price":33.39,"sma50":33.448,"sma200":33.534,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-5.6,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-04-11","price":31.52,"sma50":33.386,"sma200":33.511,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.38,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-04-14","price":31.64,"sma50":33.323,"sma200":33.492,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":5.28,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-04-15","price":33.31,"sma50":33.274,"sma200":33.486,"sma50_signal":"Bullish","sma200_signal":"Bearish","next_change":-2.76,"sma50_success":false,"sma200_success":true,"trend":"Bullish"},{"date":"2025-04-16","price":32.39,"sma50":33.215,"sma200":33.471,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.06,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-04-17","price":32.41,"sma50":33.156,"sma200":33.455,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":4.6,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-04-22","price":33.9,"sma50":33.115,"sma200":33.457,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":2.33,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-04-23","price":34.69,"sma50":33.086,"sma200":33.465,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":0.69,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-04-24","price":34.93,"sma50":33.071,"sma200":33.476,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":0.6,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-04-25","price":35.14,"sma50":33.067,"sma200":33.491,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-3.1,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-04-28","price":34.05,"sma50":33.052,"sma200":33.499,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":2.61,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-04-29","price":34.94,"sma50":33.05,"sma200":33.512,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-0.77,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-04-30","price":34.67,"sma50":33.048,"sma200":33.524,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":4.87,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-05-01","price":36.36,"sma50":33.071,"sma200":33.547,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-2.48,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-05-02","price":35.46,"sma50":33.089,"sma200":33.566,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":5.72,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-05-05","price":37.49,"sma50":33.131,"sma200":33.596,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-3.89,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-05-06","price":36.03,"sma50":33.177,"sma200":33.617,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":1.72,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-05-07","price":36.65,"sma50":33.228,"sma200":33.641,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-2.0,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-05-08","price":35.92,"sma50":33.268,"sma200":33.662,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":3.48,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-05-09","price":37.17,"sma50":33.321,"sma200":33.689,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-2.37,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-05-12","price":36.29,"sma50":33.368,"sma200":33.712,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":3.72,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-05-13","price":37.64,"sma50":33.432,"sma200":33.743,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-3.75,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-05-14","price":36.23,"sma50":33.486,"sma200":33.768,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":1.66,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-05-15","price":36.83,"sma50":33.543,"sma200":33.795,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-3.7,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-05-16","price":35.47,"sma50":33.59,"sma200":33.817,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":0.48,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-05-19","price":35.64,"sma50":33.639,"sma200":33.84,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":2.86,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-05-20","price":36.66,"sma50":33.705,"sma200":33.871,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":1.01,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-05-21","price":37.03,"sma50":33.777,"sma200":33.906,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":1.84,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-05-22","price":37.71,"sma50":33.859,"sma200":33.946,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-1.43,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-05-23","price":37.17,"sma50":33.939,"sma200":33.983,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":3.36,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-05-26","price":38.42,"sma50":34.038,"sma200":34.027,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-1.77,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-05-27","price":37.74,"sma50":34.133,"sma200":34.067,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":4.85,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-05-28","price":39.57,"sma50":34.254,"sma200":34.118,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-5.63,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-05-29","price":37.34,"sma50":34.373,"sma200":34.159,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-0.67,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-05-30","price":37.09,"sma50":34.487,"sma200":34.199,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":4.41,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-06-02","price":38.73,"sma50":34.627,"sma200":34.247,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-4.87,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-06-03","price":36.84,"sma50":34.75,"sma200":34.287,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":0.87,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-06-04","price":37.16,"sma50":34.875,"sma200":34.33,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":2.15,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-06-05","price":37.96,"sma50":35.008,"sma200":34.378,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":4.19,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-06-06","price":39.55,"sma50":35.166,"sma200":34.437,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-1.77,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-06-09","price":38.85,"sma50":35.324,"sma200":34.493,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-3.97,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-06-10","price":37.31,"sma50":35.463,"sma200":34.542,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":0.69,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-06-11","price":37.57,"sma50":35.604,"sma200":34.594,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-1.81,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-06-12","price":36.89,"sma50":35.73,"sma200":34.641,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":1.19,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-06-13","price":37.33,"sma50":35.858,"sma200":34.693,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-4.78,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-06-16","price":35.55,"sma50":35.956,"sma200":34.733,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":0.85,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-06-17","price":35.85,"sma50":36.052,"sma200":34.776,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":3.32,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-06-18","price":37.04,"sma50":36.162,"sma200":34.828,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":2.73,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-06-19","price":38.05,"sma50":36.293,"sma200":34.887,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-2.55,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-06-20","price":37.08,"sma50":36.412,"sma200":34.939,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":3.24,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-06-23","price":38.28,"sma50":36.549,"sma200":34.998,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-4.48,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-06-24","price":36.57,"sma50":36.662,"sma200":35.046,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":2.24,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-06-25","price":37.39,"sma50":36.786,"sma200":35.101,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-1.39,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-06-26","price":36.87,"sma50":36.899,"sma200":35.151,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-1.14,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-06-27","price":36.45,"sma50":36.998,"sma200":35.197,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":1.95,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-06-30","price":37.16,"sma50":37.101,"sma200":35.25,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-2.84,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-07-01","price":36.1,"sma50":37.188,"sma200":35.296,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-1.69,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-07-02","price":35.49,"sma50":37.268,"sma200":35.337,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":0.37,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-07-03","price":35.62,"sma50":37.343,"sma200":35.379,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":3.96,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-07-04","price":37.03,"sma50":37.431,"sma200":35.428,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-0.92,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-07-07","price":36.69,"sma50":37.514,"sma200":35.474,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":1.09,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-07-08","price":37.09,"sma50":37.601,"sma200":35.523,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":1.84,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-07-09","price":37.77,"sma50":37.704,"sma200":35.578,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":1.03,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-07-10","price":38.16,"sma50":37.818,"sma200":35.636,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":1.36,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-07-11","price":38.68,"sma50":37.943,"sma200":35.699,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-2.38,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-07-14","price":37.76,"sma50":38.059,"sma200":35.757,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":1.67,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-07-15","price":38.39,"sma50":38.186,"sma200":35.82,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-4.04,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-07-16","price":36.84,"sma50":38.296,"sma200":35.874,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":3.88,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-07-17","price":38.27,"sma50":38.42,"sma200":35.935,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-2.25,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-07-18","price":37.41,"sma50":38.531,"sma200":35.989,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":3.18,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-07-21","price":38.6,"sma50":38.657,"sma200":36.051,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-1.89,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-07-22","price":37.87,"sma50":38.774,"sma200":36.108,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-3.18,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-07-23","price":36.67,"sma50":38.869,"sma200":36.157,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-1.33,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-07-24","price":36.18,"sma50":38.952,"sma200":36.201,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.55,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-07-25","price":35.98,"sma50":39.025,"sma200":36.241,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-3.39,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-07-28","price":34.76,"sma50":39.083,"sma200":36.275,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":3.28,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-07-29","price":35.9,"sma50":39.152,"sma200":36.314,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.67,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-07-30","price":36.5,"sma50":39.228,"sma200":36.356,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-3.29,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-07-31","price":35.3,"sma50":39.292,"sma200":36.391,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-2.38,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-08-01","price":34.46,"sma50":39.343,"sma200":36.42,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.42,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-08-04","price":33.97,"sma50":39.385,"sma200":36.444,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.88,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-08-05","price":34.27,"sma50":39.425,"sma200":36.469,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":2.33,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-08-06","price":35.07,"sma50":39.469,"sma200":36.497,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.86,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-08-07","price":34.42,"sma50":39.502,"sma200":36.521,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":4.62,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-08-08","price":36.01,"sma50":39.553,"sma200":36.554,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":2.58,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-08-11","price":36.94,"sma50":39.614,"sma200":36.59,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":2.06,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-08-12","price":37.7,"sma50":39.686,"sma200":36.633,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-1.61,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-08-13","price":37.09,"sma50":39.748,"sma200":36.671,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":0.3,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-08-14","price":37.2,"sma50":39.809,"sma200":36.71,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":3.47,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-08-18","price":38.49,"sma50":39.888,"sma200":36.757,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-1.27,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-08-19","price":38.0,"sma50":39.958,"sma200":36.8,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-1.24,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-08-20","price":37.53,"sma50":40.018,"sma200":36.84,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":4.77,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-08-21","price":39.32,"sma50":40.098,"sma200":36.889,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":0.97,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-08-22","price":39.7,"sma50":40.182,"sma200":36.942,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-1.18,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-08-25","price":39.23,"sma50":40.255,"sma200":36.989,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-0.46,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-08-26","price":39.05,"sma50":40.319,"sma200":37.033,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":2.36,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-08-27","price":39.97,"sma50":40.398,"sma200":37.084,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-2.48,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-08-28","price":38.98,"sma50":40.464,"sma200":37.129,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":2.72,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-08-29","price":40.04,"sma50":40.548,"sma200":37.18,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":1.37,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-09-01","price":40.59,"sma50":40.643,"sma200":37.236,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":1.38,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-09-02","price":41.15,"sma50":40.748,"sma200":37.298,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-1.22,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-09-03","price":40.65,"sma50":40.845,"sma200":37.355,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-3.86,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-09-04","price":39.08,"sma50":40.923,"sma200":37.399,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-0.31,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-09-05","price":38.96,"sma50":40.992,"sma200":37.44,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":1.77,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-09-08","price":39.65,"sma50":41.066,"sma200":37.484,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-0.15,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-09-09","price":39.59,"sma50":41.132,"sma200":37.526,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":1.97,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-09-10","price":40.37,"sma50":41.209,"sma200":37.573,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-1.46,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-09-11","price":39.78,"sma50":41.278,"sma200":37.616,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":1.98,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-09-12","price":40.57,"sma50":41.355,"sma200":37.663,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":1.78,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-09-15","price":41.29,"sma50":41.441,"sma200":37.716,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":0.31,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-09-16","price":41.42,"sma50":41.532,"sma200":37.77,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":0.29,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-09-17","price":41.54,"sma50":41.624,"sma200":37.826,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-0.43,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-09-18","price":41.36,"sma50":41.71,"sma200":37.88,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":2.68,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-09-19","price":42.47,"sma50":41.812,"sma200":37.944,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-1.58,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-09-22","price":41.8,"sma50":41.909,"sma200":38.003,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":0.48,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-09-23","price":42.0,"sma50":42.008,"sma200":38.065,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-1.38,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-09-24","price":41.42,"sma50":42.1,"sma200":38.122,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":2.2,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-09-25","price":42.33,"sma50":42.202,"sma200":38.185,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-1.32,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-09-26","price":41.77,"sma50":42.296,"sma200":38.245,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":2.78,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-09-29","price":42.93,"sma50":42.406,"sma200":38.314,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-0.23,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-09-30","price":42.83,"sma50":42.514,"sma200":38.383,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":3.71,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-10-01","price":44.42,"sma50":42.651,"sma200":38.466,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-0.27,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-10-02","price":44.3,"sma50":42.787,"sma200":38.549,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":3.85,"sma50_success":true,"sma200_success":true,"trend":"Bullish"},{"date":"2025-10-03","price":46.0,"sma50":42.951,"sma200":38.645,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-0.63,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-10-06","price":45.71,"sma50":43.114,"sma200":38.741,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-2.51,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-10-07","price":44.56,"sma50":43.271,"sma200":38.832,"sma50_signal":"Bullish","sma200_signal":"Bullish","next_change":-6.18,"sma50_success":false,"sma200_success":false,"trend":"Bullish"},{"date":"2025-10-08","price":41.8,"sma50":43.403,"sma200":38.907,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":1.82,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-10-09","price":42.56,"sma50":43.546,"sma200":38.988,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-0.87,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-10-10","price":42.19,"sma50":43.681,"sma200":39.064,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":0.69,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-10-13","price":42.48,"sma50":43.822,"sma200":39.145,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-4.61,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-10-14","price":40.52,"sma50":43.94,"sma200":39.211,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-0.22,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-10-15","price":40.43,"sma50":44.051,"sma200":39.275,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":0.72,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-10-16","price":40.72,"sma50":44.162,"sma200":39.34,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-1.55,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-10-17","price":40.09,"sma50":44.261,"sma200":39.4,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-2.27,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-10-20","price":39.18,"sma50":44.348,"sma200":39.453,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.69,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-10-21","price":39.45,"sma50":44.432,"sma200":39.503,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.86,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-10-22","price":39.79,"sma50":44.513,"sma200":39.554,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.98,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-10-23","price":39.4,"sma50":44.592,"sma200":39.601,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.14,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-10-24","price":38.95,"sma50":44.661,"sma200":39.643,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":2.62,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-10-27","price":39.97,"sma50":44.737,"sma200":39.69,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.7,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-10-28","price":39.29,"sma50":44.803,"sma200":39.733,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.18,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-10-29","price":39.36,"sma50":44.868,"sma200":39.776,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":3.23,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-10-30","price":40.63,"sma50":44.944,"sma200":39.824,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":0.37,"sma50_success":false,"sma200_success":true,"trend":"Bearish"},{"date":"2025-10-31","price":40.78,"sma50":45.021,"sma200":39.876,"sma50_signal":"Bearish","sma200_signal":"Bullish","next_change":-4.49,"sma50_success":true,"sma200_success":false,"trend":"Bearish"},{"date":"2025-11-03","price":38.95,"sma50":45.072,"sma200":39.904,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.87,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-11-04","price":38.61,"sma50":45.117,"sma200":39.929,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":2.46,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-11-05","price":39.56,"sma50":45.17,"sma200":39.961,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-4.45,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-11-06","price":37.8,"sma50":45.209,"sma200":39.983,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.19,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-11-07","price":38.25,"sma50":45.249,"sma200":40.008,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-3.4,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-11-10","price":36.95,"sma50":45.278,"sma200":40.022,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.65,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-11-11","price":36.34,"sma50":45.302,"sma200":40.033,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.22,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-11-12","price":36.42,"sma50":45.323,"sma200":40.044,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.99,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-11-13","price":36.78,"sma50":45.342,"sma200":40.055,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.25,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-11-14","price":37.24,"sma50":45.361,"sma200":40.068,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-5.14,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-11-17","price":35.33,"sma50":45.369,"sma200":40.069,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.51,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-11-18","price":35.15,"sma50":45.372,"sma200":40.068,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-2.15,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-11-19","price":34.39,"sma50":45.369,"sma200":40.062,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-2.91,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-11-20","price":33.39,"sma50":45.355,"sma200":40.05,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-2.52,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-11-21","price":32.55,"sma50":45.332,"sma200":40.031,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.66,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-11-24","price":33.09,"sma50":45.311,"sma200":40.014,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-2.51,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-11-25","price":32.26,"sma50":45.283,"sma200":39.992,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":2.98,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-11-26","price":33.22,"sma50":45.258,"sma200":39.974,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-2.59,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-11-27","price":32.36,"sma50":45.226,"sma200":39.95,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":3.21,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-11-28","price":33.4,"sma50":45.2,"sma200":39.929,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.5,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-12-01","price":32.9,"sma50":45.168,"sma200":39.904,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-3.37,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-12-02","price":31.8,"sma50":45.127,"sma200":39.873,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.69,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-12-03","price":31.58,"sma50":45.083,"sma200":39.84,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.38,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-12-04","price":31.46,"sma50":45.036,"sma200":39.805,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.24,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-12-05","price":31.85,"sma50":44.993,"sma200":39.773,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.44,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-12-08","price":31.71,"sma50":44.945,"sma200":39.738,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-3.59,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-12-09","price":30.57,"sma50":44.888,"sma200":39.696,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-4.12,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-12-10","price":29.31,"sma50":44.821,"sma200":39.646,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.34,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-12-11","price":29.21,"sma50":44.748,"sma200":39.593,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.37,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-12-12","price":29.1,"sma50":44.673,"sma200":39.539,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.03,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-12-15","price":29.4,"sma50":44.598,"sma200":39.488,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":2.76,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-12-16","price":30.21,"sma50":44.524,"sma200":39.439,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-3.14,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-12-17","price":29.26,"sma50":44.441,"sma200":39.382,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.54,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-12-18","price":29.71,"sma50":44.357,"sma200":39.327,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.37,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-12-19","price":29.6,"sma50":44.271,"sma200":39.269,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":3.51,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-12-22","price":30.64,"sma50":44.188,"sma200":39.215,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.5,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-12-23","price":30.18,"sma50":44.1,"sma200":39.157,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.66,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-12-24","price":30.38,"sma50":44.012,"sma200":39.1,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":3.13,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2025-12-26","price":31.33,"sma50":43.929,"sma200":39.048,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.41,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-12-29","price":30.89,"sma50":43.841,"sma200":38.992,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-3.59,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-12-30","price":29.78,"sma50":43.742,"sma200":38.927,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-3.16,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2025-12-31","price":28.84,"sma50":43.636,"sma200":38.858,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.0,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-01-01","price":28.84,"sma50":43.523,"sma200":38.786,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.25,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-01-02","price":28.48,"sma50":43.403,"sma200":38.71,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.23,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-01-05","price":28.83,"sma50":43.282,"sma200":38.636,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.42,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-01-06","price":28.42,"sma50":43.155,"sma200":38.558,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.97,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-01-07","price":27.86,"sma50":43.023,"sma200":38.477,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.54,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-01-08","price":27.43,"sma50":42.887,"sma200":38.394,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.54,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-01-09","price":27.28,"sma50":42.748,"sma200":38.309,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":3.37,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-01-12","price":28.2,"sma50":42.611,"sma200":38.228,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-3.12,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-01-13","price":27.32,"sma50":42.468,"sma200":38.141,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.29,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-01-14","price":27.24,"sma50":42.324,"sma200":38.053,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":2.79,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-01-15","price":27.0,"sma50":42.177,"sma200":37.962,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.07,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-01-16","price":27.97,"sma50":42.034,"sma200":37.876,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.32,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-01-19","price":28.06,"sma50":41.892,"sma200":37.793,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.46,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-01-20","price":27.65,"sma50":41.742,"sma200":37.705,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.76,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-01-21","price":27.44,"sma50":41.592,"sma200":37.618,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-2.15,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-01-22","price":26.85,"sma50":41.436,"sma200":37.527,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.26,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-01-23","price":26.78,"sma50":41.278,"sma200":37.434,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.89,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-01-26","price":27.02,"sma50":41.122,"sma200":37.344,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.26,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-01-27","price":26.68,"sma50":40.962,"sma200":37.251,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.93,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-01-28","price":26.43,"sma50":40.799,"sma200":37.156,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-2.73,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-01-29","price":25.71,"sma50":40.628,"sma200":37.054,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.44,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-01-30","price":26.08,"sma50":40.456,"sma200":36.954,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.61,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-02-02","price":26.24,"sma50":40.283,"sma200":36.852,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.42,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-02-03","price":26.35,"sma50":40.109,"sma200":36.749,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.06,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-02-04","price":26.63,"sma50":39.937,"sma200":36.649,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.16,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-02-05","price":26.32,"sma50":39.763,"sma200":36.547,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.14,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-02-06","price":26.02,"sma50":39.587,"sma200":36.442,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.31,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-02-07","price":26.1,"sma50":39.412,"sma200":36.339,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.61,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-02-09","price":26.52,"sma50":39.241,"sma200":36.238,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":1.74,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-02-10","price":26.98,"sma50":39.072,"sma200":36.139,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-1.93,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-02-11","price":26.46,"sma50":38.898,"sma200":36.036,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":2.64,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-02-12","price":27.16,"sma50":38.727,"sma200":35.934,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-2.57,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-02-13","price":26.46,"sma50":38.553,"sma200":35.829,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.83,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-02-16","price":26.24,"sma50":38.377,"sma200":35.721,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":0.23,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-02-17","price":26.3,"sma50":38.202,"sma200":35.614,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":2.63,"sma50_success":false,"sma200_success":false,"trend":"Bearish"},{"date":"2026-02-18","price":26.99,"sma50":38.03,"sma200":35.51,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-2.04,"sma50_success":true,"sma200_success":true,"trend":"Bearish"},{"date":"2026-02-19","price":26.44,"sma50":37.856,"sma200":35.403,"sma50_signal":"Bearish","sma200_signal":"Bearish","next_change":-0.72,"sma50_success":true,"sma200_success":true,"trend":"Bearish"}];
+
+const WEEKLY = [{"date":"2024-08-11","price":32.2,"signal":"Bullish","buysell":"Buy","next_change":-2.17,"success":false},{"date":"2024-08-18","price":31.5,"signal":"Bearish","buysell":"Sell","next_change":3.81,"success":false},{"date":"2024-08-25","price":32.7,"signal":"Bullish","buysell":"Sell","next_change":-3.06,"success":false},{"date":"2024-09-01","price":31.7,"signal":"Bearish","buysell":"Sell","next_change":-2.21,"success":true},{"date":"2024-09-08","price":31.0,"signal":"Bearish","buysell":"Sell","next_change":-3.23,"success":true},{"date":"2024-09-15","price":30.0,"signal":"Bearish","buysell":"Sell","next_change":3.33,"success":false},{"date":"2024-09-22","price":31.0,"signal":"Bullish","buysell":"Sell","next_change":3.55,"success":true},{"date":"2024-09-29","price":32.1,"signal":"Bullish","buysell":"Sell","next_change":5.3,"success":true},{"date":"2024-10-06","price":33.8,"signal":"Bullish","buysell":"Sell","next_change":3.85,"success":true},{"date":"2024-10-13","price":35.1,"signal":"Bullish","buysell":"Sell","next_change":4.27,"success":true},{"date":"2024-10-20","price":36.6,"signal":"Bullish","buysell":"Sell","next_change":-1.09,"success":false},{"date":"2024-10-27","price":36.2,"signal":"Bullish","buysell":"Sell","next_change":1.66,"success":true},{"date":"2024-11-03","price":36.8,"signal":"Bullish","buysell":"Sell","next_change":-0.54,"success":false},{"date":"2024-11-10","price":36.6,"signal":"Bullish","buysell":"Sell","next_change":0.55,"success":true},{"date":"2024-11-17","price":36.8,"signal":"Bullish","buysell":"Sell","next_change":9.24,"success":true},{"date":"2024-11-24","price":40.2,"signal":"Bullish","buysell":"Sell","next_change":5.72,"success":true},{"date":"2024-12-01","price":42.5,"signal":"Bullish","buysell":"Sell","next_change":5.74,"success":true},{"date":"2024-12-08","price":45.0,"signal":"Bullish","buysell":"Sell","next_change":-0.89,"success":false},{"date":"2024-12-15","price":44.6,"signal":"Bullish","buysell":"Sell","next_change":-3.14,"success":false},{"date":"2024-12-22","price":43.2,"signal":"Bullish","buysell":"Sell","next_change":-6.25,"success":false},{"date":"2024-12-29","price":40.5,"signal":"Bearish","buysell":"Sell","next_change":-8.84,"success":true},{"date":"2025-01-05","price":36.9,"signal":"Bearish","buysell":"Sell","next_change":-1.9,"success":true},{"date":"2025-01-12","price":36.2,"signal":"Bearish","buysell":"Sell","next_change":-2.76,"success":true},{"date":"2025-01-19","price":35.2,"signal":"Bearish","buysell":"Sell","next_change":-6.53,"success":true},{"date":"2025-01-26","price":32.9,"signal":"Bearish","buysell":"Sell","next_change":-4.86,"success":true},{"date":"2025-02-02","price":31.3,"signal":"Bearish","buysell":"Sell","next_change":-2.24,"success":true},{"date":"2025-02-09","price":30.6,"signal":"Bearish","buysell":"Sell","next_change":-2.29,"success":true},{"date":"2025-02-16","price":29.9,"signal":"Bearish","buysell":"Sell","next_change":7.36,"success":false},{"date":"2025-02-23","price":32.1,"signal":"Bullish","buysell":"Sell","next_change":-0.93,"success":false},{"date":"2025-03-02","price":31.8,"signal":"Bearish","buysell":"Sell","next_change":-3.77,"success":true},{"date":"2025-03-09","price":30.6,"signal":"Bearish","buysell":"Sell","next_change":6.86,"success":false},{"date":"2025-03-16","price":32.7,"signal":"Bearish","buysell":"Sell","next_change":5.2,"success":false},{"date":"2025-03-23","price":34.4,"signal":"Bullish","buysell":"Sell","next_change":1.16,"success":true},{"date":"2025-03-30","price":34.8,"signal":"Bullish","buysell":"Sell","next_change":-0.58,"success":false},{"date":"2025-04-06","price":34.6,"signal":"Bullish","buysell":"Sell","next_change":-4.91,"success":false},{"date":"2025-04-13","price":32.9,"signal":"Bearish","buysell":"Sell","next_change":5.47,"success":false},{"date":"2025-04-20","price":34.7,"signal":"Bullish","buysell":"Sell","next_change":4.9,"success":true},{"date":"2025-04-27","price":36.4,"signal":"Bullish","buysell":"Sell","next_change":4.26,"success":true},{"date":"2025-05-04","price":37.9,"signal":"Bullish","buysell":"Sell","next_change":0.79,"success":true},{"date":"2025-05-11","price":38.2,"signal":"Bullish","buysell":"Sell","next_change":-0.26,"success":false},{"date":"2025-05-18","price":38.1,"signal":"Bullish","buysell":"Sell","next_change":3.15,"success":true},{"date":"2025-05-25","price":39.3,"signal":"Bullish","buysell":"Sell","next_change":-3.82,"success":false},{"date":"2025-06-01","price":37.8,"signal":"Bullish","buysell":"Sell","next_change":2.38,"success":true},{"date":"2025-06-08","price":38.7,"signal":"Bullish","buysell":"Sell","next_change":-3.36,"success":false},{"date":"2025-06-15","price":37.4,"signal":"Bullish","buysell":"Sell","next_change":4.81,"success":true},{"date":"2025-06-22","price":39.2,"signal":"Bullish","buysell":"Sell","next_change":-5.36,"success":false},{"date":"2025-06-29","price":37.1,"signal":"Bearish","buysell":"Sell","next_change":-6.19,"success":true},{"date":"2025-07-06","price":34.8,"signal":"Bearish","buysell":"Sell","next_change":8.91,"success":false},{"date":"2025-07-13","price":37.9,"signal":"Bearish","buysell":"Sell","next_change":5.54,"success":false},{"date":"2025-07-20","price":40.0,"signal":"Bullish","buysell":"Sell","next_change":-10.0,"success":false},{"date":"2025-07-27","price":36.0,"signal":"Bearish","buysell":"Sell","next_change":-4.17,"success":true},{"date":"2025-08-03","price":34.5,"signal":"Bearish","buysell":"Sell","next_change":4.35,"success":false},{"date":"2025-08-10","price":36.0,"signal":"Bearish","buysell":"Sell","next_change":4.44,"success":false},{"date":"2025-08-17","price":37.6,"signal":"Bearish","buysell":"Sell","next_change":5.05,"success":false},{"date":"2025-08-24","price":39.5,"signal":"Bearish","buysell":"Sell","next_change":0.51,"success":false},{"date":"2025-08-31","price":39.7,"signal":"Bearish","buysell":"Sell","next_change":5.8,"success":false},{"date":"2025-09-07","price":42.0,"signal":"Bullish","buysell":"Sell","next_change":-3.81,"success":false},{"date":"2025-09-14","price":40.4,"signal":"Bearish","buysell":"Sell","next_change":5.69,"success":false},{"date":"2025-09-21","price":42.7,"signal":"Bullish","buysell":"Sell","next_change":7.26,"success":true},{"date":"2025-09-28","price":45.8,"signal":"Bullish","buysell":"Sell","next_change":-6.55,"success":false},{"date":"2025-10-05","price":42.8,"signal":"Bearish","buysell":"Sell","next_change":-4.67,"success":true},{"date":"2025-10-12","price":40.8,"signal":"Bearish","buysell":"Sell","next_change":-2.45,"success":true},{"date":"2025-10-19","price":39.8,"signal":"Bearish","buysell":"Sell","next_change":-2.76,"success":true},{"date":"2025-10-26","price":38.7,"signal":"Bearish","buysell":"Sell","next_change":5.42,"success":false},{"date":"2025-11-02","price":40.8,"signal":"Bearish","buysell":"Sell","next_change":-11.52,"success":true},{"date":"2025-11-09","price":36.1,"signal":"Bearish","buysell":"Sell","next_change":-5.26,"success":true},{"date":"2025-11-16","price":34.2,"signal":"Bearish","buysell":"Sell","next_change":-6.73,"success":true},{"date":"2025-11-23","price":31.9,"signal":"Bearish","buysell":"Sell","next_change":-3.76,"success":true},{"date":"2025-11-30","price":30.7,"signal":"Bearish","buysell":"Sell","next_change":-4.89,"success":true},{"date":"2025-12-07","price":29.2,"signal":"Bearish","buysell":"Sell","next_change":4.45,"success":false},{"date":"2025-12-14","price":30.5,"signal":"Bearish","buysell":"Sell","next_change":-5.25,"success":true},{"date":"2025-12-21","price":28.9,"signal":"Bearish","buysell":"Sell","next_change":-3.81,"success":true},{"date":"2025-12-28","price":27.8,"signal":"Bearish","buysell":"Sell","next_change":-2.52,"success":true},{"date":"2026-01-04","price":27.1,"signal":"Bearish","buysell":"Sell","next_change":-3.69,"success":true},{"date":"2026-01-11","price":26.1,"signal":"Bearish","buysell":"Sell","next_change":8.43,"success":false},{"date":"2026-01-18","price":28.3,"signal":"Bearish","buysell":"Sell","next_change":-0.07,"success":true},{"date":"2026-01-25","price":28.3,"signal":"Bullish","buysell":"Sell","next_change":-1.0,"success":false},{"date":"2026-02-01","price":28.0,"signal":"Bearish","buysell":"Sell","next_change":-4.22,"success":true}];
+
+const PHASES = [
+  {start:"2024-12-11",end:"2025-01-08",signal:"Bullish",days:20,successes:7,fails:13,accuracy:35.0},
+  {start:"2025-01-09",end:"2025-01-16",signal:"Bearish",days:6,successes:2,fails:4,accuracy:33.3},
+  {start:"2025-01-17",end:"2025-01-17",signal:"Bullish",days:1,successes:0,fails:1,accuracy:0.0},
+  {start:"2025-01-20",end:"2025-02-05",signal:"Bearish",days:14,successes:6,fails:8,accuracy:42.9},
+  {start:"2025-02-06",end:"2025-02-06",signal:"Bullish",days:1,successes:0,fails:1,accuracy:0.0},
+  {start:"2025-02-07",end:"2025-03-20",signal:"Bearish",days:28,successes:17,fails:11,accuracy:60.7},
+  {start:"2025-03-21",end:"2025-03-24",signal:"Bullish",days:2,successes:1,fails:1,accuracy:50.0},
+  {start:"2025-03-25",end:"2025-03-25",signal:"Bearish",days:1,successes:0,fails:1,accuracy:0.0},
+  {start:"2025-03-26",end:"2025-05-07",signal:"Bullish",days:24,successes:13,fails:11,accuracy:54.2},
+  {start:"2025-05-09",end:"2025-07-23",signal:"Bullish",days:54,successes:28,fails:26,accuracy:51.9},
+  {start:"2025-07-24",end:"2025-10-09",signal:"Bearish",days:53,successes:29,fails:24,accuracy:54.7},
+  {start:"2025-10-10",end:"2025-10-13",signal:"Bullish",days:2,successes:0,fails:2,accuracy:0.0},
+  {start:"2025-10-14",end:"2025-10-28",signal:"Bearish",days:10,successes:5,fails:5,accuracy:50.0},
+  {start:"2025-10-29",end:"2025-10-31",signal:"Bullish",days:3,successes:1,fails:2,accuracy:33.3},
+  {start:"2025-11-03",end:"2026-02-19",signal:"Bearish",days:76,successes:48,fails:28,accuracy:63.2}
+];
+
+const MONTHLY = [
+  {m:"Dec '24",acc:42.9,total:14},
+  {m:"Jan '25",acc:34.8,total:23},
+  {m:"Feb '25",acc:60.0,total:20},
+  {m:"Mar '25",acc:47.4,total:19},
+  {m:"Apr '25",acc:52.6,total:19},
+  {m:"May '25",acc:57.1,total:21},
+  {m:"Jun '25",acc:52.4,total:21},
+  {m:"Jul '25",acc:47.8,total:23},
+  {m:"Aug '25",acc:52.6,total:19},
+  {m:"Sep '25",acc:50.0,total:22},
+  {m:"Oct '25",acc:42.9,total:21},
+  {m:"Nov '25",acc:57.9,total:19},
+  {m:"Dec '25",acc:59.1,total:22},
+  {m:"Jan '26",acc:75.0,total:20},
+  {m:"Feb '26",acc:60.0,total:15}
+];
+
+// ===== ANIMATE BARS =====
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    document.querySelectorAll('.mc-bar-fill').forEach(el => {
+      el.style.width = el.dataset.w + '%';
+    });
+  }, 400);
+
+  buildPhaseTable();
+  buildDailyTable(DAILY);
+  buildWeeklyTable(WEEKLY);
+  buildCharts();
+});
+
+// ===== PHASE TABLE =====
+function buildPhaseTable() {
+  const grid = document.querySelector('.phase-grid');
+  PHASES.forEach(p => {
+    const acc = p.accuracy;
+    const isBull = p.signal === 'Bullish';
+    const color = acc >= 60 ? 'var(--green)' : acc >= 50 ? 'var(--yellow)' : 'var(--red)';
+    const verdict = acc >= 60 ? 'Strong' : acc >= 50 ? 'Marginal' : 'Failed';
+    const vClass = acc >= 60 ? 'ok' : acc >= 50 ? 'neut' : 'fail';
+    const row = document.createElement('div');
+    row.className = 'phase-row';
+    row.innerHTML = `
+      <span class="sig-pill ${isBull ? 'bull' : 'bear'}">${p.signal}</span>
+      <span class="ph-range">${p.start} → ${p.end}</span>
+      <span class="ph-days" style="color:var(--text)">${p.days}d</span>
+      <span class="ph-count"><span style="color:var(--green)">${p.successes}✓</span> <span style="color:var(--red)">${p.fails}✗</span></span>
+      <span class="ph-acc" style="color:${color}">${acc}%</span>
+      <span class="sig-pill ${vClass}">${verdict}</span>
+    `;
+    grid.appendChild(row);
+  });
+}
+
+// ===== DAILY TABLE =====
+let currentFilter = 'all';
+function buildDailyTable(data) {
+  const tbody = document.getElementById('dailyTbody');
+  tbody.innerHTML = '';
+  const filtered = data.filter(r => {
+    if (currentFilter === 'success') return r.sma50_success;
+    if (currentFilter === 'fail') return !r.sma50_success;
+    if (currentFilter === 'bull') return r.sma50_signal === 'Bullish';
+    if (currentFilter === 'bear') return r.sma50_signal === 'Bearish';
+    return true;
+  });
+  document.getElementById('countLabel').textContent = filtered.length;
+  filtered.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.className = r.sma50_success ? 'success-row' : 'fail-row';
+    const signalPill = r.sma50_signal === 'Bullish'
+      ? `<span class="sig-pill bull">▲ Bull</span>`
+      : `<span class="sig-pill bear">▼ Bear</span>`;
+    const result50 = r.sma50_success
+      ? `<span style="color:var(--green)">✓ HIT</span>`
+      : `<span style="color:var(--red)">✗ MISS</span>`;
+    const result200 = r.sma200_success
+      ? `<span style="color:var(--green)">✓ HIT</span>`
+      : `<span style="color:var(--red)">✗ MISS</span>`;
+    const changeColor = r.next_change >= 0 ? 'var(--green)' : 'var(--red)';
+    tr.innerHTML = `
+      <td style="color:var(--muted)">${r.date}</td>
+      <td>₹${r.price}</td>
+      <td style="color:var(--cyan)">₹${r.sma50}</td>
+      <td style="color:var(--violet)">₹${r.sma200}</td>
+      <td>${signalPill}</td>
+      <td style="color:${changeColor}">${r.next_change > 0 ? '+' : ''}${r.next_change}%</td>
+      <td>${result50}</td>
+      <td>${result200}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function filterTable(type) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  buildDailyTable(DAILY);
+}
+
+// ===== WEEKLY TABLE =====
+function buildWeeklyTable(data) {
+  const tbody = document.getElementById('weeklyTbody');
+  data.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.className = r.success ? 'success-row' : 'fail-row';
+    const sig = r.signal === 'Bullish'
+      ? `<span class="sig-pill bull">▲ Bullish</span>`
+      : `<span class="sig-pill bear">▼ Bearish</span>`;
+    const bs = r.buysell === 'Buy'
+      ? `<span style="color:var(--green)">Buy</span>`
+      : `<span style="color:var(--red)">Sell</span>`;
+    const result = r.success
+      ? `<span class="sig-pill ok">✓ Hit</span>`
+      : `<span class="sig-pill fail">✗ Miss</span>`;
+    const changeColor = r.next_change >= 0 ? 'var(--green)' : 'var(--red)';
+    tr.innerHTML = `
+      <td style="color:var(--muted)">${r.date}</td>
+      <td>₹${r.price}</td>
+      <td>${sig}</td>
+      <td>${bs}</td>
+      <td style="color:${changeColor}">${r.next_change > 0 ? '+' : ''}${r.next_change}%</td>
+      <td>${result}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ===== TAB SWITCH =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ===== CHARTS =====
+function buildCharts() {
+  Chart.defaults.color = '#64748b';
+  Chart.defaults.borderColor = '#1e2540';
+
+  // --- PRICE CHART ---
+  const priceCtx = document.getElementById('priceChart').getContext('2d');
+  const dates = DAILY.map(r => r.date.slice(5));
+  const prices = DAILY.map(r => r.price);
+  const sma50 = DAILY.map(r => r.sma50);
+  const sma200 = DAILY.map(r => r.sma200);
+
+  // Color points by success
+  const pointColors = DAILY.map(r => r.sma50_success ? 'rgba(16,217,126,0.7)' : 'rgba(244,63,94,0.7)');
+
+  new Chart(priceCtx, {
+    type: 'line',
+    data: {
+      labels: dates,
+      datasets: [
+        {
+          label: 'Price',
+          data: prices,
+          borderColor: '#e2e8f0',
+          borderWidth: 1.5,
+          pointRadius: 2,
+          pointBackgroundColor: pointColors,
+          pointBorderColor: pointColors,
+          tension: 0.3,
+          fill: false,
+          order: 1
+        },
+        {
+          label: 'SMA50',
+          data: sma50,
+          borderColor: '#06b6d4',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: false,
+          borderDash: [],
+          order: 2
+        },
+        {
+          label: 'SMA200',
+          data: sma200,
+          borderColor: '#8b5cf6',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: false,
+          borderDash: [5, 3],
+          order: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          labels: {
+            color: '#94a3b8',
+            font: { family: 'JetBrains Mono', size: 11 },
+            usePointStyle: true,
+            pointStyleWidth: 20
+          }
+        },
+        tooltip: {
+          backgroundColor: '#0c0f1a',
+          borderColor: '#1e2540',
+          borderWidth: 1,
+          titleColor: '#06b6d4',
+          bodyColor: '#94a3b8',
+          titleFont: { family: 'JetBrains Mono', size: 11 },
+          bodyFont: { family: 'JetBrains Mono', size: 11 },
+        },
+        annotation: {
+          annotations: {
+            deathCross: {
+              type: 'line',
+              xMin: '10-07',
+              xMax: '10-07',
+              borderColor: 'rgba(244,63,94,0.8)',
+              borderWidth: 2,
+              borderDash: [6, 3],
+              label: {
+                content: '💀 Death Cross',
+                enabled: true,
+                position: 'start',
+                backgroundColor: 'rgba(244,63,94,0.15)',
+                color: '#f43f5e',
+                font: { family: 'JetBrains Mono', size: 10 }
+              }
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(30,37,64,0.5)' },
+          ticks: {
+            font: { family: 'JetBrains Mono', size: 9 },
+            maxTicksLimit: 14,
+            maxRotation: 45
+          }
+        },
+        y: {
+          grid: { color: 'rgba(30,37,64,0.5)' },
+          ticks: {
+            font: { family: 'JetBrains Mono', size: 10 },
+            callback: v => '₹' + v
+          }
+        }
+      }
+    }
+  });
+
+  // --- MONTHLY ACCURACY CHART ---
+  const monCtx = document.getElementById('monthlyChart').getContext('2d');
+  const monColors = MONTHLY.map(m => {
+    if (m.acc >= 60) return 'rgba(16,217,126,0.7)';
+    if (m.acc >= 50) return 'rgba(251,191,36,0.7)';
+    return 'rgba(244,63,94,0.7)';
+  });
+  new Chart(monCtx, {
+    type: 'bar',
+    data: {
+      labels: MONTHLY.map(m => m.m),
+      datasets: [{
+        label: 'SMA50 Accuracy %',
+        data: MONTHLY.map(m => m.acc),
+        backgroundColor: monColors,
+        borderColor: monColors.map(c => c.replace('0.7','1')),
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0c0f1a',
+          borderColor: '#1e2540',
+          borderWidth: 1,
+          titleColor: '#06b6d4',
+          bodyColor: '#94a3b8',
+          titleFont: { family: 'JetBrains Mono', size: 11 },
+          bodyFont: { family: 'JetBrains Mono', size: 11 },
+          callbacks: {
+            label: ctx => ` ${ctx.parsed.y}% accuracy (${MONTHLY[ctx.dataIndex].total} signals)`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: 'JetBrains Mono', size: 10 }, maxRotation: 45 }
+        },
+        y: {
+          min: 0, max: 100,
+          grid: { color: 'rgba(30,37,64,0.5)' },
+          ticks: { font: { family: 'JetBrains Mono', size: 10 }, callback: v => v + '%' },
+          afterDataLimits(scale) { scale.max = 100; }
+        }
+      }
+    }
+  });
+  // 50% line
+  const originalDraw = Chart.registry.plugins.get('annotation');
+
+  // --- DONUT CHART ---
+  const doCtx = document.getElementById('donutChart').getContext('2d');
+  // Count by signal+outcome
+  let bull_s = 0, bull_f = 0, bear_s = 0, bear_f = 0;
+  DAILY.forEach(r => {
+    if (r.sma50_signal === 'Bullish') { r.sma50_success ? bull_s++ : bull_f++; }
+    else { r.sma50_success ? bear_s++ : bear_f++; }
+  });
+  new Chart(doCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Bull ✓', 'Bull ✗', 'Bear ✓', 'Bear ✗'],
+      datasets: [{
+        data: [bull_s, bull_f, bear_s, bear_f],
+        backgroundColor: [
+          'rgba(16,217,126,0.7)',
+          'rgba(16,217,126,0.2)',
+          'rgba(244,63,94,0.7)',
+          'rgba(244,63,94,0.2)'
+        ],
+        borderColor: ['#10d97e','#10d97e','#f43f5e','#f43f5e'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#94a3b8',
+            font: { family: 'JetBrains Mono', size: 10 },
+            padding: 14
+          }
+        },
+        tooltip: {
+          backgroundColor: '#0c0f1a',
+          borderColor: '#1e2540',
+          borderWidth: 1,
+          bodyFont: { family: 'JetBrains Mono', size: 11 },
+        }
+      }
+    }
+  });
+
+  // --- WEEKLY ACCURACY CHART ---
+  const wkCtx = document.getElementById('weeklyChart').getContext('2d');
+  // Rolling 8-week accuracy
+  const wkLabels = [], wkVals = [];
+  for (let i = 7; i < WEEKLY.length; i++) {
+    const slice = WEEKLY.slice(i - 7, i + 1);
+    const acc = slice.filter(r => r.success).length / 8 * 100;
+    wkLabels.push(WEEKLY[i].date.slice(2, 7));
+    wkVals.push(Math.round(acc * 10) / 10);
+  }
+  new Chart(wkCtx, {
+    type: 'line',
+    data: {
+      labels: wkLabels,
+      datasets: [{
+        label: '8-Week Rolling Accuracy %',
+        data: wkVals,
+        borderColor: '#f97316',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: wkVals.map(v => v >= 50 ? '#10d97e' : '#f43f5e'),
+        tension: 0.4,
+        fill: {
+          target: { value: 50 },
+          above: 'rgba(16,217,126,0.08)',
+          below: 'rgba(244,63,94,0.08)'
+        }
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0c0f1a',
+          borderColor: '#1e2540',
+          borderWidth: 1,
+          bodyFont: { family: 'JetBrains Mono', size: 11 },
+          callbacks: {
+            label: ctx => ` ${ctx.parsed.y}% (8-week rolling)`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 10, maxRotation: 45 }
+        },
+        y: {
+          min: 0, max: 100,
+          grid: { color: 'rgba(30,37,64,0.5)' },
+          ticks: { font: { family: 'JetBrains Mono', size: 10 }, callback: v => v + '%' }
+        }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
